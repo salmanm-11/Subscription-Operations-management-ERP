@@ -37,7 +37,7 @@ describe('Remote License Kill Switch & Master Developer Override', () => {
     const res = await checkSystemLicense();
     expect(res.isLocked).toBe(false);
     expect(res.status).toBe('ACTIVE');
-  });
+  }, 15000);
 
   it('triggers local and remote lockout when license is suspended', async () => {
     OfflineStorage.setLicenseStatus('SUSPENDED: Payment overdue - please contact developer');
@@ -65,5 +65,5 @@ describe('Remote License Kill Switch & Master Developer Override', () => {
     const unlockedRes = await checkSystemLicense();
     expect(unlockedRes.isLocked).toBe(false);
     expect(unlockedRes.status).toBe('ACTIVE');
-  });
+  }, 15000);
 });

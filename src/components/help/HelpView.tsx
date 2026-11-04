@@ -1,5 +1,5 @@
 import React from 'react';
-import { HelpCircle, CheckCircle2, Shield, Mail } from 'lucide-react';
+import { CheckCircle2, Mail } from 'lucide-react';
 
 export const HelpView: React.FC = () => {
   return (
@@ -78,28 +78,6 @@ export const HelpView: React.FC = () => {
             </p>
           </div>
         </div>
-      </div>
-
-      {/* Cloud & Multi-PC Synchronization */}
-      <div className="bg-[#151c2c] border border-[#222f47]/60 rounded-2xl p-6 shadow-lg space-y-3 text-xs text-slate-300">
-        <h3 className="text-sm font-bold text-white flex items-center gap-2">
-          <Shield className="w-4 h-4 text-emerald-400" />
-          <span>Multi-Computer Cloud Synchronization</span>
-        </h3>
-        <p className="text-slate-400">
-          Karama Mess Management Software uses Supabase PostgreSQL cloud infrastructure. Any change made on Computer 1 (e.g. at the billing counter) instantly updates on Computer 2 (e.g. kitchen or owner laptop).
-        </p>
-        <p className="text-slate-400">
-          Data separation is strictly enforced via PostgreSQL Row Level Security (RLS). Each business has isolated records.
-        </p>
-      </div>
-
-      {/* No License Policy */}
-      <div className="bg-[#151c2c] border border-amber-500/30 rounded-2xl p-6 shadow-lg space-y-2 text-xs text-amber-200/90">
-        <h3 className="text-sm font-bold text-amber-400">Software Policy: Full Business Freedom</h3>
-        <p>
-          This application contains <b>zero software subscription fees, activation codes, or license locks</b>. You own and operate the desktop software indefinitely for your mess business operations.
-        </p>
       </div>
     </div>
   );
