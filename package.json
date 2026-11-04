@@ -1,0 +1,49 @@
+{
+  "name": "karama-mess-management",
+  "version": "1.0.3",
+  "description": "Professional Windows Desktop Application for Karama Mess & Catering, Dubai",
+  "main": "electron/dist/main.cjs",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "build:electron": "tsc -p tsconfig.electron.json",
+    "package": "npm run build && npm run build:electron && electron-builder --win",
+    "test": "vitest run",
+    "start:web": "node server.js",
+    "seed": "node seed_database.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.4",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.447.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "tailwind-merge": "^2.5.2",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@types/node": "^20.16.10",
+    "@types/react": "^18.3.11",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.2",
+    "autoprefixer": "^10.4.20",
+    "electron": "^32.1.2",
+    "electron-builder": "^24.13.3",
+    "postcss": "^8.4.47",
+    "tailwindcss": "^3.4.13",
+    "typescript": "^5.6.2",
+    "vite": "^5.4.8",
+    "vitest": "^2.1.1"
+  },
+  "keywords": [
+    "karama-mess",
+    "electron",
+    "react",
+    "typescript",
+    "supabase",
+    "postgresql",
+    "dubai-catering"
+  ],
+  "author": "Karama Mess",
+  "license": "Proprietary"
+}

@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Karama Mess Management System</title>
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🥘</text></svg>">
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="brand-icon">🥘</div>
+      <div class="brand-text">
+        <h2>Karama Mess</h2>
+        <span>Catering & Tiffin System</span>
+      </div>
+    </div>
+
+    <nav class="nav-menu">
+      <button class="nav-item active" data-tab="dashboard">
+        <span class="icon">📊</span>
+        <span>Dashboard</span>
+      </button>
+      <button class="nav-item" data-tab="customers">
+        <span class="icon">👥</span>
+        <span>Customers & Subs</span>
+        <span class="nav-badge" id="badge-cust-count">168</span>
+      </button>
+      <button class="nav-item" data-tab="kitchen">
+        <span class="icon">🍳</span>
+        <span>Kitchen Prep</span>
+      </button>
+      <button class="nav-item" data-tab="delivery">
+        <span class="icon">🛵</span>
+        <span>Delivery Run Sheet</span>
+      </button>
+      <button class="nav-item" data-tab="billing">
+        <span class="icon">💰</span>
+        <span>Billing & Dues</span>
+        <span class="nav-badge" style="background:#dc2626" id="badge-dues">22K</span>
+      </button>
+      <button class="nav-item" data-tab="calculator">
+        <span class="icon">🧮</span>
+        <span>Days Calculator</span>
+      </button>
+      <button class="nav-item" data-tab="ledger">
+        <span class="icon">📖</span>
+        <span>Moms Accounts</span>
+      </button>
+      <button class="nav-item" data-tab="groups">
+        <span class="icon">🏢</span>
+        <span>Group Accounts</span>
+      </button>
+      <button class="nav-item" data-tab="bad-debts">
+        <span class="icon">⚠️</span>
+        <span>Bad Debts Log</span>
+      </button>
+      <button class="nav-item" data-tab="mobile">
+        <span class="icon">📱</span>
+        <span>Mobile Staff Wi-Fi</span>
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="wifi-pill" id="sidebar-wifi-pill" title="Click to view mobile network URL">
+        <span>📶</span>
+        <span id="sidebar-ip-text">Wi-Fi: 192.168.0.106:3000</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Container -->
+  <div class="main-wrapper">
+    <!-- Header -->
+    <header class="top-header">
+      <div style="display: flex; align-items: center; gap: 14px;">
+        <button class="mobile-toggle" id="mobile-menu-btn">☰</button>
+        <div class="page-title">
+          <h1 id="page-heading">Dashboard</h1>
+          <p id="page-subheading">Live Mess Operations, Subscriptions & Accounts</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-secondary btn-sm" id="btn-refresh" title="Reload live data">🔄 Refresh</button>
+        <button class="btn btn-primary btn-sm" id="btn-quick-customer">➕ Add Customer</button>
+        <button class="btn btn-success btn-sm" id="btn-quick-ledger">📝 Record Accounts</button>
+      </div>
+    </header>
+
+    <!-- Content Body -->
+    <main class="content-body">
+
+      <!-- ========================================== -->
+      <!-- TAB 1: DASHBOARD -->
+      <!-- ========================================== -->
+      <section id="tab-dashboard" class="tab-pane active">
+        <!-- KPI Cards -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon icon-orange">👥</div>
+            <div class="stat-info">
+              <div class="label">Active Subscriptions</div>
+              <div class="value" id="kpi-active-subs">--</div>
+              <div class="subtext" id="kpi-subs-breakdown">Trials: -- | Notice: --</div>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon icon-green">🍱</div>
+            <div class="stat-info">
+              <div class="label">Today's Meals Headcount</div>
+              <div class="value" id="kpi-today-meals">--</div>
+              <div class="subtext" id="kpi-meals-breakdown">BF: -- | LN: -- | DN: --</div>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon icon-red">💵</div>
+            <div class="stat-info">
+              <div class="label">Total Overdue Dues</div>
+              <div class="value" id="kpi-total-overdue">AED 0</div>
+              <div class="subtext" id="kpi-debtors-count">-- pending accounts</div>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon icon-purple">⚠️</div>
+            <div class="stat-info">
+              <div class="label">Bad Debts Log</div>
+              <div class="value" id="kpi-bad-debts">AED 0</div>
+              <div class="subtext" id="kpi-bad-debts-count">-- past accounts</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Areas Summary & Urgent Notices Row -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; margin-bottom: 24px;">
+          
+          <!-- Area Distribution -->
+          <div class="card" style="margin-bottom: 0;">
+            <div class="card-header">
+              <h3>📍 Delivery Areas & Meal Density</h3>
+            </div>
+            <div class="card-body" style="padding: 12px;" id="dashboard-area-list">
+              <!-- Rendered by JS -->
+              <p style="color: var(--text-muted); padding: 12px;">Loading areas...</p>
+            </div>
+          </div>
+
+          <!-- Urgent Notices & Cancellations -->
+          <div class="card" style="margin-bottom: 0;">
+            <div class="card-header">
+              <h3>⚠️ Notice & Upcoming Cancellations</h3>
+              <span class="badge badge-notice" id="dashboard-notice-count">0 customers</span>
+            </div>
+            <div class="card-body" style="padding: 12px;" id="dashboard-notice-list">
+              <!-- Rendered by JS -->
+              <p style="color: var(--text-muted); padding: 12px;">Loading notice list...</p>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Quick Access Shortcuts -->
+        <div class="card">
+          <div class="card-header">
+            <h3>⚡ Quick Operational Shortcuts</h3>
+          </div>
+          <div class="card-body">
+            <div style="display: flex; gap: 14px; flex-wrap: wrap;">
+              <button class="btn btn-secondary" onclick="app.switchTab('kitchen')">🍳 Open Kitchen Preparation Sheet</button>
+              <button class="btn btn-secondary" onclick="app.switchTab('delivery')">🛵 Open Delivery Driver Routes</button>
+              <button class="btn btn-secondary" onclick="app.switchTab('billing')">💬 Send WhatsApp Payment Reminders</button>
+              <button class="btn btn-secondary" onclick="app.switchTab('calculator')">🧮 Compute Pro-Rata Days</button>
+              <button class="btn btn-secondary" onclick="app.switchTab('ledger')">📖 View Moms Accounts Ledger</button>
+              <button class="btn btn-secondary" onclick="app.exportCustomersCsv()">📥 Export Customers CSV</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- TAB 2: CUSTOMERS & SUBSCRIPTIONS -->
+      <!-- ========================================== -->
+      <section id="tab-customers" class="tab-pane">
+        <div class="card">
+          <div class="card-header">
+            <h3>👥 Customer Subscriptions Directory</h3>
+            <div style="display: flex; gap: 8px;">
+              <button class="btn btn-secondary btn-sm" onclick="app.exportCustomersCsv()">📥 Export CSV</button>
+              <button class="btn btn-primary btn-sm" onclick="app.openCustomerModal()">➕ Add Customer</button>
+            </div>
+          </div>
+          <div class="card-body">
+            
+            <!-- Filters -->
+            <div class="filter-bar">
+              <div class="search-input">
+                <span class="icon">🔍</span>
+                <input type="text" id="cust-search" placeholder="Search name, building, apartment, label...">
+              </div>
+
+              <select class="filter-select" id="cust-filter-area">
+                <option value="">All Areas</option>
+                <!-- Rendered dynamically -->
+              </select>
+
+              <select class="filter-select" id="cust-filter-status">
+                <option value="">All Statuses</option>
+                <option value="Running">Running</option>
+                <option value="Trial">Trial</option>
+                <option value="Under Notice">Under Notice</option>
+                <option value="Cancelled">Cancelled</option>
+                <option value="Paused">Paused</option>
+              </select>
+
+              <select class="filter-select" id="cust-filter-meals">
+                <option value="">All Meals</option>
+                <option value="3">3 Times (BF + LN + DN)</option>
+                <option value="2">2 Times (e.g. LN + DN)</option>
+                <option value="1">1 Time (Lunch / Dinner)</option>
+              </select>
+
+              <select class="filter-select" id="cust-filter-rating">
+                <option value="">All Ratings</option>
+                <option value="Good">Good</option>
+                <option value="Late payer">Late Payer</option>
+                <option value="Bad">Bad</option>
+              </select>
+
+              <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; cursor: pointer;">
+                <input type="checkbox" id="cust-filter-dues"> Has Dues Only
+              </label>
+            </div>
+
+            <!-- Customer Table -->
+            <div class="table-responsive">
+              <table id="customers-table">
+                <thead>
+                  <tr>
+                    <th>Customer</th>
+                    <th>Area & Building</th>
+                    <th>Apt / Room</th>
+                    <th>Meals</th>
+                    <th>Dietary Labels & Notes</th>
+                    <th>Billed Upto</th>
+                    <th>Overdue (AED)</th>
+                    <th>Rating</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="customers-tbody">
+                  <tr><td colspan="9" style="text-align: center; padding: 24px;">Loading customers...</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- TAB 3: KITCHEN PREPARATION BOARD -->
+      <!-- ========================================== -->
+      <section id="tab-kitchen" class="tab-pane">
+        <!-- Kitchen Controls -->
+        <div class="card">
+          <div class="card-header">
+            <h3>🍳 Kitchen Daily Preparation Dashboard</h3>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <button class="btn btn-secondary btn-sm" id="btn-kitchen-prev">◀ Prev Day</button>
+              <input type="date" class="form-control" id="kitchen-date-picker" style="padding: 5px 10px; width: 140px;">
+              <button class="btn btn-secondary btn-sm" id="btn-kitchen-today">Today</button>
+              <button class="btn btn-secondary btn-sm" id="btn-kitchen-next">Next Day ▶</button>
+              <button class="btn btn-primary btn-sm" onclick="window.print()">🖨️ Print Kitchen Sheet</button>
+            </div>
+          </div>
+          <div class="card-body">
+
+            <!-- High-Contrast Kitchen Big Numbers -->
+            <div class="kitchen-stat-grid">
+              <div class="kitchen-stat-card">
+                <div class="val" id="kitchen-bf-count">--</div>
+                <div class="lbl">🍳 Breakfasts to Pack</div>
+              </div>
+              <div class="kitchen-stat-card green">
+                <div class="val" id="kitchen-ln-count">--</div>
+                <div class="lbl">🍛 Lunches to Pack</div>
+              </div>
+              <div class="kitchen-stat-card blue">
+                <div class="val" id="kitchen-dn-count">--</div>
+                <div class="lbl">🍲 Dinners to Pack</div>
+              </div>
+              <div class="kitchen-stat-card purple">
+                <div class="val" id="kitchen-total-count">--</div>
+                <div class="lbl">📦 Total Meal Boxes</div>
+              </div>
+            </div>
+
+            <!-- Granular Dietary Requirements -->
+            <h4 style="margin-bottom: 12px; font-size: 15px; color: var(--secondary);">📋 Detailed Kitchen Batch Counters</h4>
+            <div class="diet-breakdown-grid">
+              <div class="diet-counter-card">
+                <div>
+                  <div style="font-weight: 700;">🍚 Barik Rice (Fine)</div>
+                  <div style="font-size: 12px; color: var(--text-muted);">Special white/fine rice</div>
+                </div>
+                <div class="count" id="count-barik-rice">0</div>
+              </div>
+
+              <div class="diet-counter-card">
+                <div>
+                  <div style="font-weight: 700;">🍚 Matta / Normal Rice</div>
+                  <div style="font-size: 12px; color: var(--text-muted);">Regular Kerala meal rice</div>
+                </div>
+                <div class="count" id="count-normal-rice">0</div>
+              </div>
+
+              <div class="diet-counter-card">
+                <div>
+                  <div style="font-weight: 700;">🫓 Chapati Sets</div>
+                  <div style="font-size: 12px; color: var(--text-muted);">Instead of meal/rice</div>
+                </div>
+                <div class="count" id="count-chapati-sets">0</div>
+              </div>
+
+              <div class="diet-counter-card">
+                <div>
+                  <div style="font-weight: 700;">👨‍🍳 Handmade Chapati</div>
+                  <div style="font-size: 12px; color: var(--text-muted);">Strictly no machine</div>
+                </div>
+                <div class="count" id="count-handmade">0</div>
+              </div>
+
+              <div class="diet-counter-card">
+                <div>
+                  <div style="font-weight: 700;">🥦 Pure Veg Only</div>
+                  <div style="font-size: 12px; color: var(--text-muted);">Strict vegetarian boxes</div>
+                </div>
+                <div class="count" id="count-pure-veg">0</div>
+              </div>
+
+              <div class="diet-counter-card">
+                <div>
+                  <div style="font-weight: 700;">🐟 No Fish Curry</div>
+                  <div style="font-size: 12px; color: var(--text-muted);">Fish fry or egg substitute</div>
+                </div>
+                <div class="count" id="count-no-fish">0</div>
+              </div>
+
+              <div class="diet-counter-card">
+                <div>
+                  <div style="font-weight: 700;">🥩 No Beef</div>
+                  <div style="font-size: 12px; color: var(--text-muted);">Alternative chicken/egg</div>
+                </div>
+                <div class="count" id="count-no-beef">0</div>
+              </div>
+
+              <div class="diet-counter-card">
+                <div>
+                  <div style="font-weight: 700;">🥚 Egg Substitute</div>
+                  <div style="font-size: 12px; color: var(--text-muted);">Need omelette or egg</div>
+                </div>
+                <div class="count" id="count-egg-sub">0</div>
+              </div>
+            </div>
+
+            <!-- Special Packing Instructions Table -->
+            <h4 style="margin: 24px 0 12px 0; font-size: 15px; color: var(--secondary);">🏷️ Special Meal Box Customization Roster</h4>
+            <div class="table-responsive">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Customer Name</th>
+                    <th>Area & Building</th>
+                    <th>Apt</th>
+                    <th>Meals</th>
+                    <th>Delivery Target</th>
+                    <th>Special Preparation Label & Instructions</th>
+                  </tr>
+                </thead>
+                <tbody id="kitchen-special-tbody">
+                  <tr><td colspan="6" style="text-align:center; padding: 20px;">Loading special orders...</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- TAB 4: DELIVERY RUN SHEET -->
+      <!-- ========================================== -->
+      <section id="tab-delivery" class="tab-pane">
+        <div class="card">
+          <div class="card-header">
+            <h3>🛵 Delivery Boy Dispatch Run Sheet</h3>
+            <div style="display: flex; gap: 10px; align-items: center;">
+              <select class="filter-select" id="delivery-meal-slot">
+                <option value="all">All Today's Meals</option>
+                <option value="BF">Breakfast (Morning 5:30 - 7:00 AM)</option>
+                <option value="LN">Lunch (Morning & 12 PM Noon)</option>
+                <option value="DN">Dinner (Evening)</option>
+              </select>
+              <button class="btn btn-primary btn-sm" onclick="window.print()">🖨️ Print Route Sheet</button>
+            </div>
+          </div>
+          <div class="card-body">
+            
+            <!-- Area Tabs -->
+            <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px;" id="delivery-area-pills">
+              <button class="btn btn-sm btn-primary delivery-area-btn" data-area="">All Areas</button>
+              <button class="btn btn-sm btn-secondary delivery-area-btn" data-area="🟠 Burjman & Mankhool">🟠 Burjman & Mankhool</button>
+              <button class="btn btn-sm btn-secondary delivery-area-btn" data-area="🟡 Park, Pioneer & ADCB">🟡 Park, Pioneer & ADCB</button>
+              <button class="btn btn-sm btn-secondary delivery-area-btn" data-area="🟢 Karama Center - Pyramid">🟢 Karama Center - Pyramid</button>
+              <button class="btn btn-sm btn-secondary delivery-area-btn" data-area="🟣 Hamdan Colony & Post">🟣 Hamdan Colony & Post</button>
+            </div>
+
+            <!-- Route Stop Cards Container -->
+            <div id="delivery-route-container">
+              <p style="color: var(--text-muted); padding: 24px; text-align: center;">Loading delivery stops...</p>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- TAB 5: BILLING & DUES -->
+      <!-- ========================================== -->
+      <section id="tab-billing" class="tab-pane">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon icon-red">💰</div>
+            <div class="stat-info">
+              <div class="label">Total Uncollected Dues</div>
+              <div class="value" id="billing-total-overdue">AED 0</div>
+              <div class="subtext">Outstanding subscription balance</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon icon-orange">⏰</div>
+            <div class="stat-info">
+              <div class="label">Late Payers</div>
+              <div class="value" id="billing-late-count">0</div>
+              <div class="subtext">Requiring follow-up</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon icon-green">✅</div>
+            <div class="stat-info">
+              <div class="label">Good Standing</div>
+              <div class="value" id="billing-good-count">0</div>
+              <div class="subtext">Zero dues / paid on time</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h3>💳 Outstanding Balances & WhatsApp Collection Follow-up</h3>
+            <div style="display: flex; gap: 8px;">
+              <select class="filter-select" id="billing-filter-tier">
+                <option value="0">All Customers with Overdue (&gt; 0)</option>
+                <option value="300">High Dues (&gt;= 300 AED)</option>
+                <option value="150">Moderate Dues (&gt;= 150 AED)</option>
+              </select>
+            </div>
+          </div>
+          <div class="card-body">
+            
+            <div class="table-responsive">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Customer Name</th>
+                    <th>Area & Building</th>
+                    <th>Apt</th>
+                    <th>Billed Upto</th>
+                    <th>Payment Made Upto</th>
+                    <th>Overdue Amount</th>
+                    <th>Follow-up Remarks</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="billing-tbody">
+                  <tr><td colspan="8" style="text-align: center; padding: 24px;">Loading dues...</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- TAB 6: DAYS CALCULATOR -->
+      <!-- ========================================== -->
+      <section id="tab-calculator" class="tab-pane">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 24px;">
+          
+          <!-- Calculator Form -->
+          <div class="card">
+            <div class="card-header">
+              <h3>🧮 Pro-Rata Days & Partial Month Calculator</h3>
+            </div>
+            <div class="card-body">
+              <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">
+                Matches Karama Mess standard pricing: 1 Time = 6.2 AED/day, 2 Times = 10 AED/day, 3 Times = 13 AED/day (e.g., 10 days × 3 times = 130 AED, 13 days × 2 times = 130 AED).
+              </p>
+
+              <div class="form-group" style="margin-bottom: 14px;">
+                <label>Starting Date</label>
+                <input type="date" class="form-control" id="calc-start-date">
+              </div>
+
+              <div class="form-group" style="margin-bottom: 14px;">
+                <label>Bill Upto Date</label>
+                <input type="date" class="form-control" id="calc-end-date">
+              </div>
+
+              <div class="form-group" style="margin-bottom: 14px;">
+                <label>Times of Food per Day</label>
+                <select class="form-control" id="calc-times">
+                  <option value="3">3 Times (BF + LN + DN) - 13 AED/day</option>
+                  <option value="2">2 Times (LN + DN or BF + DN) - 10 AED/day</option>
+                  <option value="1">1 Time (Lunch only) - 6.2 AED/day</option>
+                </select>
+              </div>
+
+              <div class="form-group" style="margin-bottom: 14px;">
+                <label>Deduction / Discount Amount (AED)</label>
+                <input type="number" class="form-control" id="calc-deduction" value="0" placeholder="0">
+              </div>
+
+              <div class="form-group" style="margin-bottom: 20px;">
+                <label>Custom Daily Rate (Optional)</label>
+                <input type="number" step="0.1" class="form-control" id="calc-custom-rate" placeholder="Leave blank to use standard rate">
+              </div>
+
+              <button class="btn btn-primary" style="width: 100%;" id="btn-run-calc">Calculate Final Charges</button>
+            </div>
+          </div>
+
+          <!-- Calculation Result -->
+          <div class="card">
+            <div class="card-header">
+              <h3>📄 Bill Breakdown Result</h3>
+            </div>
+            <div class="card-body">
+              <div id="calc-result-box" style="padding: 20px; background: #f8fafc; border-radius: 12px; border: 1px solid var(--border);">
+                <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 6px;">Total Billable Days</div>
+                <div style="font-size: 28px; font-weight: 800; color: var(--secondary);" id="res-days">0 Days</div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 20px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 14px 0;">
+                  <div>
+                    <div style="font-size: 12px; color: var(--text-muted);">Daily Rate</div>
+                    <div style="font-size: 16px; font-weight: 700;" id="res-rate">AED 13.00</div>
+                  </div>
+                  <div>
+                    <div style="font-size: 12px; color: var(--text-muted);">Base Amount</div>
+                    <div style="font-size: 16px; font-weight: 700;" id="res-base">AED 0</div>
+                  </div>
+                  <div>
+                    <div style="font-size: 12px; color: var(--text-muted);">Deduction</div>
+                    <div style="font-size: 16px; font-weight: 700; color: var(--danger);" id="res-deduction">AED 0</div>
+                  </div>
+                  <div>
+                    <div style="font-size: 12px; color: var(--text-muted);">Times of Food</div>
+                    <div style="font-size: 16px; font-weight: 700;" id="res-times">3 Times</div>
+                  </div>
+                </div>
+
+                <div style="font-size: 14px; color: var(--text-muted);">Final Charges</div>
+                <div style="font-size: 36px; font-weight: 800; color: #f97316;" id="res-final">AED 0</div>
+
+                <div style="margin-top: 24px;">
+                  <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 6px;">Apply this charge to customer:</label>
+                  <div style="display: flex; gap: 8px;">
+                    <select class="form-control" id="calc-apply-customer">
+                      <option value="">Select customer to update...</option>
+                    </select>
+                    <button class="btn btn-success btn-sm" id="btn-calc-apply">Apply</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- TAB 7: MOMS ACCOUNTS (DAILY LEDGER) -->
+      <!-- ========================================== -->
+      <section id="tab-ledger" class="tab-pane">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon icon-orange">🍛</div>
+            <div class="stat-info">
+              <div class="label">Period Meal Charges</div>
+              <div class="value" id="ledger-stat-charges">AED 0</div>
+              <div class="subtext">Based on authentic formula</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon icon-green">💵</div>
+            <div class="stat-info">
+              <div class="label">Period Cash Collected</div>
+              <div class="value" id="ledger-stat-collected">AED 0</div>
+              <div class="subtext">Payments received</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon icon-blue">⚖️</div>
+            <div class="stat-info">
+              <div class="label">Net Balance</div>
+              <div class="value" id="ledger-stat-net">AED 0</div>
+              <div class="subtext">Charges minus collections</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h3>📖 Moms Accounts - Daily Financial Ledger</h3>
+            <div style="display: flex; gap: 10px; align-items: center;">
+              <select class="filter-select" id="ledger-month-select">
+                <option value="">All Months (2026)</option>
+              </select>
+              <button class="btn btn-secondary btn-sm" onclick="app.exportLedgerCsv()">📥 Export CSV</button>
+              <button class="btn btn-primary btn-sm" onclick="app.openLedgerModal()">➕ Record Daily Entry</button>
+            </div>
+          </div>
+          <div class="card-body">
+            
+            <div class="table-responsive">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Day</th>
+                    <th>BF Count</th>
+                    <th>LN Count</th>
+                    <th>DN Count</th>
+                    <th>Daily Total Charges (AED)</th>
+                    <th>Amount Paid (AED)</th>
+                    <th>Cumulative Balance (AED)</th>
+                    <th>Remarks</th>
+                  </tr>
+                </thead>
+                <tbody id="ledger-tbody">
+                  <tr><td colspan="9" style="text-align: center; padding: 24px;">Loading ledger...</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- TAB 8: GROUP ACCOUNTS (THAHIR GROUP) -->
+      <!-- ========================================== -->
+      <section id="tab-groups" class="tab-pane">
+        <div class="card">
+          <div class="card-header">
+            <h3>🏢 Corporate & Group Subscriptions</h3>
+            <button class="btn btn-primary btn-sm" onclick="app.openGroupModal()">➕ Add Group Account</button>
+          </div>
+          <div class="card-body">
+            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">
+              Manage multi-person accounts billed to a single coordinator (like Thahir Group staff accommodation across Star of Karama, Dhe Fish, A9).
+            </p>
+
+            <div id="groups-container">
+              <p style="color: var(--text-muted); padding: 20px; text-align: center;">Loading group accounts...</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- TAB 9: BAD DEBTS -->
+      <!-- ========================================== -->
+      <section id="tab-bad-debts" class="tab-pane">
+        <div class="card">
+          <div class="card-header">
+            <h3>⚠️ Bad Debts & Defaulted Accounts Log</h3>
+            <button class="btn btn-primary btn-sm" onclick="app.openBadDebtModal()">➕ Add Bad Debt</button>
+          </div>
+          <div class="card-body">
+            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">
+              Historical log of past customers who vacated or stopped food with unpaid balances.
+            </p>
+
+            <div class="table-responsive">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Customer Name</th>
+                    <th>Building & Apt</th>
+                    <th>Meals History</th>
+                    <th>Amount Due (AED)</th>
+                    <th>Notes</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="bad-debts-tbody">
+                  <tr><td colspan="7" style="text-align: center; padding: 24px;">Loading bad debts...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- TAB 10: MOBILE STAFF ACCESS -->
+      <!-- ========================================== -->
+      <section id="tab-mobile" class="tab-pane">
+        <div class="card">
+          <div class="card-header">
+            <h3>📱 Mobile Staff & Driver Access on Local Wi-Fi</h3>
+          </div>
+          <div class="card-body" style="text-align: center; max-width: 650px; margin: 0 auto; padding: 32px 20px;">
+            <div style="font-size: 48px; margin-bottom: 12px;">📶</div>
+            <h2 style="font-size: 22px; color: var(--secondary); margin-bottom: 10px;">Connect Mobile Devices on Local Wi-Fi</h2>
+            <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 24px;">
+              Kitchen cooks and delivery drivers on the same Wi-Fi network can open this exact link on their smartphones (iPhone or Android) with zero app installation:
+            </p>
+
+            <div style="background: #f1f5f9; padding: 18px 24px; border-radius: 12px; font-family: monospace; font-size: 20px; font-weight: 700; color: #f97316; border: 2px dashed #cbd5e1; margin-bottom: 24px; word-break: break-all;" id="mobile-url-box">
+              http://192.168.0.106:3000
+            </div>
+
+            <div style="display: flex; justify-content: center; gap: 14px;">
+              <button class="btn btn-primary" onclick="navigator.clipboard.writeText(document.getElementById('mobile-url-box').innerText.trim()); alert('Copied mobile URL to clipboard!');">📋 Copy Mobile Link</button>
+              <button class="btn btn-secondary" onclick="window.open(document.getElementById('mobile-url-box').innerText.trim(), '_blank')">🌐 Open in New Tab</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL 1: ADD / EDIT CUSTOMER -->
+  <!-- ========================================== -->
+  <div class="modal-overlay" id="modal-customer">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 id="modal-cust-title">Add New Customer</h3>
+        <button class="close-btn" onclick="app.closeModals()">✕</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="cust-form-id">
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Customer Name *</label>
+            <input type="text" class="form-control" id="cust-form-name" required placeholder="e.g. Saran">
+          </div>
+          <div class="form-group">
+            <label>Phone Number (WhatsApp)</label>
+            <input type="text" class="form-control" id="cust-form-phone" placeholder="e.g. +971 50 123 4567">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Area *</label>
+            <select class="form-control" id="cust-form-area" required>
+              <option value="🟠 Burjman & Mankhool">🟠 Burjman & Mankhool</option>
+              <option value="🟡 Park, Pioneer & ADCB">🟡 Park, Pioneer & ADCB</option>
+              <option value="🟢 Karama Center - Pyramid">🟢 Karama Center - Pyramid</option>
+              <option value="🟣 Hamdan Colony & Post">🟣 Hamdan Colony & Post</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Building Name *</label>
+            <input type="text" class="form-control" id="cust-form-building" required placeholder="e.g. Falaknaz, Era Building">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Apartment / Room #</label>
+            <input type="text" class="form-control" id="cust-form-apt" placeholder="e.g. 211, Flat 104">
+          </div>
+          <div class="form-group">
+            <label>Status</label>
+            <select class="form-control" id="cust-form-status">
+              <option value="Running">Running (Active)</option>
+              <option value="Trial">Trial Period</option>
+              <option value="Under Notice">Under Notice (Cancelling soon)</option>
+              <option value="Paused">Paused / On Hold</option>
+              <option value="Cancelled">Cancelled</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Meal Selection Checkboxes -->
+        <div class="form-group">
+          <label>Meals Included</label>
+          <div class="checkbox-group">
+            <label class="checkbox-item"><input type="checkbox" id="cust-form-bf"> 🍳 Breakfast (BF)</label>
+            <label class="checkbox-item"><input type="checkbox" id="cust-form-ln" checked> 🍛 Lunch (LN)</label>
+            <label class="checkbox-item"><input type="checkbox" id="cust-form-dn" checked> 🍲 Dinner (DN)</label>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Delivery Target Time</label>
+            <input type="text" class="form-control" id="cust-form-delivery-time" placeholder="e.g. 5:45 AM, 6:00 AM, 12:00 PM">
+          </div>
+          <div class="form-group">
+            <label>Door Passcode / Access Code</label>
+            <input type="text" class="form-control" id="cust-form-passcode" placeholder="e.g. 4695#, 7580#">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Dietary Labels & Preferences</label>
+          <textarea class="form-control" id="cust-form-label" rows="2" placeholder="e.g. Barik rice, No fish curry, Chapati set instead of meal"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Subscription Remarks & History</label>
+          <input type="text" class="form-control" id="cust-form-remarks" placeholder="e.g. Starting from 14 September 2026 ✅">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Payment Made Upto Date</label>
+            <input type="date" class="form-control" id="cust-form-paydate">
+          </div>
+          <div class="form-group">
+            <label>Billed Upto Date</label>
+            <input type="date" class="form-control" id="cust-form-billeddate">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Total Overdue Dues (AED)</label>
+            <input type="number" step="0.5" class="form-control" id="cust-form-overdue" value="0">
+          </div>
+          <div class="form-group">
+            <label>Payment Rating</label>
+            <select class="form-control" id="cust-form-rating">
+              <option value="">Select Rating...</option>
+              <option value="Good">Good</option>
+              <option value="Late payer">Late Payer</option>
+              <option value="Bad">Bad</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Payment Follow-up Remarks</label>
+          <input type="text" class="form-control" id="cust-form-payremarks" placeholder="e.g. Dues will clear by Nov beginning">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="app.closeModals()">Cancel</button>
+        <button class="btn btn-primary" id="btn-save-customer">Save Customer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL 2: RECORD PAYMENT -->
+  <!-- ========================================== -->
+  <div class="modal-overlay" id="modal-payment">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>Record Customer Payment</h3>
+        <button class="close-btn" onclick="app.closeModals()">✕</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="pay-form-cust-id">
+        <div style="background: #f8fafc; padding: 12px 16px; border-radius: 8px; border: 1px solid var(--border);">
+          <div style="font-size: 16px; font-weight: 700;" id="pay-form-cust-name">Customer Name</div>
+          <div style="font-size: 13px; color: var(--danger); font-weight: 600;" id="pay-form-current-overdue">Current Overdue: AED 0</div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Payment Amount (AED) *</label>
+            <input type="number" step="1" class="form-control" id="pay-form-amount" required placeholder="0">
+          </div>
+          <div class="form-group">
+            <label>Payment Date</label>
+            <input type="date" class="form-control" id="pay-form-date">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Payment Method</label>
+            <select class="form-control" id="pay-form-method">
+              <option value="Cash">Cash</option>
+              <option value="Bank Transfer">Bank Transfer / UPI</option>
+              <option value="Card">Card</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Extend Payment Made Upto</label>
+            <input type="date" class="form-control" id="pay-form-paidupto">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Payment Remarks / Receipt Notes</label>
+          <input type="text" class="form-control" id="pay-form-remarks" placeholder="e.g. October balance cleared in full">
+        </div>
+
+        <label class="checkbox-item" style="margin-top: 4px;">
+          <input type="checkbox" id="pay-form-record-ledger" checked> Add this amount to today's Moms Accounts Ledger
+        </label>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="app.closeModals()">Cancel</button>
+        <button class="btn btn-success" id="btn-save-payment">Confirm & Save Payment</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL 3: RECORD DAILY LEDGER ENTRY -->
+  <!-- ========================================== -->
+  <div class="modal-overlay" id="modal-ledger">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>Record Daily Accounts Entry</h3>
+        <button class="close-btn" onclick="app.closeModals()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Date *</label>
+          <input type="date" class="form-control" id="ledger-form-date" required>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Breakfast (BF) Count</label>
+            <input type="number" class="form-control" id="ledger-form-bf" value="0">
+          </div>
+          <div class="form-group">
+            <label>Lunch (LN) Count</label>
+            <input type="number" class="form-control" id="ledger-form-ln" value="0">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Dinner (DN) Count</label>
+            <input type="number" class="form-control" id="ledger-form-dn" value="0">
+          </div>
+          <div class="form-group">
+            <label>Total Collections / Amount Paid (AED)</label>
+            <input type="number" step="0.5" class="form-control" id="ledger-form-paid" value="0">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Daily Remarks / Notes</label>
+          <input type="text" class="form-control" id="ledger-form-remarks" placeholder="e.g. High collection from Park area">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="app.closeModals()">Cancel</button>
+        <button class="btn btn-primary" id="btn-save-ledger">Save Daily Entry</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL 4: RECORD GROUP PAYMENT -->
+  <!-- ========================================== -->
+  <div class="modal-overlay" id="modal-group-payment">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>Record Group Payment</h3>
+        <button class="close-btn" onclick="app.closeModals()">✕</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="grp-pay-id">
+        <div class="form-group">
+          <label>Payment Amount (AED) *</label>
+          <input type="number" class="form-control" id="grp-pay-amount" required placeholder="e.g. 400">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="app.closeModals()">Cancel</button>
+        <button class="btn btn-success" id="btn-save-group-payment">Confirm Payment</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL 5: ADD BAD DEBT -->
+  <!-- ========================================== -->
+  <div class="modal-overlay" id="modal-baddebt">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>Add Bad Debt Record</h3>
+        <button class="close-btn" onclick="app.closeModals()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Customer Name *</label>
+          <input type="text" class="form-control" id="debt-form-name" required placeholder="e.g. Asif">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Building Name</label>
+            <input type="text" class="form-control" id="debt-form-building" placeholder="e.g. Mas Express cargo">
+          </div>
+          <div class="form-group">
+            <label>Apartment / Room</label>
+            <input type="text" class="form-control" id="debt-form-apt" placeholder="e.g. Shop, 404">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Meals History</label>
+            <input type="text" class="form-control" id="debt-form-meals" placeholder="e.g. 2 Time (LN+DN)">
+          </div>
+          <div class="form-group">
+            <label>Amount Due (AED) *</label>
+            <input type="number" class="form-control" id="debt-form-amount" required placeholder="470">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Notes / Recovery Details</label>
+          <input type="text" class="form-control" id="debt-form-notes" placeholder="e.g. Promised to clear on next visit">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="app.closeModals()">Cancel</button>
+        <button class="btn btn-primary" id="btn-save-baddebt">Save Bad Debt</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>

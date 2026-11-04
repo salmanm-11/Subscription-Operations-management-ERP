@@ -1,0 +1,1 @@
+[11944:1025/114442.106:INFO:CONSOLE(294)] "Supabase fetch customers failed, using local cache: Could not find the table 'public.customers' in the schema cache", source: file:///D:/mess%20project/release/win-unpacked/resources/app.asar/dist/assets/index-jwYI3ZQT.js (294)

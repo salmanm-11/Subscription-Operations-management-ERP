@@ -1,0 +1,984 @@
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { Plus, Search, Filter, Download, Edit, Trash2, Utensils, Phone, PhoneCall, Building2, FileSpreadsheet, Upload, ChevronDown, Clock, Eye, AlertTriangle, Check, X } from 'lucide-react';
+import { Customer, Building, MealPlan, Invoice, Payment } from '../../types';
+import { formatAED } from '../../utils/currency';
+import { exportCustomersToExcel, downloadCustomerTemplate, ParsedImportRow } from '../../utils/excelService';
+import { getCustomerCancellationNotice } from '../../utils/cancellationService';
+import { ExcelImportModal } from '../excel/ExcelImportModal';
+import { CustomerDetailModal } from './CustomerDetailModal';
+
+interface CustomerListProps {
+  customers: Customer[];
+  buildings: Building[];
+  mealPlans: MealPlan[];
+  invoices?: Invoice[];
+  payments?: Payment[];
+  onAddCustomer: () => void;
+  onEditCustomer: (customer: Customer) => void;
+  onDeleteCustomer: (id: string) => void;
+  onDeleteAllCustomers?: () => Promise<void> | void;
+  onExportCsv: () => void;
+  onImportCustomers?: (rows: ParsedImportRow[], mode: 'merge' | 'replace') => void;
+  onRecordPayment?: (payment: Partial<Payment>) => Promise<void> | void;
+  onSaveCustomer?: (customer: Partial<Customer>) => Promise<void> | void;
+}
+
+export const CustomerList: React.FC<CustomerListProps> = ({
+  customers,
+  buildings,
+  mealPlans,
+  invoices = [],
+  payments = [],
+  onAddCustomer,
+  onEditCustomer,
+  onDeleteCustomer,
+  onDeleteAllCustomers,
+  onExportCsv,
+  onImportCustomers,
+  onRecordPayment,
+  onSaveCustomer,
+}) => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [areaFilter, setAreaFilter] = useState<string>('all');
+  const [buildingFilter, setBuildingFilter] = useState<string>('all');
+  const [handlerFilter, setHandlerFilter] = useState<string>('all');
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
+  const [viewingCustomer, setViewingCustomer] = useState<Customer | null>(null);
+  const [isDeleteAllModalOpen, setIsDeleteAllModalOpen] = useState(false);
+  const [isDeletingAll, setIsDeletingAll] = useState(false);
+
+  // Main customer search input ref
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Searchable building combobox dropdown state
+  const [isBuildingDropdownOpen, setIsBuildingDropdownOpen] = useState(false);
+  const [buildingSearchQuery, setBuildingSearchQuery] = useState('');
+  const buildingDropdownRef = useRef<HTMLDivElement>(null);
+  const buildingSearchInputRef = useRef<HTMLInputElement>(null);
+
+  // Quick keyboard shortcut: Press '/' or 'Ctrl+F' to jump to search box
+  useEffect(() => {
+    const handleGlobalKey = (e: KeyboardEvent) => {
+      const activeTag = document.activeElement?.tagName;
+      const isInputActive = activeTag === 'INPUT' || activeTag === 'TEXTAREA' || activeTag === 'SELECT';
+      if ((e.key === '/' || ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f')) && !isInputActive) {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+        searchInputRef.current?.select();
+      }
+    };
+    window.addEventListener('keydown', handleGlobalKey);
+    return () => window.removeEventListener('keydown', handleGlobalKey);
+  }, []);
+
+  // Auto-focus search input & handle click outside for building combobox
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (buildingDropdownRef.current && !buildingDropdownRef.current.contains(e.target as Node)) {
+        setIsBuildingDropdownOpen(false);
+      }
+    };
+    if (isBuildingDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      const timer = setTimeout(() => {
+        buildingSearchInputRef.current?.focus();
+      }, 50);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+        clearTimeout(timer);
+      };
+    }
+  }, [isBuildingDropdownOpen]);
+
+  // Building-to-Area lookup for lightning-fast customer matching
+  const buildingAreaMap = useMemo(() => {
+    const map = new Map<string, string>();
+    buildings.forEach((b) => {
+      const area = (b.area || 'Karama Central').replace(/^[\p{Emoji}\p{Symbol}\s\u200B-\u200D\uFE0F]+/u, '').trim();
+      if (b.id) map.set(b.id, area);
+      if (b.name) {
+        const cleanName = b.name.toLowerCase().trim();
+        map.set(cleanName, area);
+        map.set(cleanName.replace(/[^a-z0-9]/g, ''), area);
+      }
+    });
+    return map;
+  }, [buildings]);
+
+  // Extract unique Area Clusters with building counts
+  const availableAreas = useMemo(() => {
+    const counts: Record<string, number> = {};
+    buildings.forEach((b) => {
+      const a = (b.area || 'Karama Central').replace(/^[\p{Emoji}\p{Symbol}\s\u200B-\u200D\uFE0F]+/u, '').trim();
+      if (a) counts[a] = (counts[a] || 0) + 1;
+    });
+    return Object.entries(counts).sort((a, b) => b[1] - a[1]);
+  }, [buildings]);
+
+  // Dynamically filter buildings list based on selected area cluster
+  const filteredBuildings = useMemo(() => {
+    if (areaFilter === 'all') return buildings;
+    return buildings.filter(
+      (b) => (b.area || 'Karama Central').trim().toLowerCase() === areaFilter.trim().toLowerCase()
+    );
+  }, [buildings, areaFilter]);
+
+  // Filtered buildings list incorporating search query inside dropdown
+  const searchFilteredBuildings = useMemo(() => {
+    const q = buildingSearchQuery.trim().toLowerCase();
+    if (!q) return filteredBuildings;
+    return filteredBuildings.filter(
+      (b) =>
+        b.name.toLowerCase().includes(q) ||
+        (b.area && b.area.toLowerCase().includes(q)) ||
+        (b.address && b.address.toLowerCase().includes(q))
+    );
+  }, [filteredBuildings, buildingSearchQuery]);
+
+  const selectedBuildingObj = useMemo(() => {
+    if (buildingFilter === 'all') return null;
+    return buildings.find((b) => b.id === buildingFilter);
+  }, [buildings, buildingFilter]);
+
+  const getCustomerArea = (c: Customer): string => {
+    if (c.building_id && buildingAreaMap.has(c.building_id)) {
+      return buildingAreaMap.get(c.building_id)!;
+    }
+    const nameCache = (c.building_name_cache || '').toLowerCase().trim();
+    if (nameCache) {
+      if (buildingAreaMap.has(nameCache)) return buildingAreaMap.get(nameCache)!;
+      const stripped = nameCache.replace(/[^a-z0-9]/g, '');
+      if (buildingAreaMap.has(stripped)) return buildingAreaMap.get(stripped)!;
+      const found = buildings.find((b) => {
+        const bName = b.name.toLowerCase().trim();
+        return bName.includes(nameCache) || nameCache.includes(bName);
+      });
+      if (found && found.area) return found.area.trim();
+    }
+    return '';
+  };
+
+  // Keep viewingCustomer fresh whenever customers state updates
+  useEffect(() => {
+    if (viewingCustomer) {
+      const fresh = customers.find(
+        (c) => c.id === viewingCustomer.id || c.customer_code === viewingCustomer.customer_code
+      );
+      if (
+        fresh &&
+        (fresh.total_overdue !== viewingCustomer.total_overdue ||
+          fresh.payment_rating !== viewingCustomer.payment_rating ||
+          fresh.payment_made_up_to_date !== viewingCustomer.payment_made_up_to_date)
+      ) {
+        setViewingCustomer(fresh);
+      }
+    }
+  }, [customers, viewingCustomer]);
+
+  // Helper to normalize phone numbers for forgiving search (handles 050..., +97150..., 50...)
+  const normalizeDigits = (val: string) => {
+    const d = val.replace(/\D/g, '');
+    return d.replace(/^971/, '').replace(/^0/, '');
+  };
+
+  // High-performance, forgiving, multi-term customer search & filter
+  const filtered = useMemo(() => {
+    const rawSearch = (searchTerm || '').trim().toLowerCase();
+    const searchTokens = rawSearch ? rawSearch.split(/\s+/).filter(Boolean) : [];
+
+    return customers.filter((c) => {
+      // 1. Multi-term, multi-field, forgiving search filter
+      if (searchTokens.length > 0) {
+        const fullName = (c.full_name || '').toLowerCase();
+        const code = (c.customer_code || '').toLowerCase();
+        const codeDigits = code.replace(/\D/g, '');
+        const phone = String(c.phone || '');
+        const phoneDigits = phone.replace(/\D/g, '');
+        const normPhone = normalizeDigits(phone);
+        const emergency = String(c.emergency_contact || '');
+        const emergencyDigits = emergency.replace(/\D/g, '');
+        const normEmergency = normalizeDigits(emergency);
+        const buildingName = (c.building_name_cache || c.building?.name || '').toLowerCase();
+        const apt = String(c.apartment_cache || c.room?.room_number || '').toLowerCase();
+        const aptDigits = apt.replace(/\D/g, '');
+        const dietary = (c.dietary_preferences || '').toLowerCase();
+        const deliveryTime = (c.delivery_time || '').toLowerCase();
+        const passcode = (c.door_passcode || '').toLowerCase();
+        const area = getCustomerArea(c).toLowerCase();
+        const notes = (c.notes || '').toLowerCase();
+
+        // Every token must match at least one attribute of the customer
+        const matchesAllTokens = searchTokens.every((token) => {
+          const cleanTokenDigits = token.replace(/\D/g, '');
+          const normTokenDigits = normalizeDigits(token);
+          return (
+            fullName.includes(token) ||
+            code.includes(token) ||
+            (cleanTokenDigits && codeDigits.includes(cleanTokenDigits)) ||
+            phone.includes(token) ||
+            (cleanTokenDigits && phoneDigits.includes(cleanTokenDigits)) ||
+            (normTokenDigits && normPhone.includes(normTokenDigits)) ||
+            emergency.includes(token) ||
+            (cleanTokenDigits && emergencyDigits.includes(cleanTokenDigits)) ||
+            (normTokenDigits && normEmergency.includes(normTokenDigits)) ||
+            buildingName.includes(token) ||
+            apt.includes(token) ||
+            (cleanTokenDigits && aptDigits.includes(cleanTokenDigits)) ||
+            dietary.includes(token) ||
+            deliveryTime.includes(token) ||
+            passcode.includes(token) ||
+            area.includes(token) ||
+            notes.includes(token)
+          );
+        });
+
+        if (!matchesAllTokens) return false;
+      }
+
+      // 2. Status filter
+      if (statusFilter !== 'all') {
+        if (statusFilter === 'cancelling_soon') {
+          if (c.status === 'cancelling_soon') {
+            // Matched directly by status
+          } else if (c.status === 'cancelled' || c.status === 'left') {
+            return false;
+          } else {
+            const notice = getCustomerCancellationNotice(c);
+            if (!notice) return false;
+          }
+        } else if (statusFilter === 'cancelled' || statusFilter === 'left') {
+          if (c.status !== 'left' && c.status !== 'cancelled') return false;
+        } else if (c.status !== statusFilter) {
+          return false;
+        }
+      }
+
+      // 3. Area filter
+      if (areaFilter !== 'all') {
+        const custArea = getCustomerArea(c);
+        if (!custArea || custArea.toLowerCase() !== areaFilter.toLowerCase()) {
+          return false;
+        }
+      }
+
+      // 4. Building filter
+      if (buildingFilter !== 'all') {
+        if (c.building_id !== buildingFilter && c.building_name_cache !== buildingFilter) {
+          return false;
+        }
+      }
+
+      // 5. Customer type / handler filter
+      if (handlerFilter !== 'all') {
+        const managed = (c.managed_by || '').toLowerCase();
+        if (handlerFilter === 'admin') {
+          if (managed && managed !== 'admin' && managed !== 'customer' && managed !== 'regular') {
+            return false;
+          }
+        } else if (managed !== handlerFilter.toLowerCase()) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }, [customers, searchTerm, statusFilter, areaFilter, buildingFilter, handlerFilter, buildingAreaMap, buildings]);
+
+  return (
+    <div className="space-y-4 max-w-full min-w-0">
+      {/* Top action bar */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 w-full">
+        <div className="min-w-0">
+          <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">Customer Directory</h2>
+          <p className="text-xs sm:text-sm text-slate-300 font-medium mt-0.5">
+            Manage customer profiles, subscriptions, and accommodation
+            <span className="text-slate-500 mx-1.5">•</span>
+            <span className="text-amber-400 font-bold">{filtered.length}</span> of {customers.length} customers
+          </p>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
+          {/* Import Excel Button */}
+          <button
+            onClick={() => setIsImportModalOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 text-xs font-bold border border-emerald-500/30 transition-colors shadow-sm"
+          >
+            <Upload className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Import</span>
+          </button>
+
+          {/* Export Excel Dropdown */}
+          <div className="relative">
+            <button
+              onClick={() => setIsExportMenuOpen(!isExportMenuOpen)}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-750 text-slate-200 text-xs font-semibold border border-slate-700/60 transition-colors"
+            >
+              <FileSpreadsheet className="w-3.5 h-3.5 text-amber-400" />
+              <span>Export</span>
+              <ChevronDown className="w-3 h-3 text-slate-400 ml-0.5" />
+            </button>
+
+            {isExportMenuOpen && (
+              <div
+                className="absolute right-0 mt-2 w-56 rounded-xl bg-[#151c2c] border border-slate-700 shadow-xl z-30 py-1.5 animate-fadeIn"
+                onClick={() => setIsExportMenuOpen(false)}
+              >
+                <button
+                  onClick={() => exportCustomersToExcel(customers, 'all', 'xlsx')}
+                  className="w-full text-left px-4 py-2 text-xs text-slate-200 hover:bg-slate-800 flex items-center justify-between"
+                >
+                  <span>Export All (.xlsx)</span>
+                  <span className="text-[10px] text-slate-500 font-mono">{customers.length}</span>
+                </button>
+                <button
+                  onClick={() => exportCustomersToExcel(customers, 'active', 'xlsx')}
+                  className="w-full text-left px-4 py-2 text-xs text-slate-200 hover:bg-slate-800 flex items-center justify-between"
+                >
+                  <span>Active Only (.xlsx)</span>
+                  <span className="text-[10px] text-emerald-400 font-mono">
+                    {customers.filter(c => c.status === 'active' || c.status === 'cancelling_soon').length}
+                  </span>
+                </button>
+                <button
+                  onClick={() => exportCustomersToExcel(customers, 'overdue', 'xlsx')}
+                  className="w-full text-left px-4 py-2 text-xs text-slate-200 hover:bg-slate-800 flex items-center justify-between"
+                >
+                  <span>Overdue Accounts (.xlsx)</span>
+                  <span className="text-[10px] text-rose-400 font-mono">
+                    {customers.filter(c => (c.total_overdue || 0) > 0).length}
+                  </span>
+                </button>
+                <button
+                  onClick={() => exportCustomersToExcel(customers, 'all', 'csv')}
+                  className="w-full text-left px-4 py-2 text-xs text-slate-200 hover:bg-slate-800"
+                >
+                  Export All (.csv)
+                </button>
+                <div className="h-px bg-slate-800 my-1" />
+                <button
+                  onClick={() => downloadCustomerTemplate('xlsx')}
+                  className="w-full text-left px-4 py-2 text-xs text-amber-400 hover:bg-slate-800 font-semibold flex items-center gap-2"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Download Blank Template</span>
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Delete All Customers Button */}
+          {customers.length > 0 && onDeleteAllCustomers && (
+            <button
+              onClick={() => setIsDeleteAllModalOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 text-rose-400 hover:text-rose-300 text-xs font-bold border border-rose-500/30 transition-colors shadow-sm cursor-pointer"
+              title="Delete all customer records with confirmation"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              <span>Delete All ({customers.length})</span>
+            </button>
+          )}
+
+          <button
+            onClick={onAddCustomer}
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold shadow-md shadow-amber-500/20 transition-all active:scale-[0.98]"
+          >
+            <Plus className="w-3.5 h-3.5 text-slate-950" />
+            <span>Add Customer</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Filter toolbar */}
+      <div className="bg-[#151c2c] border border-[#222f47]/60 rounded-xl p-3 flex flex-wrap items-center justify-between gap-2.5 shadow-md shadow-black/10">
+        <div
+          onClick={() => searchInputRef.current?.focus()}
+          className="relative flex-1 min-w-[200px] cursor-text group"
+        >
+          <Search className="w-4 h-4 text-slate-400 group-focus-within:text-amber-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none transition-colors" />
+          <input
+            ref={searchInputRef}
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Search name, code, phone, room, building, notes... (Press '/' to focus)"
+            className="w-full pl-9 pr-9 py-2 bg-slate-900/80 border border-slate-700/60 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-500 transition-colors cursor-text pointer-events-auto"
+          />
+          {searchTerm && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setSearchTerm('');
+                searchInputRef.current?.focus();
+              }}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
+              title="Clear search"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="bg-slate-900/80 border border-slate-700/60 rounded-xl px-2.5 py-2 text-xs text-slate-200 focus:outline-none focus:border-amber-500 font-semibold"
+          >
+            <option value="all">All Statuses</option>
+            <option value="active">Active (Running)</option>
+            <option value="cancelling_soon">⚠️ Cancelling Soon (On Notice)</option>
+            <option value="trial">Trial</option>
+            <option value="paused">Temporarily Paused</option>
+            <option value="inactive">Inactive</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+
+          {/* Which Area? Area Cluster filter */}
+          <select
+            value={areaFilter}
+            onChange={(e) => {
+              setAreaFilter(e.target.value);
+              setBuildingFilter('all');
+            }}
+            className={`bg-slate-900/80 border rounded-xl px-2.5 py-2 text-xs font-semibold focus:outline-none transition-colors ${
+              areaFilter !== 'all'
+                ? 'border-amber-500 text-amber-300 bg-amber-500/10'
+                : 'border-slate-700/60 text-slate-200 focus:border-amber-500'
+            }`}
+            title="Filter by Which Area / Delivery Cluster"
+          >
+            <option value="all">Which Area? Area Cluster (All)</option>
+            {availableAreas.map(([areaName, count]) => (
+              <option key={areaName} value={areaName}>
+                {areaName} ({count})
+              </option>
+            ))}
+          </select>
+
+          {/* Searchable Building Combobox Dropdown */}
+          <div ref={buildingDropdownRef} className="relative">
+            <button
+              type="button"
+              onClick={() => {
+                setIsBuildingDropdownOpen(!isBuildingDropdownOpen);
+                if (!isBuildingDropdownOpen) {
+                  setBuildingSearchQuery('');
+                }
+              }}
+              className={`flex items-center justify-between gap-1.5 bg-slate-900/80 border rounded-xl px-2.5 py-2 text-xs transition-all cursor-pointer min-w-[170px] max-w-[240px] ${
+                buildingFilter !== 'all'
+                  ? 'border-amber-500 text-amber-300 bg-amber-500/10 font-semibold shadow-sm'
+                  : 'border-slate-700/60 text-slate-200 hover:border-slate-500'
+              }`}
+              title="Filter by Building (Click to open search box)"
+            >
+              <div className="flex items-center gap-1.5 truncate">
+                <Building2 className={`w-3.5 h-3.5 shrink-0 ${buildingFilter !== 'all' ? 'text-amber-400' : 'text-slate-400'}`} />
+                <span className="truncate">
+                  {selectedBuildingObj
+                    ? selectedBuildingObj.name
+                    : areaFilter === 'all'
+                    ? `All Buildings (${buildings.length})`
+                    : `All in ${areaFilter} (${filteredBuildings.length})`}
+                </span>
+              </div>
+              {buildingFilter !== 'all' ? (
+                <span
+                  role="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setBuildingFilter('all');
+                    setBuildingSearchQuery('');
+                  }}
+                  className="p-0.5 hover:bg-amber-500/20 rounded text-amber-400 hover:text-white transition-colors"
+                  title="Clear building filter"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </span>
+              ) : (
+                <ChevronDown className={`w-3.5 h-3.5 shrink-0 text-slate-400 transition-transform ${isBuildingDropdownOpen ? 'rotate-180' : ''}`} />
+              )}
+            </button>
+
+            {isBuildingDropdownOpen && (
+              <div className="absolute left-0 top-full mt-1.5 w-72 sm:w-84 bg-[#131b2a] border border-slate-700/90 rounded-2xl shadow-2xl shadow-black/90 z-50 overflow-hidden animate-fadeIn backdrop-blur-md">
+                {/* Search Box Header */}
+                <div className="p-2.5 bg-slate-900/95 border-b border-slate-700/80 sticky top-0 z-10 space-y-1.5">
+                  <div className="relative">
+                    <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    <input
+                      ref={buildingSearchInputRef}
+                      type="text"
+                      value={buildingSearchQuery}
+                      onChange={(e) => setBuildingSearchQuery(e.target.value)}
+                      placeholder={`Search ${filteredBuildings.length} buildings...`}
+                      className="w-full pl-8 pr-7 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 font-medium"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Escape') {
+                          setIsBuildingDropdownOpen(false);
+                        } else if (e.key === 'Enter' && searchFilteredBuildings.length === 1) {
+                          setBuildingFilter(searchFilteredBuildings[0].id);
+                          setIsBuildingDropdownOpen(false);
+                          setBuildingSearchQuery('');
+                        }
+                      }}
+                    />
+                    {buildingSearchQuery && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setBuildingSearchQuery('');
+                          buildingSearchInputRef.current?.focus();
+                        }}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white p-0.5 rounded cursor-pointer"
+                        title="Clear search"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between text-[10px] text-slate-400 px-1 font-medium">
+                    <span>
+                      Showing {searchFilteredBuildings.length} of {filteredBuildings.length}
+                    </span>
+                    {areaFilter !== 'all' && (
+                      <span className="text-amber-400 font-semibold truncate max-w-[130px]">
+                        {areaFilter}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Scrollable Building Options List */}
+                <div className="max-h-60 overflow-y-auto divide-y divide-slate-800/60 p-1 custom-scrollbar">
+                  {/* All Buildings Option */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setBuildingFilter('all');
+                      setIsBuildingDropdownOpen(false);
+                      setBuildingSearchQuery('');
+                    }}
+                    className={`w-full text-left px-3 py-2 rounded-xl text-xs flex items-center justify-between transition-colors cursor-pointer ${
+                      buildingFilter === 'all'
+                        ? 'bg-amber-500/15 text-amber-300 font-bold'
+                        : 'text-slate-300 hover:bg-slate-800/80 hover:text-white'
+                    }`}
+                  >
+                    <span className="flex items-center gap-2 truncate">
+                      <Building2 className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                      <span className="truncate">
+                        {areaFilter === 'all'
+                          ? `All Buildings (${buildings.length})`
+                          : `All in ${areaFilter} (${filteredBuildings.length})`}
+                      </span>
+                    </span>
+                    {buildingFilter === 'all' && <Check className="w-3.5 h-3.5 text-amber-400 shrink-0" />}
+                  </button>
+
+                  {/* Filtered Buildings List */}
+                  {searchFilteredBuildings.map((b) => {
+                    const isSelected = buildingFilter === b.id;
+                    const residentCount = customers.filter(
+                      (c) => c.building_id === b.id || (c.building && c.building.id === b.id)
+                    ).length;
+
+                    return (
+                      <button
+                        key={b.id}
+                        type="button"
+                        onClick={() => {
+                          setBuildingFilter(b.id);
+                          setIsBuildingDropdownOpen(false);
+                          setBuildingSearchQuery('');
+                        }}
+                        className={`w-full text-left px-3 py-2 rounded-xl text-xs flex items-center justify-between transition-colors cursor-pointer ${
+                          isSelected
+                            ? 'bg-amber-500/20 text-amber-300 font-bold'
+                            : 'text-slate-200 hover:bg-slate-800/80 hover:text-white'
+                        }`}
+                      >
+                        <div className="truncate pr-2">
+                          <div className="font-semibold truncate text-white">{b.name}</div>
+                          {b.area && (
+                            <div className="text-[10px] text-slate-400 truncate">{b.area}</div>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          {residentCount > 0 && (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 font-mono">
+                              {residentCount}
+                            </span>
+                          )}
+                          {isSelected && <Check className="w-3.5 h-3.5 text-amber-400 shrink-0" />}
+                        </div>
+                      </button>
+                    );
+                  })}
+
+                  {searchFilteredBuildings.length === 0 && (
+                    <div className="p-4 text-center text-xs text-slate-400">
+                      <p className="font-medium text-slate-300">No buildings found</p>
+                      <p className="text-[11px] text-slate-500 mt-0.5">
+                        No matches for "{buildingSearchQuery}"
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Who is this customer? Filter */}
+          <select
+            value={handlerFilter}
+            onChange={(e) => setHandlerFilter(e.target.value)}
+            className="bg-[#151c2c] border border-slate-700/80 rounded-xl px-2.5 py-2 text-xs font-semibold text-slate-300 focus:outline-none focus:border-amber-400"
+            title="Filter by customer account type"
+          >
+            <option value="all">All Customer Types</option>
+            <option value="admin">Admin</option>
+            <option value="manager">Manager</option>
+          </select>
+
+          {(searchTerm || statusFilter !== 'all' || areaFilter !== 'all' || buildingFilter !== 'all' || handlerFilter !== 'all') && (
+            <button
+              onClick={() => {
+                setSearchTerm('');
+                setStatusFilter('all');
+                setAreaFilter('all');
+                setBuildingFilter('all');
+                setBuildingSearchQuery('');
+                setHandlerFilter('all');
+              }}
+              className="text-xs text-amber-400 hover:text-amber-300 font-bold px-2.5 py-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 transition-colors"
+              title="Reset all filters"
+            >
+              Reset
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Customers Table */}
+      <div className="bg-[#151c2c] border border-[#222f47]/60 rounded-2xl overflow-hidden shadow-xl shadow-black/30">
+        <div className="overflow-x-auto w-full custom-scrollbar">
+          <table className="w-full text-left">
+            <thead>
+              <tr className="bg-[#0f1422] text-slate-300 border-b border-slate-700/80 text-xs uppercase tracking-wider font-bold">
+                <th className="py-3 px-3">Code</th>
+                <th className="py-3 px-3">Customer</th>
+                <th className="py-3 px-3">Building &amp; Room</th>
+                <th className="py-3 px-2 text-center">Meals</th>
+                <th className="py-3 px-3.5 min-w-[220px]">Dietary &amp; Delivery Notes</th>
+                <th className="py-3 px-2.5 text-right whitespace-nowrap">Monthly Fee</th>
+                <th className="py-3 px-2 text-center whitespace-nowrap">Payment Made Up To</th>
+                <th className="py-3 px-2 text-center whitespace-nowrap">Billed Up To</th>
+                <th className="py-3 px-2.5 text-right whitespace-nowrap">Overdue</th>
+                <th className="py-3 px-2 text-center">Status</th>
+                <th className="py-3 px-3 text-right sticky right-0 bg-[#0f1422] z-20 shadow-[-10px_0_12px_-4px_rgba(0,0,0,0.6)] border-l border-slate-800">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-800/80 text-xs sm:text-sm">
+              {filtered.length === 0 ? (
+                <tr>
+                  <td colSpan={11} className="py-12 text-center text-slate-400 text-xs sm:text-sm">
+                    No customers match the current filter.
+                  </td>
+                </tr>
+              ) : (
+                filtered.map((c) => {
+                  const overdue = c.total_overdue || 0;
+                  return (
+                    <tr
+                      key={c.id}
+                      onClick={() => setViewingCustomer(c)}
+                      className="hover:bg-slate-800/60 cursor-pointer transition-colors group"
+                      title="Click anywhere to view full customer details"
+                    >
+                      <td className="py-3 px-3 font-mono text-amber-400 font-bold whitespace-nowrap">
+                        <span className="hover:underline flex items-center gap-1 text-amber-300">
+                          {c.customer_code}
+                        </span>
+                      </td>
+                      <td className="py-3 px-3 min-w-[160px]">
+                        <div className="font-bold text-white text-sm sm:text-base tracking-tight hover:text-amber-300 transition-colors">
+                          {c.full_name}
+                        </div>
+                        {c.phone && (
+                          <div className="flex items-center gap-1 text-[11px] text-slate-400 font-medium mt-0.5">
+                            <Phone className="w-3 h-3 text-amber-400/80 shrink-0" />
+                            <span>{c.phone}</span>
+                          </div>
+                        )}
+                        {c.emergency_contact && (
+                          <div className="flex items-center gap-1 text-[10px] text-rose-300 font-semibold mt-0.5" title="Emergency Contact">
+                            <PhoneCall className="w-3 h-3 text-rose-400 shrink-0" />
+                            <span>SOS: {c.emergency_contact}</span>
+                          </div>
+                        )}
+                        {(() => {
+                          const notice = getCustomerCancellationNotice(c);
+                          if (!notice) return null;
+                          return (
+                            <div className="mt-1">
+                              <span
+                                className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold border ${notice.badge.bg} ${notice.badge.textColor} ${notice.badge.border}`}
+                                title={`Scheduled cancellation on ${notice.targetDateDisplay} (${notice.daysRemaining >= 0 ? `${notice.daysRemaining} days left` : 'overdue'})`}
+                              >
+                                <span>⚠️ {notice.badge.label}</span>
+                              </span>
+                            </div>
+                          );
+                        })()}
+                      </td>
+                      <td className="py-3 px-3 text-slate-200">
+                        <div className="font-bold text-xs sm:text-sm flex items-center gap-1.5">
+                          <Building2 className="w-3.5 h-3.5 text-sky-400 shrink-0" />
+                          <span>{c.building_name_cache || c.building?.name || 'Unassigned'}</span>
+                        </div>
+                        <div className="text-[11px] text-slate-400 ml-5 mt-0.5 flex items-center gap-1.5 flex-wrap">
+                          <span>Apt {c.apartment_cache || 'N/A'}</span>
+                          {getCustomerArea(c) && (
+                            <span className="text-[10px] px-1.5 py-0.2 rounded bg-sky-500/15 text-sky-300 border border-sky-500/30 font-medium">
+                              {getCustomerArea(c)}
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="py-3 px-2 whitespace-nowrap text-center">
+                        <div className="inline-flex items-center gap-1">
+                          <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${c.has_breakfast ? 'bg-amber-500/25 text-amber-300 border border-amber-500/40' : 'bg-slate-800/60 text-slate-600'}`}>BF</span>
+                          <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${c.has_lunch ? 'bg-emerald-500/25 text-emerald-300 border border-emerald-500/40' : 'bg-slate-800/60 text-slate-600'}`}>LN</span>
+                          <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${c.has_dinner ? 'bg-blue-500/25 text-blue-300 border border-blue-500/40' : 'bg-slate-800/60 text-slate-600'}`}>DN</span>
+                        </div>
+                      </td>
+                      {/* Dietary & Delivery Notes (Showing fully without truncation) */}
+                      <td className="py-3 px-3.5 min-w-[220px] max-w-[340px]">
+                        <div className="space-y-1">
+                          {c.dietary_preferences ? (
+                            <div className="text-xs text-amber-200/95 font-medium leading-relaxed whitespace-pre-line break-words">
+                              {c.dietary_preferences}
+                            </div>
+                          ) : (
+                            <span className="text-slate-600 text-xs">-</span>
+                          )}
+                          {c.delivery_time && (
+                            <div className="text-[11px] text-slate-300 font-semibold flex items-center gap-1 mt-0.5">
+                              <Clock className="w-3 h-3 text-amber-400 shrink-0" />
+                              <span>Time: {c.delivery_time}</span>
+                            </div>
+                          )}
+                          {c.door_passcode && (
+                            <span className="inline-flex items-center gap-1 font-mono text-[10px] font-bold px-1.5 py-0.5 rounded bg-sky-500/15 text-sky-300 border border-sky-500/30">
+                              🔑 {c.door_passcode}
+                            </span>
+                          )}
+                          {c.notes && c.notes !== c.dietary_preferences && (
+                            <div className="text-[11px] text-slate-400 italic break-words mt-0.5">
+                              📝 {c.notes}
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                      <td className="py-3 px-2.5 text-right font-bold text-white whitespace-nowrap font-mono text-xs sm:text-sm">
+                        {formatAED(c.monthly_rate)}
+                      </td>
+                      {/* Payment Made Up To The Date */}
+                      <td className="py-3 px-2 text-center whitespace-nowrap">
+                        <span className="inline-flex items-center font-mono text-xs font-bold text-emerald-300 bg-emerald-500/15 px-2 py-0.5 rounded border border-emerald-500/30">
+                          {c.payment_made_up_to_date || c.billing_start_date || '31 Oct 2026'}
+                        </span>
+                      </td>
+                      {/* Billed Up To The Date */}
+                      <td className="py-3 px-2 text-center whitespace-nowrap">
+                        <span className="inline-flex items-center font-mono text-xs font-bold text-slate-200 bg-slate-800/90 px-2 py-0.5 rounded border border-slate-700/70">
+                          {c.billed_up_to_date || c.billing_end_date || '31 Oct 2026'}
+                        </span>
+                      </td>
+                      <td className="py-3 px-2.5 text-right font-black whitespace-nowrap font-mono text-xs sm:text-sm">
+                        <span className={overdue > 0 ? 'text-rose-400 drop-shadow-sm' : 'text-emerald-400'}>
+                          {formatAED(overdue)}
+                        </span>
+                      </td>
+                      <td className="py-3 px-2 text-center whitespace-nowrap">
+                        <span
+                          className={`px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase border shadow-sm ${
+                            c.status === 'active'
+                              ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
+                              : c.status === 'cancelling_soon'
+                              ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 font-black'
+                              : c.status === 'trial'
+                              ? 'bg-sky-500/15 text-sky-300 border-sky-500/30'
+                              : c.status === 'paused'
+                              ? 'bg-amber-500/15 text-amber-300 border-amber-500/30'
+                              : (c.status === 'left' || c.status === 'cancelled')
+                              ? 'bg-rose-500/15 text-rose-300 border-rose-500/30'
+                              : 'bg-slate-800 text-slate-400 border-slate-700'
+                          }`}
+                        >
+                          {c.status === 'cancelling_soon'
+                            ? 'Cancelling Soon'
+                            : (c.status === 'left' || c.status === 'cancelled')
+                            ? 'cancelled'
+                            : c.status}
+                        </span>
+                        {(() => {
+                          const notice = getCustomerCancellationNotice(c);
+                          if (!notice) return null;
+                          return (
+                            <div className="mt-1">
+                              <span
+                                className={`inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-tight border ${notice.badge.bg} ${notice.badge.textColor} ${notice.badge.border} animate-pulse`}
+                                title={`Planned Exit: ${notice.targetDateDisplay}`}
+                              >
+                                On Notice
+                              </span>
+                            </div>
+                          );
+                        })()}
+                      </td>
+                      {/* Sticky Action Options */}
+                      <td className="py-3 px-3 text-right whitespace-nowrap sticky right-0 bg-[#151c2c] group-hover:bg-[#1c253a] z-20 shadow-[-10px_0_12px_-4px_rgba(0,0,0,0.6)] border-l border-slate-800/80">
+                        <div className="flex items-center justify-end gap-1.5">
+                          {/* 1-Click View Button */}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setViewingCustomer(c);
+                            }}
+                            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-sky-500/15 hover:bg-sky-500/25 text-sky-300 hover:text-white transition-colors border border-sky-500/30 shadow-sm text-xs font-semibold"
+                            title="View Full Profile Details"
+                          >
+                            <Eye className="w-3.5 h-3.5 text-sky-400" />
+                            <span>View</span>
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onEditCustomer(c);
+                            }}
+                            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-750 text-slate-200 hover:text-white transition-colors border border-slate-700/60 shadow-sm text-xs font-semibold"
+                            title="Edit Customer"
+                          >
+                            <Edit className="w-3.5 h-3.5 text-amber-400" />
+                            <span>Edit</span>
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (confirm(`Are you sure you want to remove customer ${c.full_name}? Historical financial records will be preserved.`)) {
+                                onDeleteCustomer(c.id);
+                              }
+                            }}
+                            className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 transition-colors border border-rose-500/20 shadow-sm"
+                            title="Delete Customer"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Excel Import Modal */}
+      <ExcelImportModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        onImportSuccess={(rows, mode) => {
+          if (onImportCustomers) {
+            onImportCustomers(rows, mode);
+          }
+          setIsImportModalOpen(false);
+        }}
+      />
+
+      {/* 1-Click Customer 360° Profile & Details Modal */}
+      <CustomerDetailModal
+        isOpen={Boolean(viewingCustomer)}
+        customer={
+          viewingCustomer
+            ? customers.find((c) => c.id === viewingCustomer.id) || viewingCustomer
+            : null
+        }
+        customers={customers}
+        onClose={() => setViewingCustomer(null)}
+        buildings={buildings}
+        mealPlans={mealPlans}
+        invoices={invoices}
+        payments={payments}
+        onEdit={(cust) => {
+          setViewingCustomer(null);
+          onEditCustomer(cust);
+        }}
+        onRecordPayment={onRecordPayment}
+        onSaveCustomer={onSaveCustomer}
+      />
+
+      {/* Confirmation Modal for Delete All Customers */}
+      {isDeleteAllModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-[#151c2c] border border-rose-500/40 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-rose-500/15 border border-rose-500/30 flex items-center justify-center text-rose-400 shrink-0">
+                <AlertTriangle className="w-6 h-6 stroke-[2.2]" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-white">Delete All Customers?</h3>
+                <p className="text-xs text-rose-400 font-semibold mt-0.5">Permanent Deletion Warning</p>
+              </div>
+            </div>
+            <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-300 space-y-2">
+              <p>
+                Are you sure you want to permanently delete all <strong className="text-white font-mono">{customers.length}</strong> customer records?
+              </p>
+              <p className="text-slate-400 text-[11px]">
+                This action cannot be undone. All customer profiles, meal plans, and subscriptions will be wiped from both local storage and the cloud database.
+              </p>
+            </div>
+            <div className="flex items-center justify-end gap-2.5 pt-2">
+              <button
+                type="button"
+                disabled={isDeletingAll}
+                onClick={() => setIsDeleteAllModalOpen(false)}
+                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={isDeletingAll}
+                onClick={async () => {
+                  if (onDeleteAllCustomers) {
+                    setIsDeletingAll(true);
+                    try {
+                      await onDeleteAllCustomers();
+                    } finally {
+                      setIsDeletingAll(false);
+                      setIsDeleteAllModalOpen(false);
+                    }
+                  }
+                }}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 disabled:opacity-50 text-white font-bold text-xs shadow-lg shadow-rose-600/30 transition-colors cursor-pointer"
+              >
+                <Trash2 className="w-4 h-4" />
+                <span>{isDeletingAll ? 'Deleting All...' : 'Yes, Delete All Customers'}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
