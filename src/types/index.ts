@@ -1,6 +1,6 @@
 // TypeScript Domain Types for Karama Mess Management Software
 
-export type UserRole = 'owner' | 'manager' | 'staff';
+export type UserRole = 'owner' | 'manager' | 'staff' | 'viewer';
 export type CustomerStatus = 'active' | 'inactive' | 'paused' | 'left' | 'cancelled' | 'trial' | 'cancelling_soon';
 export type AttendanceStatus = 'present' | 'absent' | 'cancelled';
 export type InvoiceStatus = 'draft' | 'issued' | 'partially_paid' | 'paid' | 'overdue' | 'cancelled';

@@ -5,7 +5,7 @@ export interface AppUser {
   id: string;
   username: string;
   fullName: string;
-  role: 'admin' | 'manager' | 'staff';
+  role: 'admin' | 'manager' | 'staff' | 'viewer';
   roleTitle: string;
   passwordHash: string;
   email?: string;
@@ -44,6 +44,18 @@ const DEFAULT_USERS: AppUser[] = [
     passwordHash: 'manager123',
     email: 'manager@karamamess.ae',
     phone: '+971 50 998 8776',
+    createdAt: '2026-01-01T00:00:00Z',
+    isActive: true,
+  },
+  {
+    id: 'user-viewer-3',
+    username: 'viewer',
+    fullName: 'Guest / Staff Viewer',
+    role: 'viewer',
+    roleTitle: 'Viewer (Read-Only)',
+    passwordHash: 'viewer123',
+    email: 'viewer@karamamess.ae',
+    phone: '+971 50 000 0000',
     createdAt: '2026-01-01T00:00:00Z',
     isActive: true,
   },
@@ -90,6 +102,24 @@ export class AuthService {
     if (typeof localStorage === 'undefined') return;
     if (!localStorage.getItem(STORAGE_KEYS.USERS)) {
       this.setItem(STORAGE_KEYS.USERS, DEFAULT_USERS);
+    } else {
+      // Ensure viewer account is present in existing installations
+      const currentUsers = this.getItem<AppUser[]>(STORAGE_KEYS.USERS, []);
+      if (!currentUsers.some((u) => u.username.toLowerCase() === 'viewer')) {
+        currentUsers.push({
+          id: 'user-viewer-3',
+          username: 'viewer',
+          fullName: 'Guest / Staff Viewer',
+          role: 'viewer',
+          roleTitle: 'Viewer (Read-Only)',
+          passwordHash: 'viewer123',
+          email: 'viewer@karamamess.ae',
+          phone: '+971 50 000 0000',
+          createdAt: new Date().toISOString(),
+          isActive: true,
+        });
+        this.setItem(STORAGE_KEYS.USERS, currentUsers);
+      }
     }
     if (!localStorage.getItem(STORAGE_KEYS.RECOVERY_CODE)) {
       localStorage.setItem(STORAGE_KEYS.RECOVERY_CODE, DEFAULT_RECOVERY_CODE);
@@ -136,7 +166,7 @@ export class AuthService {
       username: (user.username || 'user').trim().toLowerCase(),
       fullName: user.fullName || 'New User',
       role: user.role || 'staff',
-      roleTitle: user.roleTitle || (user.role === 'admin' ? 'Administrator' : user.role === 'manager' ? 'Operations Manager' : 'Staff Member'),
+      roleTitle: user.roleTitle || (user.role === 'admin' ? 'Administrator' : user.role === 'manager' ? 'Operations Manager' : user.role === 'viewer' ? 'Viewer (Read-Only)' : 'Staff Member'),
       passwordHash: user.passwordHash || 'karama123',
       email: user.email || '',
       phone: user.phone || '',

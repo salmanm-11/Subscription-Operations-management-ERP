@@ -7,6 +7,7 @@ interface PaymentListProps {
   payments: Payment[];
   customers: Customer[];
   invoices: Invoice[];
+  isReadOnly?: boolean;
   onRecordPayment: (payment: Partial<Payment>) => void;
 }
 
@@ -14,6 +15,7 @@ export const PaymentList: React.FC<PaymentListProps> = ({
   payments,
   customers,
   invoices,
+  isReadOnly = false,
   onRecordPayment,
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -158,19 +160,21 @@ export const PaymentList: React.FC<PaymentListProps> = ({
           </p>
         </div>
 
-        <button
-          onClick={() => {
-            if (customers.length > 0) {
-              setCustomerId(customers[0].id);
-              setAmount(customers[0].total_overdue || customers[0].monthly_rate || 380);
-            }
-            setIsModalOpen(true);
-          }}
-          className="shrink-0 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs sm:text-sm font-bold shadow-md shadow-emerald-500/20 transition-all active:scale-[0.98]"
-        >
-          <Plus className="w-4 h-4 text-slate-950 stroke-[2.5]" />
-          <span>Record Payment</span>
-        </button>
+        {!isReadOnly && (
+          <button
+            onClick={() => {
+              if (customers.length > 0) {
+                setCustomerId(customers[0].id);
+                setAmount(customers[0].total_overdue || customers[0].monthly_rate || 380);
+              }
+              setIsModalOpen(true);
+            }}
+            className="shrink-0 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs sm:text-sm font-bold shadow-md shadow-emerald-500/20 transition-all active:scale-[0.98]"
+          >
+            <Plus className="w-4 h-4 text-slate-950 stroke-[2.5]" />
+            <span>Record Payment</span>
+          </button>
+        )}
       </div>
 
       {/* Top Financial Summary Cards */}

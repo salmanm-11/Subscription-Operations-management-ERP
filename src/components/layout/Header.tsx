@@ -35,6 +35,7 @@ import { CloudStatusResult } from '../../api/supabase';
 interface HeaderProps {
   userName?: string;
   userRole?: string;
+  isViewer?: boolean;
   isCloud?: boolean;
   cloudStatus?: CloudStatusResult;
   onCheckCloud?: () => Promise<void> | void;
@@ -51,6 +52,7 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({
   userName = 'admin',
   userRole = 'Administrator',
+  isViewer = false,
   isCloud = false,
   cloudStatus,
   onCheckCloud,
@@ -408,7 +410,8 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
 
         {/* Cloud Live Status Indicator & Diagnostics Popover */}
-        <div className="relative">
+        {!isViewer && (
+          <div className="relative">
           <button
             onClick={() => setIsCloudPopoverOpen(!isCloudPopoverOpen)}
             className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-bold shadow-sm transition-all cursor-pointer ${
@@ -605,6 +608,7 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
           )}
         </div>
+        )}
 
         {/* Refresh Button */}
         {onRefresh && (
@@ -629,12 +633,21 @@ export const Header: React.FC<HeaderProps> = ({
         {/* User Pill & Logout */}
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-2.5 pl-2 pr-3.5 py-1 rounded-xl bg-slate-800/80 border border-slate-700/60 shadow-sm">
-            <div className="w-7 h-7 rounded-full bg-slate-700 flex items-center justify-center text-amber-400 border border-slate-600 font-bold">
-              <User className="w-3.5 h-3.5" />
+            <div className={`w-7 h-7 rounded-full flex items-center justify-center border font-bold text-xs ${
+              isViewer 
+                ? 'bg-purple-500/20 text-purple-300 border-purple-500/30' 
+                : 'bg-slate-700 text-amber-400 border-slate-600'
+            }`}>
+              {isViewer ? '👁️' : <User className="w-3.5 h-3.5" />}
             </div>
             <div className="text-left">
-              <div className="text-xs font-bold text-white capitalize leading-tight">
-                {userName}
+              <div className="text-xs font-bold text-white capitalize leading-tight flex items-center gap-1.5">
+                <span>{userName}</span>
+                {isViewer && (
+                  <span className="px-1.5 py-0.2 rounded text-[9px] font-black uppercase bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                    Read Only
+                  </span>
+                )}
               </div>
               <div className="text-[10px] text-slate-400 leading-tight font-medium">
                 {userRole}

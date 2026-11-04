@@ -6,6 +6,7 @@ import { formatAED } from '../../utils/currency';
 interface MealPlanListProps {
   mealPlans: MealPlan[];
   customers?: Customer[];
+  isReadOnly?: boolean;
   onAddPlan: (plan: Partial<MealPlan>) => void;
   onEditPlan?: (plan: Partial<MealPlan>) => void;
   onDeletePlan?: (id: string) => void;
@@ -14,6 +15,7 @@ interface MealPlanListProps {
 export const MealPlanList: React.FC<MealPlanListProps> = ({
   mealPlans,
   customers = [],
+  isReadOnly = false,
   onAddPlan,
   onEditPlan,
   onDeletePlan,
@@ -108,13 +110,15 @@ export const MealPlanList: React.FC<MealPlanListProps> = ({
           </p>
         </div>
 
-        <button
-          onClick={handleOpenAdd}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs sm:text-sm font-bold shadow-md shadow-amber-500/20 transition-all cursor-pointer self-start sm:self-auto active:scale-[0.98]"
-        >
-          <Plus className="w-4 h-4 text-slate-950" />
-          <span>Add Meal Plan</span>
-        </button>
+        {!isReadOnly && (
+          <button
+            onClick={handleOpenAdd}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs sm:text-sm font-bold shadow-md shadow-amber-500/20 transition-all cursor-pointer self-start sm:self-auto active:scale-[0.98]"
+          >
+            <Plus className="w-4 h-4 text-slate-950" />
+            <span>Add Meal Plan</span>
+          </button>
+        )}
       </div>
 
       {/* Meal Plans Grid */}
@@ -146,26 +150,29 @@ export const MealPlanList: React.FC<MealPlanListProps> = ({
                       {mp.is_active !== false ? 'Active' : 'Inactive'}
                     </span>
 
-                    {/* Edit Button */}
-                    <button
-                      type="button"
-                      onClick={() => handleOpenEdit(mp)}
-                      className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-amber-400 border border-slate-700 transition-colors cursor-pointer"
-                      title={`Edit ${mp.name}`}
-                    >
-                      <Pencil className="w-3.5 h-3.5" />
-                    </button>
+                    {/* Edit & Delete Buttons (Hidden for Read-Only) */}
+                    {!isReadOnly && (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => handleOpenEdit(mp)}
+                          className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-amber-400 border border-slate-700 transition-colors cursor-pointer"
+                          title={`Edit ${mp.name}`}
+                        >
+                          <Pencil className="w-3.5 h-3.5" />
+                        </button>
 
-                    {/* Delete Button */}
-                    {onDeletePlan && (
-                      <button
-                        type="button"
-                        onClick={() => setDeletingPlan(mp)}
-                        className="p-1.5 rounded-lg bg-slate-800 hover:bg-rose-500/20 text-slate-300 hover:text-rose-400 border border-slate-700 transition-colors cursor-pointer"
-                        title={`Delete ${mp.name}`}
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
+                        {onDeletePlan && (
+                          <button
+                            type="button"
+                            onClick={() => setDeletingPlan(mp)}
+                            className="p-1.5 rounded-lg bg-slate-800 hover:bg-rose-500/20 text-slate-300 hover:text-rose-400 border border-slate-700 transition-colors cursor-pointer"
+                            title={`Delete ${mp.name}`}
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </>
                     )}
                   </div>
                 </div>

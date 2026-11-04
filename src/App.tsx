@@ -66,6 +66,12 @@ export const App: React.FC = () => {
   const [currentTab, setCurrentTab] = useState('dashboard');
   const [isRefreshing, setIsRefreshing] = useState(false);
 
+  useEffect(() => {
+    if (currentUser?.role === 'viewer' && (currentTab === 'admin' || currentTab === 'staff' || currentTab === 'settings')) {
+      setCurrentTab('dashboard');
+    }
+  }, [currentUser, currentTab]);
+
   // Core business state
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [buildings, setBuildings] = useState<Building[]>([]);
@@ -857,6 +863,8 @@ export const App: React.FC = () => {
     return <LoginView onLoginSuccess={(user) => setCurrentUser(user)} />;
   }
 
+  const isViewer = currentUser?.role === 'viewer';
+
   return (
     <div className="flex min-h-screen bg-[#0b0f19] text-slate-100 font-sans antialiased">
       {/* Sidebar */}
@@ -864,6 +872,7 @@ export const App: React.FC = () => {
         currentTab={currentTab}
         onSelectTab={setCurrentTab}
         onLogout={handleLogout}
+        userRole={currentUser.role}
       />
 
       {/* Main Content Area */}
@@ -871,6 +880,7 @@ export const App: React.FC = () => {
         <Header
           userName={currentUser.username}
           userRole={currentUser.roleTitle}
+          isViewer={isViewer}
           isCloud={cloudStatus.isLive}
           cloudStatus={cloudStatus}
           onCheckCloud={() => checkConnection(true)}
@@ -1068,6 +1078,7 @@ export const App: React.FC = () => {
               mealPlans={mealPlans}
               invoices={invoices}
               payments={payments}
+              isReadOnly={isViewer}
               onAddCustomer={() => {
                 setEditingCustomer(null);
                 setIsCustomerModalOpen(true);
@@ -1089,6 +1100,7 @@ export const App: React.FC = () => {
             <BuildingList
               buildings={buildings}
               customers={customers}
+              isReadOnly={isViewer}
               onAddBuilding={handleAddBuilding}
               onDeleteBuilding={handleDeleteBuilding}
               onDeleteEmptyBuildings={handleDeleteEmptyBuildings}
@@ -1103,6 +1115,7 @@ export const App: React.FC = () => {
             <MealPlanList
               mealPlans={mealPlans}
               customers={customers}
+              isReadOnly={isViewer}
               onAddPlan={handleSaveMealPlan}
               onEditPlan={handleSaveMealPlan}
               onDeletePlan={handleDeleteMealPlan}
@@ -1114,6 +1127,7 @@ export const App: React.FC = () => {
               invoices={invoices}
               customers={customers}
               settings={settings}
+              isReadOnly={isViewer}
               onGenerateInvoice={handleGenerateInvoice}
               onEditInvoice={handleEditInvoice}
               onDeleteInvoice={handleDeleteInvoice}
@@ -1126,6 +1140,7 @@ export const App: React.FC = () => {
               payments={payments}
               customers={customers}
               invoices={invoices}
+              isReadOnly={isViewer}
               onRecordPayment={handleRecordPayment}
             />
           )}
@@ -1141,6 +1156,7 @@ export const App: React.FC = () => {
               mealPlans={mealPlans}
               invoices={invoices}
               payments={payments}
+              isReadOnly={isViewer}
               onOpenPayment={(c) => {
                 setEditingCustomer(c);
                 setIsCustomerModalOpen(true);
@@ -1157,14 +1173,14 @@ export const App: React.FC = () => {
             />
           )}
 
-          {(currentTab === 'admin' || currentTab === 'staff') && (
+          {!isViewer && (currentTab === 'admin' || currentTab === 'staff') && (
             <AdminView
               currentUser={currentUser}
               onUserSessionUpdate={(user) => setCurrentUser(user)}
             />
           )}
 
-          {currentTab === 'settings' && (
+          {!isViewer && currentTab === 'settings' && (
             <BusinessSettingsView
               settings={settings}
               onSaveSettings={handleSaveSettings}
@@ -1204,6 +1220,7 @@ export const App: React.FC = () => {
         mealPlans={mealPlans}
         invoices={invoices}
         payments={payments}
+        isReadOnly={isViewer}
         onClose={() => setViewingProfileCustomer(null)}
         onEdit={(cust) => {
           setViewingProfileCustomer(null);

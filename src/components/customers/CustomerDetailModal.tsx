@@ -49,6 +49,7 @@ interface CustomerDetailModalProps {
   mealPlans?: MealPlan[];
   invoices?: Invoice[];
   payments?: Payment[];
+  isReadOnly?: boolean;
   onEdit: (customer: Customer) => void;
   onRecordPayment?: (payment: Partial<Payment>) => Promise<void> | void;
   onSaveCustomer?: (customer: Partial<Customer>) => Promise<void> | void;
@@ -63,6 +64,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
   mealPlans = [],
   invoices = [],
   payments = [],
+  isReadOnly = false,
   onEdit,
   onRecordPayment,
   onSaveCustomer,
@@ -633,17 +635,19 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
 
           {/* Quick Header Actions */}
           <div className="flex items-center gap-2 shrink-0">
-            <button
-              onClick={() => {
-                onClose();
-                onEdit(activeCustomer);
-              }}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-750 text-slate-200 text-xs font-semibold border border-slate-700/80 transition-colors shadow-sm"
-              title="Edit Profile"
-            >
-              <Edit className="w-3.5 h-3.5 text-amber-400" />
-              <span className="hidden sm:inline">Edit Profile</span>
-            </button>
+            {!isReadOnly && (
+              <button
+                onClick={() => {
+                  onClose();
+                  onEdit(activeCustomer);
+                }}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-750 text-slate-200 text-xs font-semibold border border-slate-700/80 transition-colors shadow-sm"
+                title="Edit Profile"
+              >
+                <Edit className="w-3.5 h-3.5 text-amber-400" />
+                <span className="hidden sm:inline">Edit Profile</span>
+              </button>
+            )}
 
             <button
               onClick={onClose}
@@ -711,25 +715,29 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                   <span>WhatsApp Summary</span>
                 </button>
 
-                <button
-                  type="button"
-                  onClick={handleRevokeNotice}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 text-xs font-bold transition-all cursor-pointer"
-                  title="Revoke cancellation notice and continue active service"
-                >
-                  <RotateCcw className="w-3.5 h-3.5 text-slate-400" />
-                  <span>Revoke Notice</span>
-                </button>
+                {!isReadOnly && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={handleRevokeNotice}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 text-xs font-bold transition-all cursor-pointer"
+                      title="Revoke cancellation notice and continue active service"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5 text-slate-400" />
+                      <span>Revoke Notice</span>
+                    </button>
 
-                <button
-                  type="button"
-                  onClick={handleFinalizeCancellation}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-black shadow-lg shadow-rose-900/30 transition-all cursor-pointer active:scale-95"
-                  title="Immediately change status to Cancelled"
-                >
-                  <UserMinus className="w-3.5 h-3.5 text-white" />
-                  <span>Finalize Cancellation</span>
-                </button>
+                    <button
+                      type="button"
+                      onClick={handleFinalizeCancellation}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-black shadow-lg shadow-rose-900/30 transition-all cursor-pointer active:scale-95"
+                      title="Immediately change status to Cancelled"
+                    >
+                      <UserMinus className="w-3.5 h-3.5 text-white" />
+                      <span>Finalize Cancellation</span>
+                    </button>
+                  </>
+                )}
               </div>
             </div>
 
@@ -835,15 +843,17 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
 
             {/* Quick Actions: Add Due / Edit Due + View Bill + Pay Overdue */}
             <div className="mt-2.5 flex items-center gap-1.5 flex-wrap">
-              <button
-                type="button"
-                onClick={() => handleOpenDueModal('due')}
-                className="flex-1 min-w-[65px] flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 text-xs font-bold transition-all shadow-sm active:scale-[0.98] cursor-pointer"
-                title="Add or Edit Outstanding Due Balance"
-              >
-                <Edit3 className="w-3 h-3 text-amber-400" />
-                <span>{overdue > 0 ? 'Edit Due' : 'Add Due'}</span>
-              </button>
+              {!isReadOnly && (
+                <button
+                  type="button"
+                  onClick={() => handleOpenDueModal('due')}
+                  className="flex-1 min-w-[65px] flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 text-xs font-bold transition-all shadow-sm active:scale-[0.98] cursor-pointer"
+                  title="Add or Edit Outstanding Due Balance"
+                >
+                  <Edit3 className="w-3 h-3 text-amber-400" />
+                  <span>{overdue > 0 ? 'Edit Due' : 'Add Due'}</span>
+                </button>
+              )}
 
               <button
                 type="button"
@@ -855,7 +865,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                 <span>View Bill</span>
               </button>
 
-              {isOverdue && (
+              {!isReadOnly && isOverdue && (
                 <button
                   type="button"
                   onClick={() => handleOpenPayModal(overdue)}
@@ -875,14 +885,16 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
               <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider flex items-center justify-between">
                 <span>Paid Up To</span>
                 <div className="flex items-center gap-1">
-                  <button
-                    type="button"
-                    onClick={() => handleOpenDueModal('paid')}
-                    className="p-1 rounded hover:bg-slate-700/60 text-slate-400 hover:text-amber-400 transition-colors"
-                    title="Edit Paid Date"
-                  >
-                    <Edit3 className="w-3.5 h-3.5" />
-                  </button>
+                  {!isReadOnly && (
+                    <button
+                      type="button"
+                      onClick={() => handleOpenDueModal('paid')}
+                      className="p-1 rounded hover:bg-slate-700/60 text-slate-400 hover:text-amber-400 transition-colors"
+                      title="Edit Paid Date"
+                    >
+                      <Edit3 className="w-3.5 h-3.5" />
+                    </button>
+                  )}
                   <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
                 </div>
               </div>
@@ -892,13 +904,15 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
             </div>
             <div className="text-[10px] text-slate-400 mt-2 flex items-center justify-between">
               <span>Last verified settlement</span>
-              <button
-                type="button"
-                onClick={() => handleOpenDueModal('paid')}
-                className="text-[10px] text-amber-400/80 hover:text-amber-300 hover:underline font-semibold cursor-pointer"
-              >
-                Edit
-              </button>
+              {!isReadOnly && (
+                <button
+                  type="button"
+                  onClick={() => handleOpenDueModal('paid')}
+                  className="text-[10px] text-amber-400/80 hover:text-amber-300 hover:underline font-semibold cursor-pointer"
+                >
+                  Edit
+                </button>
+              )}
             </div>
           </div>
 
@@ -908,14 +922,16 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
               <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider flex items-center justify-between">
                 <span>Billed Up To</span>
                 <div className="flex items-center gap-1">
-                  <button
-                    type="button"
-                    onClick={() => handleOpenDueModal('billed')}
-                    className="p-1 rounded hover:bg-slate-700/60 text-slate-400 hover:text-amber-400 transition-colors"
-                    title="Edit Due / Billed Date"
-                  >
-                    <Edit3 className="w-3.5 h-3.5" />
-                  </button>
+                  {!isReadOnly && (
+                    <button
+                      type="button"
+                      onClick={() => handleOpenDueModal('billed')}
+                      className="p-1 rounded hover:bg-slate-700/60 text-slate-400 hover:text-amber-400 transition-colors"
+                      title="Edit Due / Billed Date"
+                    >
+                      <Edit3 className="w-3.5 h-3.5" />
+                    </button>
+                  )}
                   <Calendar className="w-3.5 h-3.5 text-sky-400" />
                 </div>
               </div>
@@ -1382,7 +1398,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                                 <FileText className="w-3 h-3 text-amber-400" />
                                 <span>View Bill</span>
                               </button>
-                              {inv.balance_amount > 0 ? (
+                              {!isReadOnly && inv.balance_amount > 0 ? (
                                 <button
                                   onClick={() => handleOpenPayModal(inv.balance_amount, inv.id)}
                                   className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[10px] shadow-sm transition-all active:scale-[0.98]"
@@ -1391,9 +1407,9 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                                   <CreditCard className="w-3 h-3" />
                                   <span>Pay {formatAED(inv.balance_amount)}</span>
                                 </button>
-                              ) : (
+                              ) : inv.balance_amount <= 0 ? (
                                 <span className="text-[10px] text-emerald-400 font-semibold px-1">✓ Settled</span>
-                              )}
+                              ) : null}
                             </div>
                           </td>
                         </tr>
@@ -1532,25 +1548,29 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
           {/* Right Action Buttons */}
           <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
             {/* Record Payment Button (Opens In-Place Pay Modal on Profile) */}
-            <button
-              onClick={() => handleOpenPayModal(overdue > 0 ? overdue : activeCustomer.monthly_rate)}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-lg shadow-emerald-600/20 transition-all active:scale-[0.98]"
-              title="Pay Bill / Record Payment directly here"
-            >
-              <CreditCard className="w-3.5 h-3.5" />
-              <span>Record Payment</span>
-            </button>
+            {!isReadOnly && (
+              <>
+                <button
+                  onClick={() => handleOpenPayModal(overdue > 0 ? overdue : activeCustomer.monthly_rate)}
+                  className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-lg shadow-emerald-600/20 transition-all active:scale-[0.98]"
+                  title="Pay Bill / Record Payment directly here"
+                >
+                  <CreditCard className="w-3.5 h-3.5" />
+                  <span>Record Payment</span>
+                </button>
 
-            <button
-              onClick={() => {
-                onClose();
-                onEdit(activeCustomer);
-              }}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-black shadow-lg shadow-amber-500/20 transition-all active:scale-[0.98]"
-            >
-              <Edit className="w-3.5 h-3.5" />
-              <span>Edit Customer</span>
-            </button>
+                <button
+                  onClick={() => {
+                    onClose();
+                    onEdit(activeCustomer);
+                  }}
+                  className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-black shadow-lg shadow-amber-500/20 transition-all active:scale-[0.98]"
+                >
+                  <Edit className="w-3.5 h-3.5" />
+                  <span>Edit Customer</span>
+                </button>
+              </>
+            )}
 
             <button
               onClick={onClose}

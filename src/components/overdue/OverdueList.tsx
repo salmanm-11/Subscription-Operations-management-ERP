@@ -39,6 +39,7 @@ interface OverdueListProps {
   mealPlans?: MealPlan[];
   invoices?: Invoice[];
   payments?: Payment[];
+  isReadOnly?: boolean;
   onOpenPayment?: (customer: Customer) => void;
   onRecordPayment?: (payment: Partial<Payment>) => Promise<void> | void;
   onSaveCustomer?: (customer: Partial<Customer>) => Promise<void> | void;
@@ -50,6 +51,7 @@ export const OverdueList: React.FC<OverdueListProps> = ({
   mealPlans = [],
   invoices = [],
   payments = [],
+  isReadOnly = false,
   onOpenPayment,
   onRecordPayment,
   onSaveCustomer,
@@ -816,17 +818,19 @@ export const OverdueList: React.FC<OverdueListProps> = ({
                             </button>
 
                             {/* 1-Click Clear Due Button */}
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleOpenQuickSettle(c);
-                              }}
-                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs shadow-md shadow-emerald-500/20 transition-all active:scale-95 cursor-pointer"
-                              title="Clear Due Balance"
-                            >
-                              <CheckCircle2 className="w-3.5 h-3.5" />
-                              <span>Clear Due</span>
-                            </button>
+                            {!isReadOnly && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleOpenQuickSettle(c);
+                                }}
+                                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs shadow-md shadow-emerald-500/20 transition-all active:scale-95 cursor-pointer"
+                                title="Clear Due Balance"
+                              >
+                                <CheckCircle2 className="w-3.5 h-3.5" />
+                                <span>Clear Due</span>
+                              </button>
+                            )}
 
                             {/* View 360 Profile */}
                             <button
@@ -971,17 +975,19 @@ export const OverdueList: React.FC<OverdueListProps> = ({
                             </button>
 
                             {/* 1-Click Clear / Settle Due */}
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleOpenQuickSettle(c);
-                              }}
-                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-md shadow-amber-500/20 transition-all active:scale-95 cursor-pointer"
-                              title="Clear / Settle Due"
-                            >
-                              <CreditCard className="w-3.5 h-3.5" />
-                              <span>Settle</span>
-                            </button>
+                            {!isReadOnly && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleOpenQuickSettle(c);
+                                }}
+                                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-md shadow-amber-500/20 transition-all active:scale-95 cursor-pointer"
+                                title="Clear / Settle Due"
+                              >
+                                <CreditCard className="w-3.5 h-3.5" />
+                                <span>Settle</span>
+                              </button>
+                            )}
                           </div>
                         </td>
                       </tr>
@@ -1470,6 +1476,7 @@ export const OverdueList: React.FC<OverdueListProps> = ({
         mealPlans={mealPlans}
         invoices={invoices}
         payments={payments}
+        isReadOnly={isReadOnly}
         onClose={() => setSelectedCustomer(null)}
         onEdit={(cust) => {
           setSelectedCustomer(null);

@@ -13,6 +13,7 @@ interface CustomerListProps {
   mealPlans: MealPlan[];
   invoices?: Invoice[];
   payments?: Payment[];
+  isReadOnly?: boolean;
   onAddCustomer: () => void;
   onEditCustomer: (customer: Customer) => void;
   onDeleteCustomer: (id: string) => void;
@@ -29,6 +30,7 @@ export const CustomerList: React.FC<CustomerListProps> = ({
   mealPlans,
   invoices = [],
   payments = [],
+  isReadOnly = false,
   onAddCustomer,
   onEditCustomer,
   onDeleteCustomer,
@@ -300,14 +302,16 @@ export const CustomerList: React.FC<CustomerListProps> = ({
         </div>
 
         <div className="flex flex-wrap items-center gap-2 shrink-0">
-          {/* Import Excel Button */}
-          <button
-            onClick={() => setIsImportModalOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 text-xs font-bold border border-emerald-500/30 transition-colors shadow-sm"
-          >
-            <Upload className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Import</span>
-          </button>
+          {/* Import Excel Button (Hidden in Read-Only) */}
+          {!isReadOnly && (
+            <button
+              onClick={() => setIsImportModalOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 text-xs font-bold border border-emerald-500/30 transition-colors shadow-sm"
+            >
+              <Upload className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Import</span>
+            </button>
+          )}
 
           {/* Export Excel Dropdown */}
           <div className="relative">
@@ -356,20 +360,24 @@ export const CustomerList: React.FC<CustomerListProps> = ({
                 >
                   Export All (.csv)
                 </button>
-                <div className="h-px bg-slate-800 my-1" />
-                <button
-                  onClick={() => downloadCustomerTemplate('xlsx')}
-                  className="w-full text-left px-4 py-2 text-xs text-amber-400 hover:bg-slate-800 font-semibold flex items-center gap-2"
-                >
-                  <Download className="w-3.5 h-3.5" />
-                  <span>Download Blank Template</span>
-                </button>
+                {!isReadOnly && (
+                  <>
+                    <div className="h-px bg-slate-800 my-1" />
+                    <button
+                      onClick={() => downloadCustomerTemplate('xlsx')}
+                      className="w-full text-left px-4 py-2 text-xs text-amber-400 hover:bg-slate-800 font-semibold flex items-center gap-2"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                      <span>Download Blank Template</span>
+                    </button>
+                  </>
+                )}
               </div>
             )}
           </div>
 
-          {/* Delete All Customers Button */}
-          {customers.length > 0 && onDeleteAllCustomers && (
+          {/* Delete All Customers Button (Admin only) */}
+          {!isReadOnly && customers.length > 0 && onDeleteAllCustomers && (
             <button
               onClick={() => setIsDeleteAllModalOpen(true)}
               className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 text-rose-400 hover:text-rose-300 text-xs font-bold border border-rose-500/30 transition-colors shadow-sm cursor-pointer"
@@ -380,13 +388,15 @@ export const CustomerList: React.FC<CustomerListProps> = ({
             </button>
           )}
 
-          <button
-            onClick={onAddCustomer}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold shadow-md shadow-amber-500/20 transition-all active:scale-[0.98]"
-          >
-            <Plus className="w-3.5 h-3.5 text-slate-950" />
-            <span>Add Customer</span>
-          </button>
+          {!isReadOnly && (
+            <button
+              onClick={onAddCustomer}
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold shadow-md shadow-amber-500/20 transition-all active:scale-[0.98]"
+            >
+              <Plus className="w-3.5 h-3.5 text-slate-950" />
+              <span>Add Customer</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -858,29 +868,33 @@ export const CustomerList: React.FC<CustomerListProps> = ({
                             <Eye className="w-3.5 h-3.5 text-sky-400" />
                             <span>View</span>
                           </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onEditCustomer(c);
-                            }}
-                            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-750 text-slate-200 hover:text-white transition-colors border border-slate-700/60 shadow-sm text-xs font-semibold"
-                            title="Edit Customer"
-                          >
-                            <Edit className="w-3.5 h-3.5 text-amber-400" />
-                            <span>Edit</span>
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (confirm(`Are you sure you want to remove customer ${c.full_name}? Historical financial records will be preserved.`)) {
-                                onDeleteCustomer(c.id);
-                              }
-                            }}
-                            className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 transition-colors border border-rose-500/20 shadow-sm"
-                            title="Delete Customer"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
+                          {!isReadOnly && (
+                            <>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onEditCustomer(c);
+                                }}
+                                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-750 text-slate-200 hover:text-white transition-colors border border-slate-700/60 shadow-sm text-xs font-semibold"
+                                title="Edit Customer"
+                              >
+                                <Edit className="w-3.5 h-3.5 text-amber-400" />
+                                <span>Edit</span>
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (confirm(`Are you sure you want to remove customer ${c.full_name}? Historical financial records will be preserved.`)) {
+                                    onDeleteCustomer(c.id);
+                                  }
+                                }}
+                                className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 transition-colors border border-rose-500/20 shadow-sm"
+                                title="Delete Customer"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -907,6 +921,7 @@ export const CustomerList: React.FC<CustomerListProps> = ({
       {/* 1-Click Customer 360° Profile & Details Modal */}
       <CustomerDetailModal
         isOpen={Boolean(viewingCustomer)}
+        isReadOnly={isReadOnly}
         customer={
           viewingCustomer
             ? customers.find((c) => c.id === viewingCustomer.id) || viewingCustomer

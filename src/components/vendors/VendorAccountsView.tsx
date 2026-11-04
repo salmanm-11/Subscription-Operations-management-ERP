@@ -60,6 +60,7 @@ interface VendorAccountsViewProps {
 }
 
 export const VendorAccountsView: React.FC<VendorAccountsViewProps> = ({ currentUser }) => {
+  const isViewer = currentUser?.role === 'viewer';
   const [activeTab, setActiveTab] = useState<'dashboard' | 'vendors' | 'daily' | 'payments' | 'statement' | 'import' | 'audit'>('dashboard');
   
   // Data states
@@ -311,13 +312,15 @@ export const VendorAccountsView: React.FC<VendorAccountsViewProps> = ({ currentU
           <span>Account Statement</span>
         </button>
 
-        <button
-          onClick={() => setIsImportModalOpen(true)}
-          className="py-3.5 px-4 text-xs font-bold border-b-2 border-transparent text-emerald-400 hover:text-emerald-300 flex items-center gap-2 whitespace-nowrap ml-auto"
-        >
-          <FileSpreadsheet className="w-4 h-4" />
-          <span>Import Moms_Account.xlsx</span>
-        </button>
+        {!isViewer && (
+          <button
+            onClick={() => setIsImportModalOpen(true)}
+            className="py-3.5 px-4 text-xs font-bold border-b-2 border-transparent text-emerald-400 hover:text-emerald-300 flex items-center gap-2 whitespace-nowrap ml-auto"
+          >
+            <FileSpreadsheet className="w-4 h-4" />
+            <span>Import Moms_Account.xlsx</span>
+          </button>
+        )}
 
         <button
           onClick={() => setActiveTab('audit')}
@@ -337,18 +340,24 @@ export const VendorAccountsView: React.FC<VendorAccountsViewProps> = ({ currentU
         <VendorDashboard
           metrics={metrics}
           onOpenNewDailyEntry={() => {
+            if (isViewer) return;
             setEditingTransaction(null);
             setIsDailyEntryModalOpen(true);
           }}
           onOpenRecordPayment={(vendorId) => {
+            if (isViewer) return;
             setPaymentVendorId(vendorId);
             setIsPaymentModalOpen(true);
           }}
           onOpenAddVendor={() => {
+            if (isViewer) return;
             setEditingVendor(null);
             setIsVendorModalOpen(true);
           }}
-          onOpenImport={() => setIsImportModalOpen(true)}
+          onOpenImport={() => {
+            if (isViewer) return;
+            setIsImportModalOpen(true);
+          }}
           onSelectVendorStatement={handleSelectVendorForStatement}
           onViewAllTransactions={() => setActiveTab('daily')}
         />
@@ -383,16 +392,18 @@ export const VendorAccountsView: React.FC<VendorAccountsViewProps> = ({ currentU
                 <span>Export</span>
               </button>
 
-              <button
-                onClick={() => {
-                  setEditingVendor(null);
-                  setIsVendorModalOpen(true);
-                }}
-                className="px-4 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-black shadow-md shadow-amber-500/20 flex items-center gap-1.5"
-              >
-                <Plus className="w-4 h-4" />
-                <span>Add Vendor</span>
-              </button>
+              {!isViewer && (
+                <button
+                  onClick={() => {
+                    setEditingVendor(null);
+                    setIsVendorModalOpen(true);
+                  }}
+                  className="px-4 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-black shadow-md shadow-amber-500/20 flex items-center gap-1.5"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Add Vendor</span>
+                </button>
+              )}
             </div>
           </div>
 
@@ -461,23 +472,27 @@ export const VendorAccountsView: React.FC<VendorAccountsViewProps> = ({ currentU
                           >
                             <Eye className="w-3.5 h-3.5" />
                           </button>
-                          <button
-                            onClick={() => {
-                              setEditingVendor(v);
-                              setIsVendorModalOpen(true);
-                            }}
-                            className="p-1.5 rounded-lg bg-amber-500/10 text-amber-400 hover:bg-amber-500/20"
-                            title="Edit Vendor & Charges"
-                          >
-                            <Edit className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteVendor(v.id)}
-                            className="p-1.5 rounded-lg bg-rose-500/10 text-rose-400 hover:bg-rose-500/20"
-                            title="Remove / Deactivate"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
+                          {!isViewer && (
+                            <>
+                              <button
+                                onClick={() => {
+                                  setEditingVendor(v);
+                                  setIsVendorModalOpen(true);
+                                }}
+                                className="p-1.5 rounded-lg bg-amber-500/10 text-amber-400 hover:bg-amber-500/20"
+                                title="Edit Vendor & Charges"
+                              >
+                                <Edit className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteVendor(v.id)}
+                                className="p-1.5 rounded-lg bg-rose-500/10 text-rose-400 hover:bg-rose-500/20"
+                                title="Remove / Deactivate"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -518,16 +533,18 @@ export const VendorAccountsView: React.FC<VendorAccountsViewProps> = ({ currentU
                 className="px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs w-36"
               />
 
-              <button
-                onClick={() => {
-                  setEditingTransaction(null);
-                  setIsDailyEntryModalOpen(true);
-                }}
-                className="px-4 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-black shadow-md shadow-amber-500/20 flex items-center gap-1.5"
-              >
-                <Plus className="w-4 h-4" />
-                <span>New Daily Entry</span>
-              </button>
+              {!isViewer && (
+                <button
+                  onClick={() => {
+                    setEditingTransaction(null);
+                    setIsDailyEntryModalOpen(true);
+                  }}
+                  className="px-4 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-black shadow-md shadow-amber-500/20 flex items-center gap-1.5"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>New Daily Entry</span>
+                </button>
+              )}
             </div>
           </div>
 
@@ -577,25 +594,29 @@ export const VendorAccountsView: React.FC<VendorAccountsViewProps> = ({ currentU
                         {t.remarks || '-'}
                       </td>
                       <td className="py-2.5 px-3 text-right">
-                        <div className="flex items-center justify-end gap-1.5">
-                          <button
-                            onClick={() => {
-                              setEditingTransaction(t);
-                              setIsDailyEntryModalOpen(true);
-                            }}
-                            className="p-1 rounded bg-amber-500/10 text-amber-400 hover:bg-amber-500/20"
-                            title="Edit Entry"
-                          >
-                            <Edit className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteTransaction(t.id)}
-                            className="p-1 rounded bg-rose-500/10 text-rose-400 hover:bg-rose-500/20"
-                            title="Delete Entry"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
+                        {!isViewer ? (
+                          <div className="flex items-center justify-end gap-1.5">
+                            <button
+                              onClick={() => {
+                                setEditingTransaction(t);
+                                setIsDailyEntryModalOpen(true);
+                              }}
+                              className="p-1 rounded bg-amber-500/10 text-amber-400 hover:bg-amber-500/20"
+                              title="Edit Entry"
+                            >
+                              <Edit className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteTransaction(t.id)}
+                              className="p-1 rounded bg-rose-500/10 text-rose-400 hover:bg-rose-500/20"
+                              title="Delete Entry"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        ) : (
+                          <span className="text-slate-600 text-[11px]">-</span>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -620,16 +641,18 @@ export const VendorAccountsView: React.FC<VendorAccountsViewProps> = ({ currentU
               <p className="text-xs text-slate-400 mt-0.5">Disbursements, bank transfers &amp; partial settlement history</p>
             </div>
 
-            <button
-              onClick={() => {
-                setPaymentVendorId(undefined);
-                setIsPaymentModalOpen(true);
-              }}
-              className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-black shadow-md shadow-emerald-500/20 flex items-center gap-1.5"
-            >
-              <CreditCard className="w-4 h-4" />
-              <span>Record Vendor Payment</span>
-            </button>
+            {!isViewer && (
+              <button
+                onClick={() => {
+                  setPaymentVendorId(undefined);
+                  setIsPaymentModalOpen(true);
+                }}
+                className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-black shadow-md shadow-emerald-500/20 flex items-center gap-1.5"
+              >
+                <CreditCard className="w-4 h-4" />
+                <span>Record Vendor Payment</span>
+              </button>
+            )}
           </div>
 
           <div className="bg-[#151c2c] border border-slate-800/80 rounded-2xl overflow-hidden shadow-xl">
@@ -676,13 +699,17 @@ export const VendorAccountsView: React.FC<VendorAccountsViewProps> = ({ currentU
                           {p.remarks || '-'}
                         </td>
                         <td className="py-3 px-3 text-right">
-                          <button
-                            onClick={() => handleDeletePayment(p.id)}
-                            className="p-1.5 rounded-lg bg-rose-500/10 text-rose-400 hover:bg-rose-500/20"
-                            title="Reverse / Delete Payment"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
+                          {!isViewer ? (
+                            <button
+                              onClick={() => handleDeletePayment(p.id)}
+                              className="p-1.5 rounded-lg bg-rose-500/10 text-rose-400 hover:bg-rose-500/20"
+                              title="Reverse / Delete Payment"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          ) : (
+                            <span className="text-slate-600 text-xs">-</span>
+                          )}
                         </td>
                       </tr>
                     ))

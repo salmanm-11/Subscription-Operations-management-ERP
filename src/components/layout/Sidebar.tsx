@@ -21,9 +21,11 @@ interface SidebarProps {
   currentTab: string;
   onSelectTab: (tab: string) => void;
   onLogout: () => void;
+  userRole?: string;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab, onLogout }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab, onLogout, userRole }) => {
+  const isViewer = userRole === 'viewer';
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'customers', label: 'Customers', icon: Users },
@@ -35,8 +37,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab, onLog
     { id: 'vendor-accounts', label: 'Vendor Accounts', icon: Truck },
     { id: 'overdue', label: 'Overdue Accounts', icon: AlertCircle },
     { id: 'reports', label: 'Reports', icon: BarChart3 },
-    { id: 'admin', label: 'Admin & Users', icon: ShieldCheck },
-    { id: 'settings', label: 'Settings', icon: Settings },
+    ...(!isViewer ? [
+      { id: 'admin', label: 'Admin & Users', icon: ShieldCheck },
+      { id: 'settings', label: 'Settings', icon: Settings },
+    ] : []),
     { id: 'help', label: 'Help & Support', icon: HelpCircle },
   ];
 

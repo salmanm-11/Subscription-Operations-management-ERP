@@ -9,6 +9,7 @@ interface InvoiceListProps {
   invoices: Invoice[];
   customers: Customer[];
   settings: BusinessSettings;
+  isReadOnly?: boolean;
   onGenerateInvoice: (invoice: Partial<Invoice>) => Promise<void> | void;
   onEditInvoice?: (invoice: Partial<Invoice>) => Promise<void> | void;
   onDeleteInvoice?: (id: string) => Promise<void> | void;
@@ -19,6 +20,7 @@ export const InvoiceList: React.FC<InvoiceListProps> = ({
   invoices,
   customers,
   settings,
+  isReadOnly = false,
   onGenerateInvoice,
   onEditInvoice,
   onDeleteInvoice,
@@ -293,7 +295,7 @@ export const InvoiceList: React.FC<InvoiceListProps> = ({
 
         <div className="flex flex-wrap items-center gap-2 shrink-0">
           {/* Auto-Generate Invoices Button */}
-          {onAutoGenerateInvoices && missingInvoicesCount > 0 && (
+          {!isReadOnly && onAutoGenerateInvoices && missingInvoicesCount > 0 && (
             <button
               onClick={handleAutoGenerate}
               disabled={isAutoGenerating}
@@ -317,13 +319,15 @@ export const InvoiceList: React.FC<InvoiceListProps> = ({
             <span>Export Invoices</span>
           </button>
 
-          <button
-            onClick={handleOpenAdd}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold shadow-md shadow-amber-500/20 transition-all active:scale-[0.98] cursor-pointer"
-          >
-            <Plus className="w-4 h-4 text-slate-950 stroke-[2.5]" />
-            <span>Generate Invoice</span>
-          </button>
+          {!isReadOnly && (
+            <button
+              onClick={handleOpenAdd}
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold shadow-md shadow-amber-500/20 transition-all active:scale-[0.98] cursor-pointer"
+            >
+              <Plus className="w-4 h-4 text-slate-950 stroke-[2.5]" />
+              <span>Generate Invoice</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -527,7 +531,7 @@ export const InvoiceList: React.FC<InvoiceListProps> = ({
                             <span>View / Print</span>
                           </button>
 
-                          {onEditInvoice && (
+                          {!isReadOnly && onEditInvoice && (
                             <button
                               type="button"
                               onClick={() => handleOpenEdit(inv)}
@@ -538,7 +542,7 @@ export const InvoiceList: React.FC<InvoiceListProps> = ({
                             </button>
                           )}
 
-                          {onDeleteInvoice && (
+                          {!isReadOnly && onDeleteInvoice && (
                             <button
                               type="button"
                               onClick={() => setDeletingInvoice(inv)}

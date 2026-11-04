@@ -46,7 +46,7 @@ export const AdminView: React.FC<AdminViewProps> = ({ currentUser, onUserSession
   // Add/Edit user form
   const [formUsername, setFormUsername] = useState('');
   const [formFullName, setFormFullName] = useState('');
-  const [formRole, setFormRole] = useState<'admin' | 'manager'>('manager');
+  const [formRole, setFormRole] = useState<'admin' | 'manager' | 'viewer'>('viewer');
   const [formPassword, setFormPassword] = useState('');
   const [formEmail, setFormEmail] = useState('');
   const [formPhone, setFormPhone] = useState('');
@@ -107,7 +107,7 @@ export const AdminView: React.FC<AdminViewProps> = ({ currentUser, onUserSession
     setSelectedUser(user);
     setFormUsername(user.username);
     setFormFullName(user.fullName);
-    setFormRole(user.role === 'admin' ? 'admin' : 'manager');
+    setFormRole(user.role === 'admin' ? 'admin' : user.role === 'viewer' ? 'viewer' : 'manager');
     setFormEmail(user.email || '');
     setFormPhone(user.phone || '');
     setFormError(null);
@@ -123,7 +123,7 @@ export const AdminView: React.FC<AdminViewProps> = ({ currentUser, onUserSession
 
     selectedUser.fullName = formFullName.trim();
     selectedUser.role = formRole;
-    selectedUser.roleTitle = formRole === 'admin' ? 'Administrator' : 'Operations Manager';
+    selectedUser.roleTitle = formRole === 'admin' ? 'Administrator' : formRole === 'viewer' ? 'Viewer (Read-Only)' : 'Operations Manager';
     selectedUser.email = formEmail.trim();
     selectedUser.phone = formPhone.trim();
 
@@ -147,7 +147,7 @@ export const AdminView: React.FC<AdminViewProps> = ({ currentUser, onUserSession
   const handleOpenAddUserModal = () => {
     setFormUsername('');
     setFormFullName('');
-    setFormRole('manager');
+    setFormRole('viewer');
     setFormPassword('');
     setFormEmail('');
     setFormPhone('');
@@ -174,7 +174,7 @@ export const AdminView: React.FC<AdminViewProps> = ({ currentUser, onUserSession
       username: formUsername.trim().toLowerCase(),
       fullName: formFullName.trim(),
       role: formRole,
-      roleTitle: formRole === 'admin' ? 'Administrator' : 'Operations Manager',
+      roleTitle: formRole === 'admin' ? 'Administrator' : formRole === 'viewer' ? 'Viewer (Read-Only)' : 'Operations Manager',
       passwordHash: formPassword,
       email: formEmail.trim(),
       phone: formPhone.trim(),
@@ -184,7 +184,7 @@ export const AdminView: React.FC<AdminViewProps> = ({ currentUser, onUserSession
       'Authentication',
       'ADD',
       'New User Created',
-      `Registered user account "${formUsername.trim().toLowerCase()}" (${formRole === 'admin' ? 'Administrator' : 'Operations Manager'}) by ${currentUser.username}.`
+      `Registered user account "${formUsername.trim().toLowerCase()}" (${formRole === 'admin' ? 'Administrator' : formRole === 'viewer' ? 'Viewer (Read-Only)' : 'Operations Manager'}) by ${currentUser.username}.`
     );
 
     refreshUsers();
@@ -328,9 +328,11 @@ export const AdminView: React.FC<AdminViewProps> = ({ currentUser, onUserSession
                         <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-sm border ${
                           u.role === 'admin'
                             ? 'bg-amber-500/15 border-amber-500/30 text-amber-300'
+                            : u.role === 'viewer'
+                            ? 'bg-purple-500/15 border-purple-500/30 text-purple-300'
                             : 'bg-sky-500/15 border-sky-500/30 text-sky-300'
                         }`}>
-                          {u.username === 'admin' ? '👑' : '💼'}
+                          {u.username === 'admin' ? '👑' : u.role === 'viewer' ? '👁️' : '💼'}
                         </div>
                         <div>
                           <div className="font-bold text-white text-sm sm:text-base flex items-center gap-1.5">
@@ -353,6 +355,8 @@ export const AdminView: React.FC<AdminViewProps> = ({ currentUser, onUserSession
                       <span className={`px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider border shadow-sm ${
                         u.role === 'admin'
                           ? 'bg-amber-500/15 text-amber-300 border-amber-500/30'
+                          : u.role === 'viewer'
+                          ? 'bg-purple-500/15 text-purple-300 border-purple-500/30'
                           : 'bg-sky-500/15 text-sky-300 border-sky-500/30'
                       }`}>
                         {u.roleTitle}
@@ -361,10 +365,16 @@ export const AdminView: React.FC<AdminViewProps> = ({ currentUser, onUserSession
 
                     {/* Access Level */}
                     <td className="py-3.5 px-4 whitespace-nowrap">
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-bold">
-                        <CheckCircle2 className="w-3.5 h-3.5" />
-                        <span>Full Unrestricted Access</span>
-                      </span>
+                      {u.role === 'viewer' ? (
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-purple-500/10 text-purple-300 border border-purple-500/20 text-xs font-bold">
+                          <span>👁️ View Only (No Edits)</span>
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-bold">
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          <span>Full Unrestricted Access</span>
+                        </span>
+                      )}
                     </td>
 
                     {/* Password Status */}
@@ -608,11 +618,12 @@ export const AdminView: React.FC<AdminViewProps> = ({ currentUser, onUserSession
                 <label className="block text-slate-300 font-bold mb-1.5 text-xs">Assigned Role</label>
                 <select
                   value={formRole}
-                  onChange={(e) => setFormRole(e.target.value as 'admin' | 'manager')}
+                  onChange={(e) => setFormRole(e.target.value as 'admin' | 'manager' | 'viewer')}
                   className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-amber-500"
                 >
+                  <option value="viewer">Viewer (Read-Only - No Adding or Editing)</option>
+                  <option value="manager">Operations Manager (Full Access)</option>
                   <option value="admin">Administrator (System Owner)</option>
-                  <option value="manager">Operations Manager</option>
                 </select>
               </div>
 
@@ -708,11 +719,12 @@ export const AdminView: React.FC<AdminViewProps> = ({ currentUser, onUserSession
                 <label className="block text-slate-300 font-bold mb-1.5 text-xs">Role</label>
                 <select
                   value={formRole}
-                  onChange={(e) => setFormRole(e.target.value as 'admin' | 'manager')}
+                  onChange={(e) => setFormRole(e.target.value as 'admin' | 'manager' | 'viewer')}
                   className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-amber-500"
                 >
-                  <option value="admin">Administrator (Full Access)</option>
+                  <option value="viewer">Viewer (Read-Only - No Adding or Editing)</option>
                   <option value="manager">Operations Manager (Full Access)</option>
+                  <option value="admin">Administrator (Full Access)</option>
                 </select>
               </div>
 

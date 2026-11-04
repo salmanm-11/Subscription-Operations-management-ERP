@@ -17,6 +17,7 @@ import { Building, Customer } from '../../types';
 interface BuildingListProps {
   buildings: Building[];
   customers: Customer[];
+  isReadOnly?: boolean;
   onAddBuilding: (building: Partial<Building>) => void;
   onDeleteBuilding?: (id: string) => void;
   onDeleteEmptyBuildings?: () => Promise<void> | void;
@@ -61,6 +62,7 @@ const saveCustomClustersToStorage = (clusters: string[]) => {
 export const BuildingList: React.FC<BuildingListProps> = ({
   buildings,
   customers,
+  isReadOnly = false,
   onAddBuilding,
   onDeleteBuilding,
   onDeleteEmptyBuildings,
@@ -268,18 +270,20 @@ export const BuildingList: React.FC<BuildingListProps> = ({
             </button>
           )}
 
-          <button
-            onClick={handleOpenAdd}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold shadow-md shadow-amber-500/20 transition-colors cursor-pointer active:scale-[0.98]"
-          >
-            <Plus className="w-4 h-4 text-slate-950" />
-            <span>Add Building</span>
-          </button>
+          {!isReadOnly && (
+            <button
+              onClick={handleOpenAdd}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold shadow-md shadow-amber-500/20 transition-colors cursor-pointer active:scale-[0.98]"
+            >
+              <Plus className="w-4 h-4 text-slate-950" />
+              <span>Add Building</span>
+            </button>
+          )}
         </div>
       </div>
 
       {/* Empty Buildings Warning & 1-Click Purge Banner */}
-      {emptyBuildings.length > 0 && onDeleteEmptyBuildings && (
+      {!isReadOnly && emptyBuildings.length > 0 && onDeleteEmptyBuildings && (
         <div className="bg-rose-950/30 border border-rose-500/40 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-lg shadow-rose-950/20">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-rose-500/20 border border-rose-500/40 flex items-center justify-center text-rose-400 shrink-0">
@@ -422,25 +426,29 @@ export const BuildingList: React.FC<BuildingListProps> = ({
                       <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20">
                         {buildingCustomers.length} Customers
                       </span>
-                      <button
-                        onClick={() => handleOpenEdit(b)}
-                        className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-amber-400 border border-slate-700 transition-colors cursor-pointer"
-                        title="Edit Building & Area Cluster"
-                      >
-                        <Pencil className="w-3.5 h-3.5" />
-                      </button>
-                      {onDeleteBuilding && buildingCustomers.length === 0 && (
-                        <button
-                          onClick={() => {
-                            if (confirm(`Delete building "${b.name}"?`)) {
-                              onDeleteBuilding(b.id);
-                            }
-                          }}
-                          className="p-1.5 rounded-lg bg-slate-800 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 border border-slate-700 transition-colors cursor-pointer"
-                          title="Delete Building"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
+                      {!isReadOnly && (
+                        <>
+                          <button
+                            onClick={() => handleOpenEdit(b)}
+                            className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-amber-400 border border-slate-700 transition-colors cursor-pointer"
+                            title="Edit Building & Area Cluster"
+                          >
+                            <Pencil className="w-3.5 h-3.5" />
+                          </button>
+                          {onDeleteBuilding && buildingCustomers.length === 0 && (
+                            <button
+                              onClick={() => {
+                                if (confirm(`Delete building "${b.name}"?`)) {
+                                  onDeleteBuilding(b.id);
+                                }
+                              }}
+                              className="p-1.5 rounded-lg bg-slate-800 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 border border-slate-700 transition-colors cursor-pointer"
+                              title="Delete Building"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                        </>
                       )}
                     </div>
                   </div>
