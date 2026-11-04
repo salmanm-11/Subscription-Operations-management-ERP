@@ -707,6 +707,58 @@ export async function recordPayment(payment: Partial<Payment>): Promise<Payment>
   return local;
 }
 
+export async function deletePayment(id: string): Promise<boolean> {
+  const payments = OfflineStorage.getPayments();
+  const payment = payments.find((p) => p.id === id || p.payment_number === id);
+  const success = OfflineStorage.deletePayment(id);
+
+  const client = getSupabaseClient();
+  if (client) {
+    try {
+      await client.from('payments').delete().or(`id.eq.${id},payment_number.eq.${id}`);
+
+      if (payment?.customer_id) {
+        const customers = OfflineStorage.getCustomers();
+        const updatedCust = customers.find(
+          (c) => c.id === payment.customer_id || c.customer_code === payment.customer_id
+        );
+        if (updatedCust) {
+          await client
+            .from('customers')
+            .update({
+              total_overdue: updatedCust.total_overdue ?? 0,
+              payment_rating: updatedCust.payment_rating,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', updatedCust.id);
+        }
+
+        if (payment.invoice_id) {
+          const invoices = OfflineStorage.getInvoices();
+          const inv = invoices.find(
+            (i) => i.id === payment.invoice_id || i.invoice_number === payment.invoice_id
+          );
+          if (inv) {
+            await client
+              .from('invoices')
+              .update({
+                paid_amount: inv.paid_amount,
+                balance_amount: inv.balance_amount,
+                status: inv.status,
+                updated_at: new Date().toISOString()
+              })
+              .eq('id', inv.id);
+          }
+        }
+      }
+    } catch (err) {
+      console.error('Cloud sync error deleting payment:', err);
+    }
+  }
+
+  return success;
+}
+
 // ==========================================
 // DASHBOARD METRICS
 // ==========================================

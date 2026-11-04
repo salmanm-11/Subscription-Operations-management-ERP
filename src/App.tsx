@@ -49,6 +49,7 @@ import {
   deleteInvoice,
   fetchPayments,
   recordPayment,
+  deletePayment,
   fetchBusinessSettings,
   updateBusinessSettings,
   fetchDashboardMetrics,
@@ -685,6 +686,51 @@ export const App: React.FC = () => {
     }
   };
 
+  const handleDeletePayment = async (paymentId: string) => {
+    const targetPayment = payments.find(p => p.id === paymentId || p.payment_number === paymentId);
+    if (!targetPayment) return;
+
+    // 1. Instant optimistic update
+    setPayments((prev) => prev.filter(p => p.id !== paymentId && p.payment_number !== paymentId));
+
+    if (targetPayment.customer_id) {
+      setCustomers((prev) =>
+        prev.map((c) => {
+          if (c.id === targetPayment.customer_id || c.customer_code === targetPayment.customer_id) {
+            const restoredOverdue = (c.total_overdue || 0) + (targetPayment.amount || 0);
+            return {
+              ...c,
+              total_overdue: restoredOverdue,
+              payment_rating: restoredOverdue > 0 ? 'Late payer' : 'Good',
+            };
+          }
+          return c;
+        })
+      );
+    }
+
+    const targetCust = customers.find(c => c.id === targetPayment.customer_id || c.customer_code === targetPayment.customer_id);
+
+    ActivityLogService.logAction(
+      'Payments',
+      'DELETE',
+      'Payment Receipt Deleted',
+      `Deleted receipt ${targetPayment.payment_number} of AED ${targetPayment.amount} for "${targetCust?.full_name || 'Customer'}" (due balance restored).`,
+      { entityId: targetPayment.customer_id }
+    );
+
+    // 2. Background sync
+    try {
+      await deletePayment(paymentId);
+      const freshCust = await fetchCustomers();
+      const freshInv = await fetchInvoices();
+      setCustomers(freshCust);
+      setInvoices(freshInv);
+    } catch (err) {
+      console.error('Failed to sync deleted payment:', err);
+    }
+  };
+
   const handleSaveSettings = async (st: Partial<BusinessSettings>) => {
     const updated = await updateBusinessSettings(st);
     setSettings(updated);
@@ -1142,6 +1188,7 @@ export const App: React.FC = () => {
               invoices={invoices}
               isReadOnly={isViewer}
               onRecordPayment={handleRecordPayment}
+              onDeletePayment={handleDeletePayment}
             />
           )}
 

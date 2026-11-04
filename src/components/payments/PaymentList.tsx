@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { CreditCard, Plus, Search, Printer, X, FileSpreadsheet, Building2, Phone, CheckCircle2, RotateCcw, Receipt } from 'lucide-react';
+import { CreditCard, Plus, Search, Printer, X, FileSpreadsheet, Building2, Phone, CheckCircle2, RotateCcw, Receipt, Trash2, AlertTriangle } from 'lucide-react';
 import { Payment, Customer, Invoice, PaymentMethod } from '../../types';
 import { formatAED } from '../../utils/currency';
 
@@ -9,6 +9,7 @@ interface PaymentListProps {
   invoices: Invoice[];
   isReadOnly?: boolean;
   onRecordPayment: (payment: Partial<Payment>) => void;
+  onDeletePayment?: (paymentId: string) => void | Promise<void>;
 }
 
 export const PaymentList: React.FC<PaymentListProps> = ({
@@ -17,9 +18,11 @@ export const PaymentList: React.FC<PaymentListProps> = ({
   invoices,
   isReadOnly = false,
   onRecordPayment,
+  onDeletePayment,
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedReceipt, setSelectedReceipt] = useState<Payment | null>(null);
+  const [paymentToDelete, setPaymentToDelete] = useState<Payment | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [methodFilter, setMethodFilter] = useState<string>('all');
 
@@ -338,15 +341,27 @@ export const PaymentList: React.FC<PaymentListProps> = ({
                         </span>
                       </td>
 
-                      {/* Action View / Print (Sticky & never clipped or overlapping) */}
-                      <td className="py-3 px-4 text-right whitespace-nowrap sticky right-0 bg-[#151c2c] group-hover:bg-[#1c253a] z-20 shadow-[-10px_0_12px_-4px_rgba(0,0,0,0.6)] border-l border-slate-800/80 min-w-[110px]">
-                        <button
-                          onClick={() => setSelectedReceipt(p)}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-750 text-slate-200 hover:text-white rounded-lg font-bold text-xs border border-slate-700 shadow-sm transition-colors"
-                        >
-                          <Receipt className="w-3.5 h-3.5 text-amber-400" />
-                          <span>Receipt</span>
-                        </button>
+                      {/* Action View / Print & Delete (Sticky & never clipped or overlapping) */}
+                      <td className="py-3 px-4 text-right whitespace-nowrap sticky right-0 bg-[#151c2c] group-hover:bg-[#1c253a] z-20 shadow-[-10px_0_12px_-4px_rgba(0,0,0,0.6)] border-l border-slate-800/80 min-w-[130px]">
+                        <div className="flex items-center justify-end gap-1.5">
+                          <button
+                            onClick={() => setSelectedReceipt(p)}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-750 text-slate-200 hover:text-white rounded-lg font-bold text-xs border border-slate-700 shadow-sm transition-colors cursor-pointer"
+                            title="View / Print Receipt"
+                          >
+                            <Receipt className="w-3.5 h-3.5 text-amber-400" />
+                            <span>Receipt</span>
+                          </button>
+                          {!isReadOnly && onDeletePayment && (
+                            <button
+                              onClick={() => setPaymentToDelete(p)}
+                              className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/25 text-rose-400 hover:text-rose-300 border border-rose-500/20 hover:border-rose-500/40 transition-colors shadow-sm cursor-pointer"
+                              title="Delete Payment Receipt"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   );
@@ -564,6 +579,71 @@ export const PaymentList: React.FC<PaymentListProps> = ({
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+      {/* Delete Payment Confirmation Modal */}
+      {paymentToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-[#151c2c] border border-rose-500/40 rounded-2xl w-full max-w-md p-6 shadow-2xl text-white space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-rose-500/15 border border-rose-500/30 flex items-center justify-center text-rose-400 shrink-0">
+                <Trash2 className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-white">Delete Payment Receipt?</h3>
+                <p className="text-xs text-rose-300/80 font-mono mt-0.5">{paymentToDelete.payment_number}</p>
+              </div>
+            </div>
+
+            <div className="bg-slate-900/90 border border-slate-800 p-3.5 rounded-xl space-y-2 text-xs">
+              <div className="flex justify-between">
+                <span className="text-slate-400">Customer:</span>
+                <span className="font-bold text-white">{getCustomerInfo(paymentToDelete).name}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Amount:</span>
+                <span className="font-mono font-bold text-emerald-400">{formatAED(paymentToDelete.amount)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Date:</span>
+                <span className="font-mono text-slate-300">{paymentToDelete.payment_date}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Payment Method:</span>
+                <span className="uppercase font-bold text-slate-300">{paymentToDelete.payment_method.replace('_', ' ')}</span>
+              </div>
+            </div>
+
+            <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/25 flex items-start gap-2.5 text-xs text-amber-300">
+              <AlertTriangle className="w-4 h-4 shrink-0 text-amber-400 mt-0.5" />
+              <span>
+                Deleting this receipt will remove it permanently and restore <strong>{formatAED(paymentToDelete.amount)}</strong> back to the customer's overdue balance.
+              </span>
+            </div>
+
+            <div className="flex items-center justify-end gap-2.5 pt-2">
+              <button
+                type="button"
+                onClick={() => setPaymentToDelete(null)}
+                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs cursor-pointer border border-slate-700"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  if (onDeletePayment && paymentToDelete) {
+                    await onDeletePayment(paymentToDelete.id);
+                  }
+                  setPaymentToDelete(null);
+                }}
+                className="px-4 py-2 rounded-xl bg-rose-500 hover:bg-rose-400 text-white font-bold text-xs shadow-lg shadow-rose-500/20 cursor-pointer flex items-center gap-1.5"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Confirm Delete</span>
+              </button>
+            </div>
           </div>
         </div>
       )}

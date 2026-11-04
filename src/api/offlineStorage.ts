@@ -869,6 +869,45 @@ export class OfflineStorage {
     return newPayment;
   }
 
+  static deletePayment(id: string): boolean {
+    const payments = this.getItem<Payment[]>(STORAGE_KEYS.PAYMENTS, []);
+    const payment = payments.find((p) => p.id === id || p.payment_number === id);
+    if (!payment) return false;
+
+    // Filter out payment
+    const remainingPayments = payments.filter((p) => p.id !== id && p.payment_number !== id);
+    this.setItem(STORAGE_KEYS.PAYMENTS, remainingPayments);
+
+    // If payment was tied to a customer and was not reversed, restore the overdue
+    if (payment.customer_id && !payment.is_reversed) {
+      const customers = this.getCustomers();
+      const cust = customers.find(
+        (c) => c.id === payment.customer_id || c.customer_code === payment.customer_id
+      );
+      if (cust) {
+        cust.total_overdue = roundCurrency(addCurrency(cust.total_overdue || 0, payment.amount || 0));
+        cust.payment_rating = (cust.total_overdue || 0) > 0 ? 'Late payer' : 'Good';
+        this.setItem(STORAGE_KEYS.CUSTOMERS, customers);
+      }
+
+      // If tied to an invoice, restore balance on invoice
+      if (payment.invoice_id) {
+        const invoices = this.getInvoices();
+        const inv = invoices.find(
+          (i) => i.id === payment.invoice_id || i.invoice_number === payment.invoice_id
+        );
+        if (inv) {
+          inv.paid_amount = Math.max(0, roundCurrency(subtractCurrency(inv.paid_amount || 0, payment.amount || 0)));
+          inv.balance_amount = Math.min(inv.total_amount, roundCurrency(addCurrency(inv.balance_amount || 0, payment.amount || 0)));
+          inv.status = inv.paid_amount === 0 ? 'issued' : (inv.balance_amount === 0 ? 'paid' : 'partially_paid');
+          this.setItem(STORAGE_KEYS.INVOICES, invoices);
+        }
+      }
+    }
+
+    return true;
+  }
+
   // Dashboard Metrics
   static getDashboardMetrics(
     customCustomers?: Customer[],
