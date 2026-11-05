@@ -47,6 +47,7 @@ export const CustomerOnboardingView: React.FC<CustomerOnboardingViewProps> = ({ 
   // Form states
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
+  const [emergencyContact, setEmergencyContact] = useState('');
   const [selectedArea, setSelectedArea] = useState<string>(DELIVERY_AREAS[0]);
   const [customAreaName, setCustomAreaName] = useState('');
   const [apartment, setApartment] = useState('');
@@ -163,6 +164,9 @@ export const CustomerOnboardingView: React.FC<CustomerOnboardingViewProps> = ({ 
       const newCustomerPayload: Partial<Customer> = {
         full_name: trimmedName,
         phone: trimmedPhone.startsWith('+') ? trimmedPhone : `+971 ${trimmedPhone.replace(/\D/g, '')}`,
+        emergency_contact: emergencyContact.trim()
+          ? (emergencyContact.trim().startsWith('+') ? emergencyContact.trim() : `+971 ${emergencyContact.replace(/\D/g, '')}`)
+          : undefined,
         building_id: resolvedBuildingId,
         building_name_cache: resolvedBuildingName,
         apartment_cache: apartment.trim() || 'N/A',
@@ -287,6 +291,12 @@ export const CustomerOnboardingView: React.FC<CustomerOnboardingViewProps> = ({ 
                 <span className="text-slate-400 font-semibold">Phone:</span>
                 <span className="font-mono text-slate-200">{submittedCustomer.phone}</span>
               </div>
+              {submittedCustomer.emergency_contact && (
+                <div className="flex justify-between items-center py-1 border-b border-slate-800">
+                  <span className="text-slate-400 font-semibold">Emergency Contact:</span>
+                  <span className="font-mono text-slate-300">{submittedCustomer.emergency_contact}</span>
+                </div>
+              )}
               <div className="flex justify-between items-center py-1 border-b border-slate-800">
                 <span className="text-slate-400 font-semibold">Building &amp; Room:</span>
                 <span className="font-bold text-slate-200">{submittedCustomer.building_name_cache} (Apt {submittedCustomer.apartment_cache})</span>
@@ -383,28 +393,49 @@ export const CustomerOnboardingView: React.FC<CustomerOnboardingViewProps> = ({ 
                   />
                 </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">
-                    WhatsApp Mobile Number <span className="text-rose-400">*</span>
-                  </label>
-                  <div className="relative">
-                    <div className="absolute left-3.5 top-1/2 -translate-y-1/2 flex items-center gap-1.5 pointer-events-none text-xs font-bold text-amber-400">
-                      <span>🇦🇪</span>
-                      <span>+971</span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1">
+                      WhatsApp Mobile Number <span className="text-rose-400">*</span>
+                    </label>
+                    <div className="relative">
+                      <div className="absolute left-3.5 top-1/2 -translate-y-1/2 flex items-center gap-1.5 pointer-events-none text-xs font-bold text-amber-400">
+                        <span>🇦🇪</span>
+                        <span>+971</span>
+                      </div>
+                      <input
+                        type="tel"
+                        required
+                        placeholder="50 123 4567"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        className="w-full pl-20 pr-3.5 py-2.5 bg-[#090d16] border border-slate-700/80 rounded-xl text-white text-xs placeholder:text-slate-500 focus:outline-none focus:border-amber-400 font-mono transition-colors"
+                      />
                     </div>
-                    <input
-                      type="tel"
-                      required
-                      placeholder="50 123 4567"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      className="w-full pl-20 pr-3.5 py-2.5 bg-[#090d16] border border-slate-700/80 rounded-xl text-white text-xs placeholder:text-slate-500 focus:outline-none focus:border-amber-400 font-mono transition-colors"
-                    />
                   </div>
-                  <p className="text-[11px] text-slate-500 mt-1">
-                    Used for daily meal WhatsApp confirmations and billing statements.
-                  </p>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1">
+                      Emergency Contact / Alternate (Optional)
+                    </label>
+                    <div className="relative">
+                      <div className="absolute left-3.5 top-1/2 -translate-y-1/2 flex items-center gap-1.5 pointer-events-none text-xs font-bold text-slate-400">
+                        <span>🇦🇪</span>
+                        <span>+971</span>
+                      </div>
+                      <input
+                        type="tel"
+                        placeholder="50 987 6543 (Roommate / Friend)"
+                        value={emergencyContact}
+                        onChange={(e) => setEmergencyContact(e.target.value)}
+                        className="w-full pl-20 pr-3.5 py-2.5 bg-[#090d16] border border-slate-700/80 rounded-xl text-white text-xs placeholder:text-slate-500 focus:outline-none focus:border-amber-400 font-mono transition-colors"
+                      />
+                    </div>
+                  </div>
                 </div>
+                <p className="text-[11px] text-slate-500 mt-1">
+                  Primary number is used for daily meal WhatsApp confirmations and billing statements.
+                </p>
               </div>
 
               {/* SECTION 2: Room & Delivery Location */}
