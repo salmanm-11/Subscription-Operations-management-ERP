@@ -30,6 +30,14 @@ interface CustomerOnboardingViewProps {
   onBackToLogin?: () => void;
 }
 
+const DELIVERY_AREAS = [
+  'Hamdan Colony & Post',
+  'Park, Pioneer & ADCB',
+  'Karama Center - Pyramid',
+  'Burjman & Mankhool',
+  'Karama Central',
+];
+
 export const CustomerOnboardingView: React.FC<CustomerOnboardingViewProps> = ({ onBackToLogin }) => {
   // Data states
   const [buildings, setBuildings] = useState<Building[]>([]);
@@ -39,8 +47,8 @@ export const CustomerOnboardingView: React.FC<CustomerOnboardingViewProps> = ({ 
   // Form states
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
-  const [selectedBuildingId, setSelectedBuildingId] = useState('');
-  const [customBuildingName, setCustomBuildingName] = useState('');
+  const [selectedArea, setSelectedArea] = useState<string>(DELIVERY_AREAS[0]);
+  const [customAreaName, setCustomAreaName] = useState('');
   const [apartment, setApartment] = useState('');
   
   // Meal plan selection
@@ -72,9 +80,6 @@ export const CustomerOnboardingView: React.FC<CustomerOnboardingViewProps> = ({ 
         ]);
         setBuildings(bldList || []);
         setSettings(setts);
-        if (bldList && bldList.length > 0) {
-          setSelectedBuildingId(bldList[0].id);
-        }
       } catch (err) {
         console.error('Failed to load initial onboarding data:', err);
       } finally {
@@ -137,17 +142,20 @@ export const CustomerOnboardingView: React.FC<CustomerOnboardingViewProps> = ({ 
       return;
     }
 
-    // Determine building name
-    let resolvedBuildingName = '';
+    // Determine building / area name
+    let resolvedBuildingName = selectedArea;
     let resolvedBuildingId: string | undefined = undefined;
 
-    if (selectedBuildingId === 'other') {
-      resolvedBuildingName = customBuildingName.trim() || 'Unassigned Building';
-    } else {
-      const found = buildings.find(b => b.id === selectedBuildingId);
-      resolvedBuildingName = found?.name || 'Karama Central';
-      resolvedBuildingId = found?.id;
+    if (selectedArea === 'other') {
+      resolvedBuildingName = customAreaName.trim() || 'Other Area';
     }
+
+    const matchedBuilding = buildings.find(
+      (b) =>
+        (b.area && b.area.toLowerCase() === resolvedBuildingName.toLowerCase()) ||
+        b.name.toLowerCase() === resolvedBuildingName.toLowerCase()
+    );
+    resolvedBuildingId = matchedBuilding?.id;
 
     setIsSubmitting(true);
 
@@ -409,33 +417,35 @@ export const CustomerOnboardingView: React.FC<CustomerOnboardingViewProps> = ({ 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                   <div>
                     <label className="block text-xs font-semibold text-slate-300 mb-1">
-                      Building Name <span className="text-rose-400">*</span>
+                      Building / Area Name <span className="text-rose-400">*</span>
                     </label>
                     <select
-                      value={selectedBuildingId}
-                      onChange={(e) => setSelectedBuildingId(e.target.value)}
+                      value={selectedArea}
+                      onChange={(e) => setSelectedArea(e.target.value)}
                       className="w-full px-3 py-2.5 bg-[#090d16] border border-slate-700/80 rounded-xl text-white text-xs focus:outline-none focus:border-amber-400 transition-colors"
                     >
-                      {buildings.map((b) => (
-                        <option key={b.id} value={b.id}>
-                          {b.name} {b.area ? `(${b.area})` : ''}
+                      {DELIVERY_AREAS.map((area) => (
+                        <option key={area} value={area}>
+                          {area}
                         </option>
                       ))}
-                      <option value="other">➕ Other Building (Not Listed)</option>
+                      <option value="other" className="text-amber-400 font-bold">
+                        ➕ + Add New Area / Other Building...
+                      </option>
                     </select>
                   </div>
 
-                  {selectedBuildingId === 'other' && (
+                  {selectedArea === 'other' && (
                     <div>
                       <label className="block text-xs font-semibold text-slate-300 mb-1">
-                        Type Building Name <span className="text-rose-400">*</span>
+                        Type Building / Area Name <span className="text-rose-400">*</span>
                       </label>
                       <input
                         type="text"
                         required
                         placeholder="e.g. Al Wasl Tower"
-                        value={customBuildingName}
-                        onChange={(e) => setCustomBuildingName(e.target.value)}
+                        value={customAreaName}
+                        onChange={(e) => setCustomAreaName(e.target.value)}
                         className="w-full px-3.5 py-2.5 bg-[#090d16] border border-slate-700/80 rounded-xl text-white text-xs focus:outline-none focus:border-amber-400 transition-colors"
                       />
                     </div>
