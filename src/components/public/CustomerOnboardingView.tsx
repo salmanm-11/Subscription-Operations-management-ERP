@@ -30,31 +30,6 @@ interface CustomerOnboardingViewProps {
   onBackToLogin?: () => void;
 }
 
-interface DietaryOption {
-  label: string;
-  isNonVeg: boolean;
-}
-
-const DIETARY_OPTIONS_LIST: DietaryOption[] = [
-  // Pure Veg Options
-  { label: 'Barik Rice (Small Grain)', isNonVeg: false },
-  { label: 'Normal White Rice', isNonVeg: false },
-  { label: 'Chapati / Roti Set', isNonVeg: false },
-  { label: 'Dal & Veg Curry Only', isNonVeg: false },
-  { label: 'No Rice (Only Chapati)', isNonVeg: false },
-  { label: 'Less Spicy / Mild', isNonVeg: false },
-  { label: 'Extra Spicy', isNonVeg: false },
-  { label: 'Office Lunch Tiffin', isNonVeg: false },
-  // Non-Veg Specific Options (Hidden when Veg is selected)
-  { label: 'Chicken Curry', isNonVeg: true },
-  { label: 'Fish Curry', isNonVeg: true },
-  { label: 'Beef Items', isNonVeg: true },
-  { label: 'Egg Only (No Meat)', isNonVeg: true },
-  { label: 'No Fish Curry', isNonVeg: true },
-  { label: 'No Beef', isNonVeg: true },
-  { label: 'No Chicken Items', isNonVeg: true },
-];
-
 export const CustomerOnboardingView: React.FC<CustomerOnboardingViewProps> = ({ onBackToLogin }) => {
   // Data states
   const [buildings, setBuildings] = useState<Building[]>([]);
@@ -77,7 +52,8 @@ export const CustomerOnboardingView: React.FC<CustomerOnboardingViewProps> = ({ 
 
   // Dietary options
   const [foodType, setFoodType] = useState<'all' | 'veg'>('all');
-  const [dietaryPreferences, setDietaryPreferences] = useState<string[]>([]);
+  const [hasAllergy, setHasAllergy] = useState<boolean>(false);
+  const [allergyDetails, setAllergyDetails] = useState('');
   const [notes, setNotes] = useState('');
   const [joiningDate, setJoiningDate] = useState(() => new Date().toISOString().split('T')[0]);
 
@@ -137,30 +113,6 @@ export const CustomerOnboardingView: React.FC<CustomerOnboardingViewProps> = ({ 
     return 380;
   };
 
-  const visibleDietaryOptions: DietaryOption[] = useMemo(() => {
-    if (foodType === 'veg') {
-      return DIETARY_OPTIONS_LIST.filter((item) => !item.isNonVeg);
-    }
-    return DIETARY_OPTIONS_LIST;
-  }, [foodType]);
-
-  const handleSelectFoodType = (type: 'all' | 'veg') => {
-    setFoodType(type);
-    if (type === 'veg') {
-      // Remove any non-veg options that were selected
-      setDietaryPreferences((prev) =>
-        prev.filter((item) => !DIETARY_OPTIONS_LIST.find((d) => d.label === item)?.isNonVeg)
-      );
-    }
-  };
-
-  // Toggle dietary chips
-  const toggleDietaryChip = (chip: string) => {
-    setDietaryPreferences((prev) =>
-      prev.includes(chip) ? prev.filter((c) => c !== chip) : [...prev, chip]
-    );
-  };
-
   // Submit Handler
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -211,10 +163,11 @@ export const CustomerOnboardingView: React.FC<CustomerOnboardingViewProps> = ({ 
         has_dinner: hasDinner,
         monthly_rate: getMonthlyRate(),
         dietary_preferences: [
-          foodType === 'veg' ? 'Pure Vegetarian (No Non-Veg)' : 'Non-Veg & Veg',
-          ...dietaryPreferences,
-        ].filter(Boolean).join(', '),
-        notes: notes.trim(),
+          foodType === 'veg' ? 'Veg Only' : 'Non-Veg & Veg',
+          hasAllergy && allergyDetails.trim() ? `Allergy: ${allergyDetails.trim()}` : '',
+          notes.trim() ? `Notes: ${notes.trim()}` : '',
+        ].filter(Boolean).join(' | '),
+        notes: notes.trim() || (hasAllergy ? `Allergy: ${allergyDetails.trim()}` : ''),
         joining_date: joiningDate,
         billing_start_date: joiningDate,
         status: 'active',
@@ -629,116 +582,135 @@ export const CustomerOnboardingView: React.FC<CustomerOnboardingViewProps> = ({ 
                 </div>
               </div>
 
-              {/* SECTION 4: Dietary Customizations & Starting Date */}
-              <div className="space-y-3.5 pt-4 border-t border-slate-800">
+              {/* SECTION 4: Food Preference, Allergies & Notes */}
+              <div className="space-y-4 pt-4 border-t border-slate-800">
                 <div className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
                   <UtensilsCrossed className="w-3.5 h-3.5 text-amber-400" />
-                  <span>4. Food Preference &amp; Dietary Options</span>
+                  <span>4. Food Preference &amp; Special Requests</span>
                 </div>
 
-                {/* Veg vs Non-Veg Primary Toggle */}
+                {/* Diet Type (Select One): Non-Veg & Veg OR Veg Only */}
                 <div>
                   <label className="block text-xs font-semibold text-slate-300 mb-2">
-                    Diet Type (Select One):
+                    Food Preference (Select One):
                   </label>
                   <div className="grid grid-cols-2 gap-2.5">
                     <button
                       type="button"
-                      onClick={() => handleSelectFoodType('all')}
-                      className={`p-3 rounded-2xl border text-left transition-all cursor-pointer flex items-center gap-2.5 ${
+                      onClick={() => setFoodType('all')}
+                      className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer flex items-center gap-3 ${
                         foodType === 'all'
                           ? 'bg-amber-500/15 border-amber-500 shadow-md shadow-amber-500/10'
                           : 'bg-[#090d16] border-slate-800 hover:border-slate-700'
                       }`}
                     >
-                      <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-sm shrink-0 ${
-                        foodType === 'all' ? 'bg-amber-500 text-slate-950 font-black' : 'bg-slate-800 text-slate-400'
+                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-base shrink-0 ${
+                        foodType === 'all' ? 'bg-amber-500 text-slate-950 font-black shadow-sm shadow-amber-500/20' : 'bg-slate-800 text-slate-400'
                       }`}>
                         🍖
                       </div>
                       <div>
                         <div className="text-xs font-bold text-white flex items-center gap-1">
                           <span>Non-Veg &amp; Veg</span>
-                          {foodType === 'all' && <Check className="w-3 h-3 text-amber-400" />}
+                          {foodType === 'all' && <Check className="w-3.5 h-3.5 text-amber-400" />}
                         </div>
-                        <div className="text-[10px] text-slate-400">All dishes shown</div>
+                        <div className="text-[10px] text-slate-400">Regular mess menu</div>
                       </div>
                     </button>
 
                     <button
                       type="button"
-                      onClick={() => handleSelectFoodType('veg')}
-                      className={`p-3 rounded-2xl border text-left transition-all cursor-pointer flex items-center gap-2.5 ${
+                      onClick={() => setFoodType('veg')}
+                      className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer flex items-center gap-3 ${
                         foodType === 'veg'
                           ? 'bg-emerald-500/15 border-emerald-500 shadow-md shadow-emerald-500/10'
                           : 'bg-[#090d16] border-slate-800 hover:border-slate-700'
                       }`}
                     >
-                      <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-sm shrink-0 ${
-                        foodType === 'veg' ? 'bg-emerald-500 text-slate-950 font-black' : 'bg-slate-800 text-slate-400'
+                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-base shrink-0 ${
+                        foodType === 'veg' ? 'bg-emerald-500 text-slate-950 font-black shadow-sm shadow-emerald-500/20' : 'bg-slate-800 text-slate-400'
                       }`}>
                         🥗
                       </div>
                       <div>
                         <div className="text-xs font-bold text-white flex items-center gap-1">
                           <span>Veg Only</span>
-                          {foodType === 'veg' && <Check className="w-3 h-3 text-emerald-400" />}
+                          {foodType === 'veg' && <Check className="w-3.5 h-3.5 text-emerald-400" />}
                         </div>
-                        <div className="text-[10px] text-emerald-400 font-semibold">Non-veg hidden</div>
+                        <div className="text-[10px] text-emerald-400 font-semibold">100% Vegetarian</div>
                       </div>
                     </button>
                   </div>
+                </div>
 
-                  {foodType === 'veg' && (
-                    <div className="mt-2.5 p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-[11px] text-emerald-300 flex items-center gap-2">
-                      <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                      <span><strong>Vegetarian Mode Active:</strong> All Non-Veg dishes &amp; curries are hidden from selection.</span>
+                {/* Any Food Allergies Toggle & Details */}
+                <div className="p-3.5 rounded-2xl bg-[#090d16] border border-slate-800/80 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-semibold text-slate-200 flex items-center gap-1.5">
+                      <AlertCircle className="w-3.5 h-3.5 text-amber-400" />
+                      <span>Do you have any food allergies?</span>
+                    </label>
+                    <div className="flex items-center gap-1.5 bg-slate-900 p-1 rounded-xl border border-slate-800">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setHasAllergy(false);
+                          setAllergyDetails('');
+                        }}
+                        className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                          !hasAllergy
+                            ? 'bg-slate-800 text-white shadow-sm'
+                            : 'text-slate-400 hover:text-slate-200'
+                        }`}
+                      >
+                        No
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setHasAllergy(true)}
+                        className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                          hasAllergy
+                            ? 'bg-rose-500 text-white shadow-sm shadow-rose-500/30'
+                            : 'text-slate-400 hover:text-rose-300'
+                        }`}
+                      >
+                        Yes
+                      </button>
+                    </div>
+                  </div>
+
+                  {hasAllergy && (
+                    <div className="pt-2 border-t border-slate-800/80 animate-fadeIn">
+                      <label className="block text-[11px] font-semibold text-rose-300 mb-1">
+                        Please specify your allergy:
+                      </label>
+                      <input
+                        type="text"
+                        required={hasAllergy}
+                        placeholder="e.g. Peanut, Fish, Seafood, Egg, Dairy, etc."
+                        value={allergyDetails}
+                        onChange={(e) => setAllergyDetails(e.target.value)}
+                        className="w-full px-3.5 py-2.5 bg-slate-900 border border-rose-500/40 rounded-xl text-white text-xs placeholder:text-slate-500 focus:outline-none focus:border-rose-400 font-medium"
+                      />
                     </div>
                   )}
                 </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-2">
-                    Dietary Instructions (Tap all that apply):
-                  </label>
-                  <div className="flex flex-wrap gap-2">
-                    {visibleDietaryOptions.map((opt) => {
-                      const chip = opt.label;
-                      const isSelected = dietaryPreferences.includes(chip);
-                      return (
-                        <button
-                          key={chip}
-                          type="button"
-                          onClick={() => toggleDietaryChip(chip)}
-                          className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all cursor-pointer flex items-center gap-1.5 ${
-                            isSelected
-                              ? 'bg-amber-500 text-slate-950 font-bold border-amber-400 shadow-sm shadow-amber-500/20'
-                              : 'bg-[#090d16] text-slate-300 border-slate-800 hover:border-slate-700'
-                          }`}
-                        >
-                          {opt.isNonVeg && <span className="text-[10px]">🍗</span>}
-                          {!opt.isNonVeg && <span className="text-[10px]">🌿</span>}
-                          <span>{chip}</span>
-                          <span className="font-bold">{isSelected ? '✓' : '+'}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
+                {/* Specific items you don't want or special notes */}
                 <div>
                   <label className="block text-xs font-semibold text-slate-300 mb-1">
-                    Specific Delivery Notes or Allergies (Optional)
+                    Items You Don't Want or Special Notes (Optional)
                   </label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Leave tiffin at door outside room"
+                  <textarea
+                    rows={2}
+                    placeholder="e.g. No fish curry, prefer barik rice, less spicy, leave tiffin outside room door, etc."
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-[#090d16] border border-slate-700/80 rounded-xl text-white text-xs placeholder:text-slate-500 focus:outline-none focus:border-amber-400 transition-colors"
+                    className="w-full px-3.5 py-2.5 bg-[#090d16] border border-slate-700/80 rounded-xl text-white text-xs placeholder:text-slate-500 focus:outline-none focus:border-amber-400 transition-colors resize-none"
                   />
                 </div>
 
+                {/* First Meal Starting Date */}
                 <div>
                   <label className="block text-xs font-semibold text-slate-300 mb-1">
                     First Meal Starting Date <span className="text-rose-400">*</span>
