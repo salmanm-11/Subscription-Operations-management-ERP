@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   UtensilsCrossed, 
   CheckCircle2, 
@@ -30,6 +30,31 @@ interface CustomerOnboardingViewProps {
   onBackToLogin?: () => void;
 }
 
+interface DietaryOption {
+  label: string;
+  isNonVeg: boolean;
+}
+
+const DIETARY_OPTIONS_LIST: DietaryOption[] = [
+  // Pure Veg Options
+  { label: 'Barik Rice (Small Grain)', isNonVeg: false },
+  { label: 'Normal White Rice', isNonVeg: false },
+  { label: 'Chapati / Roti Set', isNonVeg: false },
+  { label: 'Dal & Veg Curry Only', isNonVeg: false },
+  { label: 'No Rice (Only Chapati)', isNonVeg: false },
+  { label: 'Less Spicy / Mild', isNonVeg: false },
+  { label: 'Extra Spicy', isNonVeg: false },
+  { label: 'Office Lunch Tiffin', isNonVeg: false },
+  // Non-Veg Specific Options (Hidden when Veg is selected)
+  { label: 'Chicken Curry', isNonVeg: true },
+  { label: 'Fish Curry', isNonVeg: true },
+  { label: 'Beef Items', isNonVeg: true },
+  { label: 'Egg Only (No Meat)', isNonVeg: true },
+  { label: 'No Fish Curry', isNonVeg: true },
+  { label: 'No Beef', isNonVeg: true },
+  { label: 'No Chicken Items', isNonVeg: true },
+];
+
 export const CustomerOnboardingView: React.FC<CustomerOnboardingViewProps> = ({ onBackToLogin }) => {
   // Data states
   const [buildings, setBuildings] = useState<Building[]>([]);
@@ -51,6 +76,7 @@ export const CustomerOnboardingView: React.FC<CustomerOnboardingViewProps> = ({ 
   const [hasDinner, setHasDinner] = useState(true);
 
   // Dietary options
+  const [foodType, setFoodType] = useState<'all' | 'veg'>('all');
   const [dietaryPreferences, setDietaryPreferences] = useState<string[]>([]);
   const [notes, setNotes] = useState('');
   const [joiningDate, setJoiningDate] = useState(() => new Date().toISOString().split('T')[0]);
@@ -111,23 +137,29 @@ export const CustomerOnboardingView: React.FC<CustomerOnboardingViewProps> = ({ 
     return 380;
   };
 
-  // Toggle dietary chips
-  const toggleDietaryChip = (chip: string) => {
-    setDietaryPreferences(prev => 
-      prev.includes(chip) ? prev.filter(c => c !== chip) : [...prev, chip]
-    );
+  const visibleDietaryOptions: DietaryOption[] = useMemo(() => {
+    if (foodType === 'veg') {
+      return DIETARY_OPTIONS_LIST.filter((item) => !item.isNonVeg);
+    }
+    return DIETARY_OPTIONS_LIST;
+  }, [foodType]);
+
+  const handleSelectFoodType = (type: 'all' | 'veg') => {
+    setFoodType(type);
+    if (type === 'veg') {
+      // Remove any non-veg options that were selected
+      setDietaryPreferences((prev) =>
+        prev.filter((item) => !DIETARY_OPTIONS_LIST.find((d) => d.label === item)?.isNonVeg)
+      );
+    }
   };
 
-  const commonDietaryOptions = [
-    'Barik Rice (Small Grain)',
-    'Normal White Rice',
-    'No Fish Curry',
-    'No Beef',
-    'Vegetarian Days',
-    'Less Spicy / Mild',
-    'Extra Spicy',
-    'Office Lunch Tiffin',
-  ];
+  // Toggle dietary chips
+  const toggleDietaryChip = (chip: string) => {
+    setDietaryPreferences((prev) =>
+      prev.includes(chip) ? prev.filter((c) => c !== chip) : [...prev, chip]
+    );
+  };
 
   // Submit Handler
   const handleSubmit = async (e: React.FormEvent) => {
@@ -178,7 +210,10 @@ export const CustomerOnboardingView: React.FC<CustomerOnboardingViewProps> = ({ 
         has_lunch: hasLunch,
         has_dinner: hasDinner,
         monthly_rate: getMonthlyRate(),
-        dietary_preferences: dietaryPreferences.join(', '),
+        dietary_preferences: [
+          foodType === 'veg' ? 'Pure Vegetarian (No Non-Veg)' : 'Non-Veg & Veg',
+          ...dietaryPreferences,
+        ].filter(Boolean).join(', '),
         notes: notes.trim(),
         joining_date: joiningDate,
         billing_start_date: joiningDate,
@@ -598,7 +633,68 @@ export const CustomerOnboardingView: React.FC<CustomerOnboardingViewProps> = ({ 
               <div className="space-y-3.5 pt-4 border-t border-slate-800">
                 <div className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
                   <UtensilsCrossed className="w-3.5 h-3.5 text-amber-400" />
-                  <span>4. Dietary Preferences &amp; Start Date</span>
+                  <span>4. Food Preference &amp; Dietary Options</span>
+                </div>
+
+                {/* Veg vs Non-Veg Primary Toggle */}
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 mb-2">
+                    Diet Type (Select One):
+                  </label>
+                  <div className="grid grid-cols-2 gap-2.5">
+                    <button
+                      type="button"
+                      onClick={() => handleSelectFoodType('all')}
+                      className={`p-3 rounded-2xl border text-left transition-all cursor-pointer flex items-center gap-2.5 ${
+                        foodType === 'all'
+                          ? 'bg-amber-500/15 border-amber-500 shadow-md shadow-amber-500/10'
+                          : 'bg-[#090d16] border-slate-800 hover:border-slate-700'
+                      }`}
+                    >
+                      <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-sm shrink-0 ${
+                        foodType === 'all' ? 'bg-amber-500 text-slate-950 font-black' : 'bg-slate-800 text-slate-400'
+                      }`}>
+                        🍖
+                      </div>
+                      <div>
+                        <div className="text-xs font-bold text-white flex items-center gap-1">
+                          <span>Non-Veg &amp; Veg</span>
+                          {foodType === 'all' && <Check className="w-3 h-3 text-amber-400" />}
+                        </div>
+                        <div className="text-[10px] text-slate-400">All dishes shown</div>
+                      </div>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => handleSelectFoodType('veg')}
+                      className={`p-3 rounded-2xl border text-left transition-all cursor-pointer flex items-center gap-2.5 ${
+                        foodType === 'veg'
+                          ? 'bg-emerald-500/15 border-emerald-500 shadow-md shadow-emerald-500/10'
+                          : 'bg-[#090d16] border-slate-800 hover:border-slate-700'
+                      }`}
+                    >
+                      <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-sm shrink-0 ${
+                        foodType === 'veg' ? 'bg-emerald-500 text-slate-950 font-black' : 'bg-slate-800 text-slate-400'
+                      }`}>
+                        🥗
+                      </div>
+                      <div>
+                        <div className="text-xs font-bold text-white flex items-center gap-1">
+                          <span>Veg Only</span>
+                          {foodType === 'veg' && <Check className="w-3 h-3 text-emerald-400" />}
+                        </div>
+                        <div className="text-[10px] text-emerald-400 font-semibold">Non-veg hidden</div>
+                      </div>
+                    </button>
+                  </div>
+
+                  {foodType === 'veg' && (
+                    <div className="mt-2.5 p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-[11px] text-emerald-300 flex items-center gap-2">
+                      <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                      <span><strong>Vegetarian Mode Active:</strong> All Non-Veg dishes &amp; curries are hidden from selection.</span>
+                    </div>
+                  )}
                 </div>
 
                 <div>
@@ -606,20 +702,24 @@ export const CustomerOnboardingView: React.FC<CustomerOnboardingViewProps> = ({ 
                     Dietary Instructions (Tap all that apply):
                   </label>
                   <div className="flex flex-wrap gap-2">
-                    {commonDietaryOptions.map((chip) => {
+                    {visibleDietaryOptions.map((opt) => {
+                      const chip = opt.label;
                       const isSelected = dietaryPreferences.includes(chip);
                       return (
                         <button
                           key={chip}
                           type="button"
                           onClick={() => toggleDietaryChip(chip)}
-                          className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all cursor-pointer ${
+                          className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all cursor-pointer flex items-center gap-1.5 ${
                             isSelected
                               ? 'bg-amber-500 text-slate-950 font-bold border-amber-400 shadow-sm shadow-amber-500/20'
                               : 'bg-[#090d16] text-slate-300 border-slate-800 hover:border-slate-700'
                           }`}
                         >
-                          {chip} {isSelected ? '✓' : '+'}
+                          {opt.isNonVeg && <span className="text-[10px]">🍗</span>}
+                          {!opt.isNonVeg && <span className="text-[10px]">🌿</span>}
+                          <span>{chip}</span>
+                          <span className="font-bold">{isSelected ? '✓' : '+'}</span>
                         </button>
                       );
                     })}
