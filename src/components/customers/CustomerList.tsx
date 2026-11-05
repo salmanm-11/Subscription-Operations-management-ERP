@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { Plus, Search, Filter, Download, Edit, Trash2, Utensils, Phone, PhoneCall, Building2, FileSpreadsheet, Upload, ChevronDown, Clock, Eye, AlertTriangle, Check, X } from 'lucide-react';
+import { Plus, Search, Filter, Download, Edit, Trash2, Utensils, Phone, PhoneCall, Building2, FileSpreadsheet, Upload, ChevronDown, Clock, Eye, AlertTriangle, Check, X, Share2, Copy, MessageSquare, ExternalLink } from 'lucide-react';
 import { Customer, Building, MealPlan, Invoice, Payment } from '../../types';
 import { formatAED } from '../../utils/currency';
 import { exportCustomersToExcel, downloadCustomerTemplate, ParsedImportRow } from '../../utils/excelService';
@@ -50,6 +50,28 @@ export const CustomerList: React.FC<CustomerListProps> = ({
   const [viewingCustomer, setViewingCustomer] = useState<Customer | null>(null);
   const [isDeleteAllModalOpen, setIsDeleteAllModalOpen] = useState(false);
   const [isDeletingAll, setIsDeletingAll] = useState(false);
+  const [isShareLinkModalOpen, setIsShareLinkModalOpen] = useState(false);
+  const [hasCopiedLink, setHasCopiedLink] = useState(false);
+
+  const getRegistrationLink = () => {
+    if (typeof window === 'undefined') return '';
+    return `${window.location.origin}/?join=true`;
+  };
+
+  const handleCopyRegistrationLink = async () => {
+    try {
+      await navigator.clipboard.writeText(getRegistrationLink());
+      setHasCopiedLink(true);
+      setTimeout(() => setHasCopiedLink(false), 2500);
+    } catch {
+      // Fallback
+    }
+  };
+
+  const handleShareOnWhatsApp = () => {
+    const text = `Hello! 👋 Please register for Karama Mess using this link and select your daily meals:\n${getRegistrationLink()}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+  };
 
   // Main customer search input ref
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -385,6 +407,18 @@ export const CustomerList: React.FC<CustomerListProps> = ({
             >
               <Trash2 className="w-3.5 h-3.5" />
               <span>Delete All ({customers.length})</span>
+            </button>
+          )}
+
+          {/* Customer Self-Registration Link Button */}
+          {!isReadOnly && (
+            <button
+              onClick={() => setIsShareLinkModalOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/30 text-xs font-bold transition-all shadow-sm cursor-pointer"
+              title="Customer Registration Link (Send to customers on WhatsApp)"
+            >
+              <Share2 className="w-3.5 h-3.5" />
+              <span>Share Registration Link</span>
             </button>
           )}
 
@@ -990,6 +1024,80 @@ export const CustomerList: React.FC<CustomerListProps> = ({
                 <Trash2 className="w-4 h-4" />
                 <span>{isDeletingAll ? 'Deleting All...' : 'Yes, Delete All Customers'}</span>
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Customer Registration Link Modal */}
+      {isShareLinkModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-[#151c2c] border border-emerald-500/30 rounded-3xl w-full max-w-md p-6 shadow-2xl text-white space-y-5">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center">
+                  <Share2 className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-white">Customer Self-Registration Link</h3>
+                  <p className="text-xs text-slate-400">Share with new customers on WhatsApp</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsShareLinkModalOpen(false)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-white cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              <p className="text-xs text-slate-300 leading-relaxed">
+                Send this link to any new customer. They can fill out their name, WhatsApp number, room, and meal plan on their mobile phone. Once submitted, they will <strong>automatically appear inside your software in real-time</strong>!
+              </p>
+
+              <div className="p-3 bg-slate-900 border border-slate-800 rounded-xl flex items-center justify-between gap-2">
+                <span className="font-mono text-xs text-amber-300 truncate select-all">
+                  {getRegistrationLink()}
+                </span>
+                <button
+                  type="button"
+                  onClick={handleCopyRegistrationLink}
+                  className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white flex items-center gap-1.5 shrink-0 border border-slate-700 cursor-pointer"
+                >
+                  {hasCopiedLink ? (
+                    <>
+                      <Check className="w-3.5 h-3.5 text-emerald-400" />
+                      <span className="text-emerald-400">Copied!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3.5 h-3.5 text-slate-400" />
+                      <span>Copy</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-center gap-2 pt-2">
+              <button
+                type="button"
+                onClick={handleShareOnWhatsApp}
+                className="w-full sm:flex-1 py-2.5 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 cursor-pointer"
+              >
+                <MessageSquare className="w-4 h-4" />
+                <span>Share via WhatsApp</span>
+              </button>
+              <a
+                href={getRegistrationLink()}
+                target="_blank"
+                rel="noreferrer"
+                className="w-full sm:w-auto py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-750 text-slate-300 hover:text-white font-bold text-xs flex items-center justify-center gap-1.5 border border-slate-700 cursor-pointer"
+              >
+                <ExternalLink className="w-3.5 h-3.5" />
+                <span>Preview Form</span>
+              </a>
             </div>
           </div>
         </div>

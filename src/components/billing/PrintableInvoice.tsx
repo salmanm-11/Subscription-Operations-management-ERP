@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { X, Printer, Pencil, Trash2 } from 'lucide-react';
 import { Invoice, Customer, BusinessSettings } from '../../types';
 import { formatAED } from '../../utils/currency';
+import { getMonthlySubscriptionRate } from '../../utils/billingCycleService';
 
 interface PrintableInvoiceProps {
   invoice: Invoice;
@@ -39,7 +40,8 @@ export const PrintableInvoice: React.FC<PrintableInvoiceProps> = ({
       isArrears?: boolean;
     }> = [];
 
-    const baseMonthly = activeCustomer?.monthly_rate || 380;
+    const cycleRate = getMonthlySubscriptionRate(activeCustomer, invoice.period_start, invoice.period_end);
+    const baseMonthly = cycleRate.effectiveRate;
 
     // Check for embedded arrears in notes: e.g. [ARREARS: AED 50.00 | Period: 2026-10-01 to 2026-10-31]
     let parsedArrearsAmount = 0;

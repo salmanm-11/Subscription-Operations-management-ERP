@@ -15,9 +15,10 @@ import loginBg from '../../assets/login-bg.jpg';
 
 interface LoginViewProps {
   onLoginSuccess: (user: AppUser) => void;
+  onOpenCustomerRegister?: () => void;
 }
 
-export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
+export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onOpenCustomerRegister }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -242,6 +243,19 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
               <LogIn className="w-4 h-4" />
               <span>{isLoading ? 'Signing In...' : 'Sign In'}</span>
             </button>
+
+            {onOpenCustomerRegister && (
+              <div className="pt-3 text-center border-t border-slate-800/80">
+                <button
+                  type="button"
+                  onClick={onOpenCustomerRegister}
+                  className="text-xs text-amber-400 hover:text-amber-300 font-bold hover:underline inline-flex items-center gap-1 cursor-pointer transition-colors"
+                >
+                  <span>New Customer? Register online for meals</span>
+                  <span>→</span>
+                </button>
+              </div>
+            )}
           </form>
         </div>
       </div>

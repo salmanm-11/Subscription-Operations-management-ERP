@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { FileText, Plus, Printer, Search, X, CheckCircle2, Clock, AlertCircle, FileSpreadsheet, Pencil, Trash2, Zap, AlertTriangle } from 'lucide-react';
 import { Invoice, Customer, BusinessSettings, InvoiceStatus } from '../../types';
 import { formatAED } from '../../utils/currency';
+import { getMonthlySubscriptionRate } from '../../utils/billingCycleService';
 import { PrintableInvoice } from './PrintableInvoice';
 import { exportInvoicesToExcel } from '../../utils/excelService';
 
@@ -160,10 +161,16 @@ export const InvoiceList: React.FC<InvoiceListProps> = ({
   const handleOpenAdd = () => {
     setEditingInvoice(null);
     let initialCid = '';
+    const now = new Date();
+    const pStart = now.toISOString().split('T')[0];
+    const daysInCurrentMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+    const pEnd = new Date(now.getFullYear(), now.getMonth(), daysInCurrentMonth).toISOString().split('T')[0];
+
     let initialBase = 380;
     if (customers.length > 0) {
       initialCid = customers[0].id;
-      initialBase = customers[0].monthly_rate || 380;
+      const rateInfo = getMonthlySubscriptionRate(customers[0], pStart, pEnd);
+      initialBase = rateInfo.effectiveRate;
     }
     setCustomerId(initialCid);
 
@@ -176,8 +183,8 @@ export const InvoiceList: React.FC<InvoiceListProps> = ({
     setBalanceAmount(finalAmount);
     setPaidAmount(0);
     setInvoiceStatus('issued');
-    setPeriodStart(new Date().toISOString().split('T')[0]);
-    setPeriodEnd(new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0]);
+    setPeriodStart(pStart);
+    setPeriodEnd(pEnd);
     setDueDate(new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0]);
     setNotes('');
     setIsModalOpen(true);
@@ -186,7 +193,8 @@ export const InvoiceList: React.FC<InvoiceListProps> = ({
   const handleCustomerChange = (cid: string) => {
     setCustomerId(cid);
     const selected = customers.find((c) => c.id === cid);
-    const baseRate = selected?.monthly_rate || 380;
+    const rateInfo = getMonthlySubscriptionRate(selected, periodStart, periodEnd);
+    const baseRate = rateInfo.effectiveRate;
     const arrears = checkCustomerArrears(cid);
     setDetectedArrears(arrears);
     setIncludeArrears(Boolean(arrears));
@@ -626,7 +634,8 @@ export const InvoiceList: React.FC<InvoiceListProps> = ({
                         const checked = e.target.checked;
                         setIncludeArrears(checked);
                         const sel = customers.find((c) => c.id === customerId);
-                        const base = sel?.monthly_rate || 380;
+                        const rateInfo = getMonthlySubscriptionRate(sel, periodStart, periodEnd);
+                        const base = rateInfo.effectiveRate;
                         const newTot = checked ? base + detectedArrears.amount : base;
                         setAmount(newTot);
                         setBalanceAmount(newTot);

@@ -19,6 +19,7 @@ import { ReportsView } from './components/reports/ReportsView';
 import { StaffList } from './components/staff/StaffList';
 import { AdminView } from './components/admin/AdminView';
 import { LoginView } from './components/auth/LoginView';
+import { CustomerOnboardingView } from './components/public/CustomerOnboardingView';
 import { BusinessSettingsView } from './components/settings/BusinessSettingsView';
 import { HelpView } from './components/help/HelpView';
 import { VendorAccountsView } from './components/vendors/VendorAccountsView';
@@ -66,6 +67,21 @@ export const App: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<AppUser | null>(() => AuthService.getCurrentSession());
   const [currentTab, setCurrentTab] = useState('dashboard');
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isPublicOnboarding, setIsPublicOnboarding] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    const search = (window.location.search || '').toLowerCase();
+    const hash = (window.location.hash || '').toLowerCase();
+    const pathname = (window.location.pathname || '').toLowerCase();
+    return (
+      search.includes('join') ||
+      search.includes('register') ||
+      search.includes('onboard') ||
+      hash.includes('register') ||
+      hash.includes('join') ||
+      pathname === '/join' ||
+      pathname === '/register'
+    );
+  });
 
   useEffect(() => {
     if (currentUser?.role === 'viewer' && (currentTab === 'admin' || currentTab === 'staff' || currentTab === 'settings')) {
@@ -904,9 +920,28 @@ export const App: React.FC = () => {
     );
   }
 
+  // Public Customer Registration & Meal Enrollment Page (No login required)
+  if (isPublicOnboarding) {
+    return (
+      <CustomerOnboardingView
+        onBackToLogin={() => {
+          if (typeof window !== 'undefined') {
+            window.history.replaceState({}, '', window.location.pathname);
+          }
+          setIsPublicOnboarding(false);
+        }}
+      />
+    );
+  }
+
   // If user is not authenticated, display full screen Login / Forgot Password / Sign Up
   if (!currentUser) {
-    return <LoginView onLoginSuccess={(user) => setCurrentUser(user)} />;
+    return (
+      <LoginView
+        onLoginSuccess={(user) => setCurrentUser(user)}
+        onOpenCustomerRegister={() => setIsPublicOnboarding(true)}
+      />
+    );
   }
 
   const isViewer = currentUser?.role === 'viewer';

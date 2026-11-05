@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { Customer, Building, MealPlan, Invoice, Payment, PaymentMethod } from '../../types';
 import { formatAED } from '../../utils/currency';
+import { getMonthlySubscriptionRate } from '../../utils/billingCycleService';
 import { exportTableToExcel } from '../../utils/excelService';
 import {
   getApproachingReminders,
@@ -278,8 +279,9 @@ export const OverdueList: React.FC<OverdueListProps> = ({
   // Open Quick Settle Modal
   const handleOpenQuickSettle = (c: Customer) => {
     const overdueAmt = c.total_overdue || 0;
+    const defaultAmount = overdueAmt > 0 ? overdueAmt : getMonthlySubscriptionRate(c).effectiveRate;
     setSettlingCustomer(c);
-    setSettleAmount(overdueAmt > 0 ? overdueAmt : c.monthly_rate || 380);
+    setSettleAmount(defaultAmount);
     setSettleMethod('cash');
     setSettleDate(new Date().toISOString().split('T')[0]);
     setSettleRef('');

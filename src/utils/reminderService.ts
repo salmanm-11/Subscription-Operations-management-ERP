@@ -1,4 +1,5 @@
 import { Customer, Invoice } from '../types';
+import { getMonthlySubscriptionRate } from './billingCycleService';
 import { formatAED } from './currency';
 
 export const DEFAULT_REMINDER_DAYS = 5;
@@ -143,7 +144,9 @@ export function getCustomerDueDateInfo(
   const isDueTomorrow = daysRemaining === 1;
   const isApproaching = daysRemaining >= 0 && daysRemaining <= thresholdDays;
 
-  const amountDue = overdueBalance > 0 ? overdueBalance : customer.monthly_rate || 310;
+  const cycleRateInfo = getMonthlySubscriptionRate(customer, parsedDueDate);
+  const standardDueAmount = cycleRateInfo.effectiveRate;
+  const amountDue = overdueBalance > 0 ? overdueBalance : standardDueAmount;
 
   // Status and styling badge
   let statusLabel = '';

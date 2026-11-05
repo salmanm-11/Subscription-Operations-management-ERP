@@ -34,6 +34,7 @@ import {
 import { Customer, Building, MealPlan, Invoice, Payment, PaymentMethod } from '../../types';
 import { formatAED } from '../../utils/currency';
 import { getCustomerDueDateInfo, sendWhatsAppReminder } from '../../utils/reminderService';
+import { getMonthlySubscriptionRate } from '../../utils/billingCycleService';
 import { getCustomerCancellationNotice, sendCancellationWhatsApp, ApproachingCancellation } from '../../utils/cancellationService';
 import { saveCustomer } from '../../api/supabase';
 import { ActivityLogService } from '../../api/activityLogService';
@@ -153,9 +154,10 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
       const today = new Date().toISOString().split('T')[0];
       const pStart = activeCustomer.billing_start_date || '2026-11-01';
       const pEnd = activeCustomer.billing_end_date || '2026-11-30';
+      const cycleRate = getMonthlySubscriptionRate(activeCustomer, pStart, pEnd);
       const total = (activeCustomer.total_overdue && activeCustomer.total_overdue > 0)
         ? activeCustomer.total_overdue
-        : (activeCustomer.monthly_rate || 380);
+        : cycleRate.effectiveRate;
 
       const virtualInv: Invoice = {
         id: `stmt-${activeCustomer.id}`,
@@ -169,7 +171,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
         due_date: today,
         period_start: pStart,
         period_end: pEnd,
-        subtotal: activeCustomer.monthly_rate || 380,
+        subtotal: cycleRate.effectiveRate,
         discount_amount: 0,
         tax_amount: 0,
         total_amount: total,
@@ -213,12 +215,13 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
 
   // Open the built-in Pay Bill dialog right on this profile page
   const handleOpenPayModal = (suggestedAmount?: number, invoiceId?: string) => {
+    const cycleRate = getMonthlySubscriptionRate(activeCustomer);
     const defaultAmount =
       suggestedAmount !== undefined && suggestedAmount > 0
         ? suggestedAmount
         : overdue > 0
         ? overdue
-        : activeCustomer.monthly_rate || 310;
+        : cycleRate.effectiveRate;
 
     setPayAmount(defaultAmount);
     setPayInvoiceId(
@@ -1658,10 +1661,10 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                       <span className="text-slate-600">•</span>
                       <button
                         type="button"
-                        onClick={() => setPayAmount(activeCustomer.monthly_rate || 310)}
+                        onClick={() => setPayAmount(getMonthlySubscriptionRate(activeCustomer).effectiveRate)}
                         className="text-[10px] text-amber-400 hover:text-amber-300 underline font-semibold"
                       >
-                        Plan ({formatAED(activeCustomer.monthly_rate || 310)})
+                        Plan ({formatAED(getMonthlySubscriptionRate(activeCustomer).effectiveRate)})
                       </button>
                     </div>
                   </div>
@@ -1829,9 +1832,10 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                       onChange={(e) => {
                         const val = parseFloat(e.target.value) || 0;
                         setDueAmountInput(val);
+                        const standardMonthRate = getMonthlySubscriptionRate(activeCustomer).effectiveRate;
                         if (val === 0) {
                           setDueRatingInput('Good');
-                        } else if (val > (activeCustomer.monthly_rate || 380)) {
+                        } else if (val > standardMonthRate) {
                           setDueRatingInput('Bad');
                         } else {
                           setDueRatingInput('Late payer');
@@ -1866,12 +1870,13 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                     <button
                       type="button"
                       onClick={() => {
-                        setDueAmountInput(activeCustomer.monthly_rate || 380);
+                        const standardMonthRate = getMonthlySubscriptionRate(activeCustomer).effectiveRate;
+                        setDueAmountInput(standardMonthRate);
                         setDueRatingInput('Late payer');
                       }}
                       className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] font-mono font-semibold transition-colors cursor-pointer"
                     >
-                      Full Month ({formatAED(activeCustomer.monthly_rate || 380)})
+                      Full Month ({formatAED(getMonthlySubscriptionRate(activeCustomer).effectiveRate)})
                     </button>
                   </div>
                 </div>

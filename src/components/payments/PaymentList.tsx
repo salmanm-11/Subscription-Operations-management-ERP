@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { CreditCard, Plus, Search, Printer, X, FileSpreadsheet, Building2, Phone, CheckCircle2, RotateCcw, Receipt, Trash2, AlertTriangle } from 'lucide-react';
 import { Payment, Customer, Invoice, PaymentMethod } from '../../types';
 import { formatAED } from '../../utils/currency';
+import { getMonthlySubscriptionRate } from '../../utils/billingCycleService';
 
 interface PaymentListProps {
   payments: Payment[];
@@ -168,7 +169,8 @@ export const PaymentList: React.FC<PaymentListProps> = ({
             onClick={() => {
               if (customers.length > 0) {
                 setCustomerId(customers[0].id);
-                setAmount(customers[0].total_overdue || customers[0].monthly_rate || 380);
+                const defaultAmt = customers[0].total_overdue || getMonthlySubscriptionRate(customers[0]).effectiveRate;
+                setAmount(defaultAmt);
               }
               setIsModalOpen(true);
             }}
@@ -486,8 +488,8 @@ export const PaymentList: React.FC<PaymentListProps> = ({
                     const selected = customers.find((c) => c.id === e.target.value);
                     if (selected && selected.total_overdue) {
                       setAmount(selected.total_overdue);
-                    } else if (selected && selected.monthly_rate) {
-                      setAmount(selected.monthly_rate);
+                    } else if (selected) {
+                      setAmount(getMonthlySubscriptionRate(selected).effectiveRate);
                     }
                   }}
                   className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white font-medium focus:outline-none focus:border-amber-500"

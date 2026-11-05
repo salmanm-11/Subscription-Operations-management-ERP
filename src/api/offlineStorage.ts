@@ -4,6 +4,7 @@
 import { Customer, CustomerStatus, Building, Room, MealPlan, Invoice, Payment, Business, BusinessSettings, DashboardMetrics, Vendor, VendorTransaction, VendorPayment, VendorAuditLog, VendorDashboardMetrics, VendorStatement, VendorStatementItem } from '../types';
 import { roundCurrency, addCurrency, subtractCurrency, roundVendorCurrency, formatVendorAED } from '../utils/currency';
 import { getApproachingReminders, getReminderDaysSetting } from '../utils/reminderService';
+import { getMonthlySubscriptionRate } from '../utils/billingCycleService';
 import fullData from './fullInitialData.json';
 import initialVendorData from './initialVendorData.json';
 import { ActivityLogService } from './activityLogService';
@@ -598,19 +599,8 @@ export class OfflineStorage {
 
       if (!hasCurrentCycleInvoice) {
         const invNum = `${settings.invoice_prefix}${settings.next_invoice_number++}`;
-        const monthlyRate = c.monthly_rate || 380;
 
-        // Calculate previous unpaid overdue/balance
-        const priorUnpaidSum = custInvoices
-          .filter((i) => i.status !== 'paid' && (i.balance_amount || 0) > 0)
-          .reduce((sum, i) => sum + (i.balance_amount || 0), 0);
-
-        const previousOverdue = Math.max(c.total_overdue || 0, priorUnpaidSum);
-
-        // Cumulative total: previous due + current month subscription rate
-        const cumulativeTotal = previousOverdue + monthlyRate;
-
-        // Determine period start and end
+        // Determine period start and end first
         let pStart = defaultStart;
         let pEnd = defaultEnd;
 
@@ -624,8 +614,9 @@ export class OfflineStorage {
             const nextStart = new Date(prevEndDate);
             nextStart.setDate(nextStart.getDate() + 1);
             pStart = nextStart.toISOString().split('T')[0];
+            const nextDays = new Date(nextStart.getFullYear(), nextStart.getMonth() + 1, 0).getDate();
             const nextEnd = new Date(nextStart);
-            nextEnd.setDate(nextEnd.getDate() + 29);
+            nextEnd.setDate(nextEnd.getDate() + (nextDays - 1));
             pEnd = nextEnd.toISOString().split('T')[0];
           }
         } else if (c.billing_start_date) {
@@ -633,7 +624,23 @@ export class OfflineStorage {
           if (c.billing_end_date) pEnd = c.billing_end_date;
         }
 
-        let notesText = `Monthly mess subscription for ${c.full_name}`;
+        // Automatic 30 vs 31 days rate calculation (380 AED for 30d, 390 AED for 31d for monthly customers)
+        const cycleRate = getMonthlySubscriptionRate(c, pStart, pEnd);
+        const monthlyRate = cycleRate.effectiveRate;
+
+        // Calculate previous unpaid overdue/balance
+        const priorUnpaidSum = custInvoices
+          .filter((i) => i.status !== 'paid' && (i.balance_amount || 0) > 0)
+          .reduce((sum, i) => sum + (i.balance_amount || 0), 0);
+
+        const previousOverdue = Math.max(c.total_overdue || 0, priorUnpaidSum);
+
+        // Cumulative total: previous due + current month subscription rate
+        const cumulativeTotal = previousOverdue + monthlyRate;
+
+        let notesText = cycleRate.is31Days && cycleRate.isMonthlySubscriber
+          ? `Monthly mess subscription for ${c.full_name} (31-day month: AED 390)`
+          : `Monthly mess subscription for ${c.full_name}`;
         if (previousOverdue > 0) {
           const priorPeriodLabel = latestPrior
             ? `${latestPrior.period_start} to ${latestPrior.period_end}`
