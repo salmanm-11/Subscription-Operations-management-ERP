@@ -1047,10 +1047,18 @@ export class OfflineStorage {
   }
 
   static getSupabaseConfig(): { url: string; anonKey: string } {
-    return this.getItem(STORAGE_KEYS.SUPABASE_CONFIG, {
-      url: (typeof process !== 'undefined' && process.env?.VITE_SUPABASE_URL) || '',
-      anonKey: (typeof process !== 'undefined' && process.env?.VITE_SUPABASE_ANON_KEY) || ''
+    const defaultUrl = (typeof process !== 'undefined' && process.env?.VITE_SUPABASE_URL) || 'https://bbqrieuujxazhqgelppr.supabase.co';
+    const defaultKey = (typeof process !== 'undefined' && process.env?.VITE_SUPABASE_ANON_KEY) || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJicXJpZXV1anhhemhxZ2VscHByIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI4OTczMjAsImV4cCI6MjEwODQ3MzMyMH0.VzeXJPGwWod5AwZmCkQ3YIWyhBdEVeTLgZUjZLndSlw';
+
+    const saved = this.getItem<{ url?: string; anonKey?: string }>(STORAGE_KEYS.SUPABASE_CONFIG, {
+      url: defaultUrl,
+      anonKey: defaultKey
     });
+
+    return {
+      url: (saved?.url && saved.url.trim().length > 0) ? saved.url.trim() : defaultUrl,
+      anonKey: (saved?.anonKey && saved.anonKey.trim().length > 0) ? saved.anonKey.trim() : defaultKey
+    };
   }
 
   static saveSupabaseConfig(url: string, anonKey: string): void {

@@ -675,12 +675,9 @@ export const Header: React.FC<HeaderProps> = ({
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-slate-400">Project Endpoint:</span>
-                    <span
-                      className="font-mono text-amber-300 truncate max-w-[180px]"
-                      title={cloudStatus?.url || 'None'}
-                    >
-                      {cloudStatus?.url ? cloudStatus.url.replace('https://', '') : 'None'}
+                    <span className="text-slate-400">Database Engine:</span>
+                    <span className="font-semibold text-emerald-400">
+                      Central Supabase Cloud
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
@@ -702,7 +699,7 @@ export const Header: React.FC<HeaderProps> = ({
                       if (onCheckCloud) await onCheckCloud();
                     }}
                     disabled={isCheckingCloud}
-                    className="flex-1 py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-750 border border-slate-700 text-slate-200 font-bold text-xs flex items-center justify-center gap-1.5 transition-colors disabled:opacity-60"
+                    className="flex-1 py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-750 border border-slate-700 text-slate-200 font-bold text-xs flex items-center justify-center gap-1.5 transition-colors disabled:opacity-60 cursor-pointer"
                   >
                     <RefreshCw
                       className={`w-3.5 h-3.5 ${
@@ -715,12 +712,13 @@ export const Header: React.FC<HeaderProps> = ({
                   <button
                     onClick={() => {
                       setIsCloudPopoverOpen(false);
-                      if (onSelectTab) onSelectTab('settings');
+                      if (onRefresh) onRefresh();
                     }}
-                    className="py-2 px-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center justify-center gap-1.5 transition-colors shadow-sm"
+                    className="py-2 px-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center justify-center gap-1.5 transition-colors shadow-sm cursor-pointer"
+                    title="Force sync latest cloud database records"
                   >
-                    <Settings className="w-3.5 h-3.5" />
-                    <span>Cloud Settings</span>
+                    <RefreshCw className="w-3.5 h-3.5" />
+                    <span>Sync Now</span>
                   </button>
                 </div>
               </div>

@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
-import { Settings, Cloud, Check, RefreshCw, FileText, ShieldCheck, Bell, Clock, Trash2 } from 'lucide-react';
+import { Settings, Check, RefreshCw, FileText, ShieldCheck, Bell, Clock, Trash2 } from 'lucide-react';
 import { BusinessSettings } from '../../types';
-import { OfflineStorage } from '../../api/offlineStorage';
 import { ActivityLogView } from './ActivityLogView';
 import { getReminderDaysSetting, setReminderDaysSetting } from '../../utils/reminderService';
-import { checkCloudStatus, resetSupabaseClient, clearAllBusinessData } from '../../api/supabase';
+import { clearAllBusinessData } from '../../api/supabase';
 
 interface BusinessSettingsViewProps {
   settings: BusinessSettings;
@@ -17,7 +16,7 @@ export const BusinessSettingsView: React.FC<BusinessSettingsViewProps> = ({
   onSaveSettings,
   currentUsername = 'admin',
 }) => {
-  const [activeTab, setActiveTab] = useState<'profile' | 'cloud' | 'logs'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'logs'>('profile');
 
   // Business profile state
   const [phone, setPhone] = useState(settings.phone || '+971 50 123 4567');
@@ -30,12 +29,6 @@ export const BusinessSettingsView: React.FC<BusinessSettingsViewProps> = ({
   const [dueReminderDays, setDueReminderDays] = useState<number>(
     settings.due_reminder_days || getReminderDaysSetting()
   );
-
-  // Cloud credentials state
-  const initialCloud = OfflineStorage.getSupabaseConfig();
-  const [supabaseUrl, setSupabaseUrl] = useState(initialCloud.url);
-  const [supabaseKey, setSupabaseKey] = useState(initialCloud.anonKey);
-  const [connectionStatus, setConnectionStatus] = useState<string | null>(null);
 
   const handleSaveProfile = (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,33 +44,12 @@ export const BusinessSettingsView: React.FC<BusinessSettingsViewProps> = ({
     alert('Business settings and Due Date reminder window saved successfully!');
   };
 
-  const handleSaveCloud = async (e: React.FormEvent) => {
-    e.preventDefault();
-    OfflineStorage.saveSupabaseConfig(supabaseUrl.trim(), supabaseKey.trim());
-    resetSupabaseClient();
-    setConnectionStatus('Testing cloud connection with updated credentials...');
-    try {
-      const result = await checkCloudStatus();
-      if (result.isLive) {
-        setConnectionStatus(`✓ Cloud Live & Connected! (${result.latencyMs}ms response time)`);
-      } else if (result.status === 'tables_missing') {
-        setConnectionStatus('▲ Connected to Supabase project, but database tables are not yet created. Using local storage.');
-      } else if (result.status === 'local') {
-        setConnectionStatus('⚪ Local mode active. No cloud database configured.');
-      } else {
-        setConnectionStatus(`✕ ${result.message} (${result.details || 'Check URL & Key'})`);
-      }
-    } catch (err: any) {
-      setConnectionStatus(`✕ Connection check failed: ${err.message || 'Unknown error'}`);
-    }
-  };
-
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-xl font-bold text-white tracking-tight">Business Configuration</h2>
-          <p className="text-xs text-slate-400 mt-0.5">Manage business profile, UAE localization, and cloud database connection</p>
+          <p className="text-xs text-slate-400 mt-0.5">Manage business profile, UAE localization, and system activity logs</p>
         </div>
 
         <div className="flex items-center gap-2 bg-slate-800/80 p-1 rounded-xl border border-slate-700 text-xs">
@@ -90,21 +62,13 @@ export const BusinessSettingsView: React.FC<BusinessSettingsViewProps> = ({
             Business Profile
           </button>
           <button
-            onClick={() => setActiveTab('cloud')}
-            className={`px-3.5 py-1.5 rounded-lg font-bold transition-colors ${
-              activeTab === 'cloud' ? 'bg-amber-500 text-slate-950 font-black' : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            Cloud Synchronization
-          </button>
-          <button
             onClick={() => setActiveTab('logs')}
             className={`px-3.5 py-1.5 rounded-lg font-bold transition-colors flex items-center gap-1.5 ${
               activeTab === 'logs' ? 'bg-amber-500 text-slate-950 font-black shadow-md shadow-amber-500/20' : 'text-slate-400 hover:text-white'
             }`}
           >
             <FileText className="w-3.5 h-3.5" />
-            <span>Log</span>
+            <span>Activity Logs</span>
           </button>
         </div>
       </div>
@@ -272,66 +236,6 @@ export const BusinessSettingsView: React.FC<BusinessSettingsViewProps> = ({
                 className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold transition-colors cursor-pointer"
               >
                 Clear All Business Data Now
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
-
-      {activeTab === 'cloud' && (
-        <div className="bg-[#151c2c] border border-[#222f47]/60 rounded-2xl p-6 shadow-lg max-w-2xl">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
-              <Cloud className="w-5 h-5" />
-            </div>
-            <div>
-              <h3 className="text-base font-bold text-white">Central Supabase Cloud Connection</h3>
-              <p className="text-xs text-slate-400 mt-0.5">Enables real-time synchronization between multiple authorized computers</p>
-            </div>
-          </div>
-
-          <form onSubmit={handleSaveCloud} className="space-y-4 text-xs">
-            <div>
-              <label className="block text-slate-300 font-semibold mb-1">Supabase Project URL</label>
-              <input
-                type="text"
-                value={supabaseUrl}
-                onChange={(e) => setSupabaseUrl(e.target.value)}
-                placeholder="https://your-project.supabase.co"
-                className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono focus:outline-none focus:border-amber-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-slate-300 font-semibold mb-1">Supabase Anon Public API Key</label>
-              <input
-                type="password"
-                value={supabaseKey}
-                onChange={(e) => setSupabaseKey(e.target.value)}
-                placeholder="eyJh..."
-                className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono focus:outline-none focus:border-amber-500"
-              />
-            </div>
-
-            {connectionStatus && (
-              <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 font-medium">
-                {connectionStatus}
-              </div>
-            )}
-
-            <div className="p-4 bg-slate-900/60 border border-slate-800 rounded-xl space-y-1.5 text-slate-400">
-              <div className="font-bold text-slate-300">How Multi-PC Cloud Sync Works:</div>
-              <p>1. Run the database migration script in your Supabase SQL editor.</p>
-              <p>2. Enter your project URL and Anon key above on Computer 1 and Computer 2.</p>
-              <p>3. Both computers will now access and update the same business data in real time with Row Level Security (RLS) tenant isolation!</p>
-            </div>
-
-            <div className="pt-2">
-              <button
-                type="submit"
-                className="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold shadow-md shadow-emerald-500/20 transition-colors"
-              >
-                Save Cloud Configuration
               </button>
             </div>
           </form>

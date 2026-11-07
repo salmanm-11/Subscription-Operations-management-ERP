@@ -1033,7 +1033,16 @@ export const App: React.FC = () => {
   if (!currentUser) {
     return (
       <LoginView
-        onLoginSuccess={(user) => setCurrentUser(user)}
+        onLoginSuccess={async (user) => {
+          setCurrentUser(user);
+          // Instantly sync with central cloud database upon user login
+          try {
+            await loadData();
+            await checkConnection();
+          } catch (e) {
+            console.warn('Auto cloud sync on login failed:', e);
+          }
+        }}
         onOpenCustomerRegister={() => setIsPublicOnboarding(true)}
       />
     );

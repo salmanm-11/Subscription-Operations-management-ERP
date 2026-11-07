@@ -5,6 +5,10 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { OfflineStorage, DEFAULT_BUSINESS } from './offlineStorage';
 import { Customer, Building, Room, MealPlan, Invoice, Payment, BusinessSettings, DashboardMetrics, Vendor, VendorTransaction, VendorPayment } from '../types';
 
+// Built-in Internal Supabase Cloud Credentials (Hidden from frontend UI)
+export const BUILTIN_SUPABASE_URL = 'https://bbqrieuujxazhqgelppr.supabase.co';
+export const BUILTIN_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJicXJpZXV1anhhemhxZ2VscHByIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI4OTczMjAsImV4cCI6MjEwODQ3MzMyMH0.VzeXJPGwWod5AwZmCkQ3YIWyhBdEVeTLgZUjZLndSlw';
+
 let supabaseClient: SupabaseClient | null = null;
 
 export type CloudConnectionState = 'live' | 'offline' | 'tables_missing' | 'local' | 'checking';
@@ -39,13 +43,13 @@ export function resetSupabaseClient(): void {
 export function getSupabaseClient(): SupabaseClient | null {
   if (supabaseClient) return supabaseClient;
 
-  // Check Vite env first, then saved user config
+  // Check Vite env first, then saved user config, with internal embedded fallback
   const envUrl = typeof import.meta !== 'undefined' && import.meta.env ? import.meta.env.VITE_SUPABASE_URL : '';
   const envKey = typeof import.meta !== 'undefined' && import.meta.env ? import.meta.env.VITE_SUPABASE_ANON_KEY : '';
   
   const saved = OfflineStorage.getSupabaseConfig();
-  const url = (envUrl || saved.url || '').trim();
-  const anonKey = (envKey || saved.anonKey || '').trim();
+  const url = (envUrl || (saved?.url ? saved.url.trim() : '') || BUILTIN_SUPABASE_URL).trim();
+  const anonKey = (envKey || (saved?.anonKey ? saved.anonKey.trim() : '') || BUILTIN_SUPABASE_ANON_KEY).trim();
 
   if (url && anonKey && url.startsWith('http')) {
     try {
@@ -74,8 +78,8 @@ export async function checkCloudStatus(timeoutMs: number = 5000): Promise<CloudS
   const envUrl = typeof import.meta !== 'undefined' && import.meta.env ? import.meta.env.VITE_SUPABASE_URL : '';
   const envKey = typeof import.meta !== 'undefined' && import.meta.env ? import.meta.env.VITE_SUPABASE_ANON_KEY : '';
   const saved = OfflineStorage.getSupabaseConfig();
-  const url = (envUrl || saved.url || '').trim();
-  const anonKey = (envKey || saved.anonKey || '').trim();
+  const url = (envUrl || (saved?.url ? saved.url.trim() : '') || BUILTIN_SUPABASE_URL).trim();
+  const anonKey = (envKey || (saved?.anonKey ? saved.anonKey.trim() : '') || BUILTIN_SUPABASE_ANON_KEY).trim();
   const now = new Date().toLocaleTimeString();
 
   if (!url || !anonKey || !url.startsWith('http')) {

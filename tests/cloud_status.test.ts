@@ -98,4 +98,35 @@ describe('Cloud Live Indicator & Diagnostics Verification', () => {
     expect(html).toContain('Checking...');
     expect(html).toContain('animate-spin');
   });
+
+  it('hides cloud credentials and configuration tab from frontend BusinessSettingsView', async () => {
+    const { BusinessSettingsView } = await import('../src/components/settings/BusinessSettingsView');
+    const { BUILTIN_SUPABASE_URL, BUILTIN_SUPABASE_ANON_KEY } = await import('../src/api/supabase');
+    const { OfflineStorage } = await import('../src/api/offlineStorage');
+
+    expect(BUILTIN_SUPABASE_URL).toBe('https://bbqrieuujxazhqgelppr.supabase.co');
+    expect(BUILTIN_SUPABASE_ANON_KEY.length).toBeGreaterThan(20);
+
+    const config = OfflineStorage.getSupabaseConfig();
+    expect(config.url).toBe(BUILTIN_SUPABASE_URL);
+
+    const html = renderToString(
+      React.createElement(BusinessSettingsView, {
+        settings: {
+          currency: 'AED',
+          timezone: 'Asia/Dubai',
+          invoice_prefix: 'INV-2026-',
+          due_reminder_days: 5,
+        } as any,
+        onSaveSettings: () => {},
+      })
+    );
+
+    // Ensure no sensitive cloud inputs, tabs or credentials exist in the UI
+    expect(html).not.toContain('Cloud Synchronization');
+    expect(html).not.toContain('Supabase Project URL');
+    expect(html).not.toContain('Supabase Anon Public API Key');
+    expect(html).not.toContain('Save Cloud Configuration');
+    expect(html).not.toContain(BUILTIN_SUPABASE_URL);
+  });
 });
