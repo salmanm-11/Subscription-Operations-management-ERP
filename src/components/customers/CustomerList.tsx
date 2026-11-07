@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { Plus, Search, Filter, Download, Edit, Trash2, Utensils, Phone, PhoneCall, Building2, FileSpreadsheet, Upload, ChevronDown, Clock, Eye, AlertTriangle, Check, X, Share2, Copy, MessageSquare, ExternalLink } from 'lucide-react';
+import { Plus, Search, Filter, Download, Edit, Trash2, Utensils, Phone, PhoneCall, Building2, FileSpreadsheet, Upload, ChevronDown, Clock, Eye, AlertTriangle, Check, X, Share2, Copy, MessageSquare, ExternalLink, Globe, Edit2, RotateCcw } from 'lucide-react';
 import { Customer, Building, MealPlan, Invoice, Payment } from '../../types';
 import { formatAED } from '../../utils/currency';
 import { exportCustomersToExcel, downloadCustomerTemplate, ParsedImportRow } from '../../utils/excelService';
@@ -53,9 +53,69 @@ export const CustomerList: React.FC<CustomerListProps> = ({
   const [isShareLinkModalOpen, setIsShareLinkModalOpen] = useState(false);
   const [hasCopiedLink, setHasCopiedLink] = useState(false);
 
+  // Dedicated Web Registration Portal Link Management
+  const DEFAULT_REGISTRATION_URL = 'https://customer-self-registration.vercel.app';
+  const STORAGE_KEY = 'karama_registration_portal_url';
+
+  const [registrationUrl, setRegistrationUrl] = useState<string>(() => {
+    try {
+      if (typeof localStorage !== 'undefined') {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved && saved.startsWith('http')) return saved;
+      }
+      if (typeof window !== 'undefined' && window.location.origin && window.location.origin.startsWith('http') && !window.location.origin.includes('localhost') && !window.location.origin.includes('file:')) {
+        return `${window.location.origin}/?join=true`;
+      }
+    } catch {
+      // fallback
+    }
+    return DEFAULT_REGISTRATION_URL;
+  });
+
+  const [isEditingUrl, setIsEditingUrl] = useState(false);
+  const [urlInputValue, setUrlInputValue] = useState('');
+
   const getRegistrationLink = () => {
-    if (typeof window === 'undefined') return '';
-    return `${window.location.origin}/?join=true`;
+    if (registrationUrl && registrationUrl.startsWith('http') && !registrationUrl.startsWith('file:')) {
+      return registrationUrl;
+    }
+    return DEFAULT_REGISTRATION_URL;
+  };
+
+  const handleStartEditingUrl = () => {
+    setUrlInputValue(registrationUrl);
+    setIsEditingUrl(true);
+  };
+
+  const handleSaveCustomUrl = () => {
+    let clean = urlInputValue.trim();
+    if (!clean) {
+      clean = DEFAULT_REGISTRATION_URL;
+    } else if (!clean.startsWith('http://') && !clean.startsWith('https://')) {
+      clean = `https://${clean}`;
+    }
+    setRegistrationUrl(clean);
+    try {
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem(STORAGE_KEY, clean);
+      }
+    } catch {
+      // fallback
+    }
+    setIsEditingUrl(false);
+  };
+
+  const handleResetToDefault = () => {
+    setRegistrationUrl(DEFAULT_REGISTRATION_URL);
+    try {
+      if (typeof localStorage !== 'undefined') {
+        localStorage.removeItem(STORAGE_KEY);
+      }
+    } catch {
+      // fallback
+    }
+    setUrlInputValue(DEFAULT_REGISTRATION_URL);
+    setIsEditingUrl(false);
   };
 
   const handleCopyRegistrationLink = async () => {
@@ -751,8 +811,13 @@ export const CustomerList: React.FC<CustomerListProps> = ({
                         </span>
                       </td>
                       <td className="py-3 px-3 min-w-[160px]">
-                        <div className="font-bold text-white text-sm sm:text-base tracking-tight hover:text-amber-300 transition-colors">
-                          {c.full_name}
+                        <div className="font-bold text-white text-sm sm:text-base tracking-tight hover:text-amber-300 transition-colors flex items-center gap-1.5 flex-wrap">
+                          <span>{c.full_name}</span>
+                          {c.managed_by === 'online_self_service' && (
+                            <span className="inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40" title="Registered via online link">
+                              🌐 Online
+                            </span>
+                          )}
                         </div>
                         {c.phone && (
                           <div className="flex items-center gap-1 text-[11px] text-slate-400 font-medium mt-0.5">
@@ -1056,28 +1121,105 @@ export const CustomerList: React.FC<CustomerListProps> = ({
                 Send this link to any new customer. They can fill out their name, WhatsApp number, room, and meal plan on their mobile phone. Once submitted, they will <strong>automatically appear inside your software in real-time</strong>!
               </p>
 
-              <div className="p-3 bg-slate-900 border border-slate-800 rounded-xl flex items-center justify-between gap-2">
-                <span className="font-mono text-xs text-amber-300 truncate select-all">
-                  {getRegistrationLink()}
-                </span>
-                <button
-                  type="button"
-                  onClick={handleCopyRegistrationLink}
-                  className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white flex items-center gap-1.5 shrink-0 border border-slate-700 cursor-pointer"
-                >
-                  {hasCopiedLink ? (
-                    <>
-                      <Check className="w-3.5 h-3.5 text-emerald-400" />
-                      <span className="text-emerald-400">Copied!</span>
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="w-3.5 h-3.5 text-slate-400" />
-                      <span>Copy</span>
-                    </>
-                  )}
-                </button>
-              </div>
+              {/* Editable Registration Portal Link */}
+              {isEditingUrl ? (
+                <div className="space-y-2 p-3 bg-slate-900 border border-amber-500/50 rounded-2xl animate-fadeIn">
+                  <div className="flex items-center justify-between text-xs font-bold text-amber-300">
+                    <span className="flex items-center gap-1.5">
+                      <Globe className="w-3.5 h-3.5 text-amber-400" />
+                      Public Registration Web URL
+                    </span>
+                    <button
+                      type="button"
+                      onClick={handleResetToDefault}
+                      className="text-[10px] text-slate-400 hover:text-white flex items-center gap-1 cursor-pointer"
+                      title="Reset to default Vercel portal"
+                    >
+                      <RotateCcw className="w-3 h-3" />
+                      <span>Reset</span>
+                    </button>
+                  </div>
+                  <input
+                    type="url"
+                    value={urlInputValue}
+                    onChange={(e) => setUrlInputValue(e.target.value)}
+                    placeholder="https://customer-self-registration.vercel.app"
+                    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs font-mono text-white focus:outline-none focus:border-amber-400"
+                    autoFocus
+                  />
+                  <div className="flex items-center gap-1.5 pt-0.5 flex-wrap">
+                    <button
+                      type="button"
+                      onClick={() => setUrlInputValue('https://customer-self-registration.vercel.app')}
+                      className="px-2 py-0.5 rounded text-[10px] font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 cursor-pointer"
+                    >
+                      Default Vercel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setUrlInputValue('https://salmanm-11.github.io/Customer-Self-Registration/')}
+                      className="px-2 py-0.5 rounded text-[10px] font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 cursor-pointer"
+                    >
+                      GitHub Pages
+                    </button>
+                  </div>
+                  <div className="flex items-center justify-end gap-2 pt-1.5">
+                    <button
+                      type="button"
+                      onClick={() => setIsEditingUrl(false)}
+                      className="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleSaveCustomUrl}
+                      className="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 shadow cursor-pointer"
+                    >
+                      Save URL
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-1.5">
+                  <div className="p-3 bg-slate-900 border border-slate-800 rounded-xl flex items-center justify-between gap-2">
+                    <span className="font-mono text-xs text-amber-300 truncate select-all" title={getRegistrationLink()}>
+                      {getRegistrationLink()}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={handleCopyRegistrationLink}
+                      className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white flex items-center gap-1.5 shrink-0 border border-slate-700 cursor-pointer"
+                    >
+                      {hasCopiedLink ? (
+                        <>
+                          <Check className="w-3.5 h-3.5 text-emerald-400" />
+                          <span className="text-emerald-400">Copied!</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-3.5 h-3.5 text-slate-400" />
+                          <span>Copy</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                  <div className="flex items-center justify-between px-1 text-[11px] text-slate-400">
+                    <span className="flex items-center gap-1">
+                      <Globe className="w-3 h-3 text-emerald-400" />
+                      Live web link
+                    </span>
+                    <button
+                      type="button"
+                      onClick={handleStartEditingUrl}
+                      className="text-amber-400 hover:text-amber-300 font-bold inline-flex items-center gap-1 cursor-pointer hover:underline"
+                    >
+                      <Edit2 className="w-3 h-3" />
+                      <span>Change Link</span>
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="flex flex-col sm:flex-row items-center gap-2 pt-2">

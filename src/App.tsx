@@ -9,6 +9,8 @@ import { UpcomingPaymentsTable } from './components/dashboard/UpcomingPaymentsTa
 import { CustomerList } from './components/customers/CustomerList';
 import { CustomerModal } from './components/customers/CustomerModal';
 import { CustomerDetailModal } from './components/customers/CustomerDetailModal';
+import { NewRegistrationToast } from './components/common/NewRegistrationToast';
+import { playNotificationChime } from './utils/notificationAudio';
 import { BuildingList } from './components/buildings/BuildingList';
 import { MealPlanList } from './components/mealPlans/MealPlanList';
 import { AttendanceSheet } from './components/attendance/AttendanceSheet';
@@ -120,6 +122,8 @@ export const App: React.FC = () => {
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [viewingProfileCustomer, setViewingProfileCustomer] = useState<Customer | null>(null);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+  const [latestRegistrant, setLatestRegistrant] = useState<Customer | null>(null);
+  const [newRegistrationAlert, setNewRegistrationAlert] = useState<Customer | null>(null);
 
   // Keep viewingProfileCustomer synchronized when customers reload
   useEffect(() => {
@@ -245,6 +249,13 @@ export const App: React.FC = () => {
         });
       }
       setCustomers(updatedCustomers);
+      // Track most recent online customer for status bar
+      const latestOnline = updatedCustomers
+        .filter((cust) => cust.managed_by === 'online_self_service')
+        .sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''))[0];
+      if (latestOnline) {
+        setLatestRegistrant((prev) => prev || latestOnline);
+      }
       setBuildings(b);
       setMealPlans(mp);
       setInvoices(inv);
@@ -288,6 +299,11 @@ export const App: React.FC = () => {
             return [rec, ...prev];
           });
           OfflineStorage.saveCustomer(rec);
+
+          // Real-time live status bar update, animated popup alert & subtle chime
+          setLatestRegistrant(rec);
+          setNewRegistrationAlert(rec);
+          playNotificationChime(0.08);
         } else if (event === 'UPDATE' && newRecord) {
           setCustomers((prev) =>
             prev.map((c) => {
@@ -973,6 +989,7 @@ export const App: React.FC = () => {
           invoices={invoices}
           onSelectTab={setCurrentTab}
           onViewCustomer={(cust) => setViewingProfileCustomer(cust)}
+          latestRegistrant={latestRegistrant}
         />
 
         <main className="p-5 md:p-6 flex-1 min-w-0 max-w-full overflow-y-auto">
@@ -1345,6 +1362,15 @@ export const App: React.FC = () => {
           </div>
         </div>
       )}
+      {/* Live Online Registration Notification Toast */}
+      <NewRegistrationToast
+        customer={newRegistrationAlert}
+        onViewCustomer={(cust) => {
+          setViewingProfileCustomer(cust);
+          setNewRegistrationAlert(null);
+        }}
+        onDismiss={() => setNewRegistrationAlert(null)}
+      />
     </div>
   );
 };

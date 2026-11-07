@@ -19,7 +19,10 @@ import {
   Wifi,
   WifiOff,
   AlertTriangle,
-  CalendarX
+  CalendarX,
+  Globe,
+  UserPlus,
+  Sparkles
 } from 'lucide-react';
 import { Customer, Invoice } from '../../types';
 import { formatAED } from '../../utils/currency';
@@ -47,6 +50,7 @@ interface HeaderProps {
   invoices?: Invoice[];
   onSelectTab?: (tab: string) => void;
   onViewCustomer?: (customer: Customer) => void;
+  latestRegistrant?: Customer | null;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -64,11 +68,12 @@ export const Header: React.FC<HeaderProps> = ({
   invoices = [],
   onSelectTab,
   onViewCustomer,
+  latestRegistrant = null,
 }) => {
   const [isRemindersOpen, setIsRemindersOpen] = useState(false);
   const [isCloudPopoverOpen, setIsCloudPopoverOpen] = useState(false);
   const [reminderDays, setReminderDays] = useState<number>(getReminderDaysSetting());
-  const [activeReminderTab, setActiveReminderTab] = useState<'due' | 'cancellation'>('due');
+  const [activeReminderTab, setActiveReminderTab] = useState<'due' | 'cancellation' | 'registrations'>('due');
 
   const today = new Intl.DateTimeFormat('en-GB', {
     weekday: 'long',
@@ -96,6 +101,13 @@ export const Header: React.FC<HeaderProps> = ({
     return getApproachingCancellations(customers, Math.max(reminderDays, 15));
   }, [customers, reminderDays]);
 
+  // Online registrations list
+  const onlineRegistrations = useMemo(() => {
+    return customers
+      .filter((c) => c.managed_by === 'online_self_service')
+      .sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''));
+  }, [customers]);
+
   const totalAlertsCount = reminders.length + approachingCancellations.length;
 
   const dueTodayCount = useMemo(() => {
@@ -120,6 +132,30 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
 
       <div className="flex items-center gap-3 shrink-0 relative">
+        {/* Real-time Status Bar Pill: Latest Online Registration */}
+        {latestRegistrant && (
+          <button
+            type="button"
+            onClick={() => onViewCustomer?.(latestRegistrant)}
+            className="group flex items-center gap-2 px-3 py-1.5 rounded-xl border border-emerald-500/40 bg-emerald-950/40 hover:bg-emerald-900/60 text-emerald-300 transition-all text-xs font-semibold shadow-sm hover:border-emerald-400 cursor-pointer animate-in fade-in duration-300"
+            title={`Latest registration: ${latestRegistrant.full_name} (${latestRegistrant.customer_code}). Click to open details.`}
+          >
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
+            <span className="text-[10px] font-black text-emerald-400 uppercase tracking-wider bg-emerald-500/20 px-1.5 py-0.5 rounded border border-emerald-500/30">
+              New Reg
+            </span>
+            <span className="font-bold text-white group-hover:text-emerald-200 truncate max-w-[110px] sm:max-w-[160px]">
+              {latestRegistrant.full_name}
+            </span>
+            <span className="font-mono text-[10px] text-emerald-300/90 hidden sm:inline">
+              ({latestRegistrant.customer_code})
+            </span>
+          </button>
+        )}
+
         {/* Due Date Approaching Reminders & Cancellation Notices Notification Bell */}
         <div className="relative">
           <button
@@ -165,12 +201,12 @@ export const Header: React.FC<HeaderProps> = ({
                 </button>
               </div>
 
-              {/* Tab Switcher: Due Reminders vs Cancellations on Notice */}
-              <div className="grid grid-cols-2 bg-slate-900 border-b border-slate-800 text-xs font-bold">
+              {/* Tab Switcher: Due Reminders vs Cancellations on Notice vs Online Registrations */}
+              <div className="grid grid-cols-3 bg-slate-900 border-b border-slate-800 text-xs font-bold">
                 <button
                   type="button"
                   onClick={() => setActiveReminderTab('due')}
-                  className={`py-2 px-3 flex items-center justify-center gap-1.5 transition-colors border-b-2 cursor-pointer ${
+                  className={`py-2 px-2 flex items-center justify-center gap-1 transition-colors border-b-2 cursor-pointer ${
                     activeReminderTab === 'due'
                       ? 'border-amber-400 text-amber-300 bg-slate-800/60'
                       : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
@@ -183,24 +219,37 @@ export const Header: React.FC<HeaderProps> = ({
                 <button
                   type="button"
                   onClick={() => setActiveReminderTab('cancellation')}
-                  className={`py-2 px-3 flex items-center justify-center gap-1.5 transition-colors border-b-2 cursor-pointer ${
+                  className={`py-2 px-2 flex items-center justify-center gap-1 transition-colors border-b-2 cursor-pointer ${
                     activeReminderTab === 'cancellation'
                       ? 'border-rose-400 text-rose-300 bg-slate-800/60'
                       : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
                   }`}
                 >
                   <CalendarX className="w-3.5 h-3.5 text-rose-400" />
-                  <span>Leaving Soon ({approachingCancellations.length})</span>
+                  <span>Leaving ({approachingCancellations.length})</span>
                   {approachingCancellations.some((c) => c.daysRemaining === 1) && (
                     <span className="font-mono text-[9px] font-black px-1.5 py-0.2 rounded bg-amber-500 text-slate-950 animate-pulse">
-                      1d Soon
+                      1d
                     </span>
                   )}
                   {approachingCancellations.some((c) => c.daysRemaining === 0) && (
                     <span className="font-mono text-[9px] font-black px-1.5 py-0.2 rounded bg-rose-500 text-white animate-pulse">
-                      TODAY
+                      NOW
                     </span>
                   )}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveReminderTab('registrations')}
+                  className={`py-2 px-2 flex items-center justify-center gap-1 transition-colors border-b-2 cursor-pointer ${
+                    activeReminderTab === 'registrations'
+                      ? 'border-emerald-400 text-emerald-300 bg-slate-800/60'
+                      : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
+                  }`}
+                >
+                  <Globe className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Online ({onlineRegistrations.length})</span>
                 </button>
               </div>
 
@@ -386,6 +435,74 @@ export const Header: React.FC<HeaderProps> = ({
                     })
                   )
                 )}
+
+                {activeReminderTab === 'registrations' && (
+                  onlineRegistrations.length === 0 ? (
+                    <div className="p-6 text-center text-slate-400 text-xs space-y-1">
+                      <Globe className="w-6 h-6 text-emerald-400 mx-auto" />
+                      <div className="font-bold text-slate-300">No Online Registrations</div>
+                      <div className="text-[11px] text-slate-500">
+                        Customers registered through the online link will appear here.
+                      </div>
+                    </div>
+                  ) : (
+                    onlineRegistrations.map((c) => (
+                      <div
+                        key={c.id}
+                        className="p-3 hover:bg-slate-800/40 transition-colors flex items-center justify-between gap-3"
+                      >
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-xs text-white truncate">
+                              {c.full_name}
+                            </span>
+                            <span className="font-mono text-[10px] font-bold text-emerald-400 bg-emerald-500/15 px-1.5 py-0.2 rounded border border-emerald-500/30">
+                              #{c.customer_code}
+                            </span>
+                          </div>
+                          <div className="text-[11px] text-slate-400 flex items-center gap-1 mt-0.5 truncate">
+                            <Building2 className="w-3 h-3 text-sky-400 shrink-0" />
+                            <span>
+                              {c.building_name_cache || c.building?.name || 'Area'}{' '}
+                              {c.apartment_cache ? `(Apt ${c.apartment_cache})` : ''}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 mt-1 flex-wrap">
+                            <span className="text-[10px] font-mono text-emerald-300 bg-emerald-950/60 px-1.5 py-0.5 rounded border border-emerald-500/30">
+                              {[
+                                c.has_breakfast ? 'Breakfast' : null,
+                                c.has_lunch ? 'Lunch' : null,
+                                c.has_dinner ? 'Dinner' : null,
+                              ]
+                                .filter(Boolean)
+                                .join(' + ') || 'Standard Plan'}
+                            </span>
+                            {c.dietary_preferences && (
+                              <span className="text-[10px] text-amber-300/90 truncate max-w-[150px]" title={c.dietary_preferences}>
+                                {c.dietary_preferences}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        <button
+                          onClick={() => {
+                            setIsRemindersOpen(false);
+                            if (onViewCustomer) {
+                              onViewCustomer(c);
+                            } else if (onSelectTab) {
+                              onSelectTab('customers');
+                            }
+                          }}
+                          className="px-2.5 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-sm transition-all cursor-pointer shrink-0"
+                          title="View Customer Profile"
+                        >
+                          View
+                        </button>
+                      </div>
+                    ))
+                  )
+                )}
               </div>
 
               {/* Dropdown Footer Link */}
@@ -393,12 +510,14 @@ export const Header: React.FC<HeaderProps> = ({
                 <button
                   onClick={() => {
                     setIsRemindersOpen(false);
-                    if (onSelectTab) onSelectTab(activeReminderTab === 'cancellation' ? 'customers' : 'overdue');
+                    if (onSelectTab) onSelectTab(activeReminderTab === 'due' ? 'overdue' : 'customers');
                   }}
                   className="text-xs text-amber-400 hover:text-amber-300 font-bold inline-flex items-center gap-1 cursor-pointer"
                 >
                   <span>
-                    {activeReminderTab === 'cancellation'
+                    {activeReminderTab === 'registrations'
+                      ? 'Open Online Customers in Directory'
+                      : activeReminderTab === 'cancellation'
                       ? 'Open Customer Directory'
                       : 'Open Full Overdue & Reminders Hub'}
                   </span>
