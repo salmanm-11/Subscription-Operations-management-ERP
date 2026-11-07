@@ -5,6 +5,7 @@ import { AuthService } from '../../api/authService';
 import { OfflineStorage } from '../../api/offlineStorage';
 import { saveBuilding } from '../../api/supabase';
 import { calculateDailyMealRate } from '../../utils/cancellationService';
+import { resolveExpectedMonthlyRate } from '../../utils/mealPlanPricingService';
 
 interface CustomerModalProps {
   isOpen: boolean;
@@ -174,7 +175,7 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
       setCancellationDate(initialNoticeDate);
       setCancellationReason(initialNoticeReason);
       setStatus(noticeActive ? 'cancelling_soon' : (customer.status || 'active'));
-      setManagedBy(customer.managed_by === 'manager' ? 'manager' : 'admin');
+      setManagedBy(customer.managed_by === 'manager' ? 'manager' : (customer.managed_by === 'online_self_service' || (customer.managed_by && customer.managed_by.includes('online')) ? 'online_self_service' : 'admin'));
       setNotes(customer.notes || '');
     } else {
       setFullName('');
@@ -590,10 +591,11 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
                   onChange={(e) => {
                     const checked = e.target.checked;
                     setHasBreakfast(checked);
-                    const count = (checked ? 1 : 0) + (hasLunch ? 1 : 0) + (hasDinner ? 1 : 0);
-                    if (count === 3) setMonthlyRate(380);
-                    else if (count === 2) setMonthlyRate(300);
-                    else if (count === 1) setMonthlyRate(180);
+                    const rate = resolveExpectedMonthlyRate(
+                      { has_breakfast: checked, has_lunch: hasLunch, has_dinner: hasDinner },
+                      mealPlans
+                    );
+                    setMonthlyRate(rate);
                   }}
                   className="w-4 h-4 rounded border-slate-700 text-amber-500 focus:ring-0 cursor-pointer"
                 />
@@ -607,10 +609,11 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
                   onChange={(e) => {
                     const checked = e.target.checked;
                     setHasLunch(checked);
-                    const count = (hasBreakfast ? 1 : 0) + (checked ? 1 : 0) + (hasDinner ? 1 : 0);
-                    if (count === 3) setMonthlyRate(380);
-                    else if (count === 2) setMonthlyRate(300);
-                    else if (count === 1) setMonthlyRate(180);
+                    const rate = resolveExpectedMonthlyRate(
+                      { has_breakfast: hasBreakfast, has_lunch: checked, has_dinner: hasDinner },
+                      mealPlans
+                    );
+                    setMonthlyRate(rate);
                   }}
                   className="w-4 h-4 rounded border-slate-700 text-amber-500 focus:ring-0 cursor-pointer"
                 />
@@ -624,10 +627,11 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
                   onChange={(e) => {
                     const checked = e.target.checked;
                     setHasDinner(checked);
-                    const count = (hasBreakfast ? 1 : 0) + (hasLunch ? 1 : 0) + (checked ? 1 : 0);
-                    if (count === 3) setMonthlyRate(380);
-                    else if (count === 2) setMonthlyRate(300);
-                    else if (count === 1) setMonthlyRate(180);
+                    const rate = resolveExpectedMonthlyRate(
+                      { has_breakfast: hasBreakfast, has_lunch: hasLunch, has_dinner: checked },
+                      mealPlans
+                    );
+                    setMonthlyRate(rate);
                   }}
                   className="w-4 h-4 rounded border-slate-700 text-amber-500 focus:ring-0 cursor-pointer"
                 />
@@ -638,33 +642,59 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <div className="flex items-center justify-between mb-1.5">
+              <div className="flex items-center justify-between mb-1.5 flex-wrap gap-1">
                 <label className="text-slate-300 font-semibold text-xs sm:text-sm">Monthly Fee (AED) *</label>
-                <div className="flex gap-1">
-                  <button
-                    type="button"
-                    onClick={() => setMonthlyRate(180)}
-                    className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 cursor-pointer"
-                    title="1 Time Standard: AED 180"
-                  >
-                    180
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setMonthlyRate(300)}
-                    className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 cursor-pointer"
-                    title="2 Time Standard: AED 300"
-                  >
-                    300
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setMonthlyRate(380)}
-                    className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 cursor-pointer"
-                    title="3 Time Full: AED 380"
-                  >
-                    380
-                  </button>
+                <div className="flex gap-1 flex-wrap">
+                  {mealPlans && mealPlans.length > 0 ? (
+                    mealPlans
+                      .filter((p) => p.is_active !== false && p.monthly_price)
+                      .sort((a, b) => (a.monthly_price || 0) - (b.monthly_price || 0))
+                      .map((p) => (
+                        <button
+                          key={p.id}
+                          type="button"
+                          onClick={() => {
+                            setMonthlyRate(p.monthly_price);
+                            setMealPlanId(p.id);
+                            if (p.includes_breakfast !== undefined) setHasBreakfast(Boolean(p.includes_breakfast));
+                            if (p.includes_lunch !== undefined) setHasLunch(Boolean(p.includes_lunch));
+                            if (p.includes_dinner !== undefined) setHasDinner(Boolean(p.includes_dinner));
+                          }}
+                          className={`px-1.5 py-0.5 rounded text-[10px] font-bold border cursor-pointer transition-all ${
+                            monthlyRate === p.monthly_price
+                              ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-sm'
+                              : 'bg-slate-800 hover:bg-slate-700 text-slate-300 border-slate-700'
+                          }`}
+                          title={`${p.name}: AED ${p.monthly_price}`}
+                        >
+                          {p.monthly_price}
+                        </button>
+                      ))
+                  ) : (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => setMonthlyRate(180)}
+                        className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 cursor-pointer"
+                      >
+                        180
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setMonthlyRate(300)}
+                        className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 cursor-pointer"
+                      >
+                        300
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setMonthlyRate(380)}
+                        className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 cursor-pointer"
+                      >
+                        380
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
               <input
@@ -871,6 +901,7 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
             >
               <option value="admin">Admin</option>
               <option value="manager">Manager</option>
+              <option value="online_self_service">Online</option>
               {availableUsers
                 .filter((u) => u.username !== 'admin' && u.username !== 'manager')
                 .map((u) => (

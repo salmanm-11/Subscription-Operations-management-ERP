@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CalendarDays, Plus, Check, Pencil, Trash2, AlertTriangle, X, Users, Utensils } from 'lucide-react';
+import { CalendarDays, Plus, Check, Pencil, Trash2, AlertTriangle, X, Users, Utensils, RefreshCw, Sparkles } from 'lucide-react';
 import { MealPlan, Customer } from '../../types';
 import { formatAED } from '../../utils/currency';
 
@@ -10,6 +10,7 @@ interface MealPlanListProps {
   onAddPlan: (plan: Partial<MealPlan>) => void;
   onEditPlan?: (plan: Partial<MealPlan>) => void;
   onDeletePlan?: (id: string) => void;
+  onSyncAllCustomerRates?: () => Promise<number | void> | void;
 }
 
 export const MealPlanList: React.FC<MealPlanListProps> = ({
@@ -19,10 +20,13 @@ export const MealPlanList: React.FC<MealPlanListProps> = ({
   onAddPlan,
   onEditPlan,
   onDeletePlan,
+  onSyncAllCustomerRates,
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPlan, setEditingPlan] = useState<MealPlan | null>(null);
   const [deletingPlan, setDeletingPlan] = useState<MealPlan | null>(null);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncMessage, setSyncMessage] = useState<string | null>(null);
 
   // Form State
   const [name, setName] = useState('');
@@ -92,6 +96,25 @@ export const MealPlanList: React.FC<MealPlanListProps> = ({
     setDeletingPlan(null);
   };
 
+  const handleSyncRates = async () => {
+    if (!onSyncAllCustomerRates) return;
+    setIsSyncing(true);
+    setSyncMessage(null);
+    try {
+      const res = await onSyncAllCustomerRates();
+      setSyncMessage(
+        typeof res === 'number'
+          ? `Successfully synchronized monthly fees for ${res} customers based on configured meal plans!`
+          : 'Successfully synchronized customer monthly fees with meal plans!'
+      );
+      setTimeout(() => setSyncMessage(null), 6000);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
   // Helper to count customers enrolled on this plan
   const getSubscribersCount = (planId: string, planName: string) => {
     return customers.filter(
@@ -110,16 +133,38 @@ export const MealPlanList: React.FC<MealPlanListProps> = ({
           </p>
         </div>
 
-        {!isReadOnly && (
-          <button
-            onClick={handleOpenAdd}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs sm:text-sm font-bold shadow-md shadow-amber-500/20 transition-all cursor-pointer self-start sm:self-auto active:scale-[0.98]"
-          >
-            <Plus className="w-4 h-4 text-slate-950" />
-            <span>Add Meal Plan</span>
-          </button>
-        )}
+        <div className="flex items-center gap-2 flex-wrap self-start sm:self-auto">
+          {!isReadOnly && onSyncAllCustomerRates && (
+            <button
+              type="button"
+              onClick={handleSyncRates}
+              disabled={isSyncing}
+              className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/30 text-xs sm:text-sm font-bold shadow-sm transition-all cursor-pointer disabled:opacity-50"
+              title="Automatically update all customer monthly rates to match active meal plans"
+            >
+              <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />
+              <span>{isSyncing ? 'Syncing Customers...' : 'Sync Rates to All Customers'}</span>
+            </button>
+          )}
+
+          {!isReadOnly && (
+            <button
+              onClick={handleOpenAdd}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs sm:text-sm font-bold shadow-md shadow-amber-500/20 transition-all cursor-pointer active:scale-[0.98]"
+            >
+              <Plus className="w-4 h-4 text-slate-950" />
+              <span>Add Meal Plan</span>
+            </button>
+          )}
+        </div>
       </div>
+
+      {syncMessage && (
+        <div className="p-3.5 bg-emerald-500/15 border border-emerald-500/40 rounded-xl text-xs font-bold text-emerald-300 flex items-center gap-2 animate-fadeIn">
+          <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+          <span>{syncMessage}</span>
+        </div>
+      )}
 
       {/* Meal Plans Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -393,6 +438,13 @@ export const MealPlanList: React.FC<MealPlanListProps> = ({
                   />
                   <span>Active for new customer subscriptions</span>
                 </label>
+              </div>
+
+              <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl text-[11px] text-amber-200 flex items-start gap-2">
+                <Sparkles className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                <span>
+                  <strong>Automatic Sync:</strong> Updating this price will automatically update the monthly fee for all matching customers across the entire software.
+                </span>
               </div>
 
               <div className="pt-3 border-t border-slate-800 flex justify-end gap-2.5">

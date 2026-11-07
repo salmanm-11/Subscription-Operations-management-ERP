@@ -334,7 +334,12 @@ export class OfflineStorage {
       has_breakfast: Boolean(cust.has_breakfast),
       has_lunch: cust.has_lunch !== undefined ? Boolean(cust.has_lunch) : true,
       has_dinner: cust.has_dinner !== undefined ? Boolean(cust.has_dinner) : true,
-      monthly_rate: cust.monthly_rate || 380.00,
+      monthly_rate: cust.monthly_rate || (() => {
+        const mealCount = (Boolean(cust.has_breakfast) ? 1 : 0) +
+          (cust.has_lunch !== undefined ? (cust.has_lunch ? 1 : 0) : 1) +
+          (cust.has_dinner !== undefined ? (cust.has_dinner ? 1 : 0) : 1);
+        return mealCount === 1 ? 180.00 : (mealCount === 2 ? 300.00 : 380.00);
+      })(),
       dietary_preferences: cust.dietary_preferences || '',
       delivery_time: cust.delivery_time || '',
       door_passcode: cust.door_passcode || '',

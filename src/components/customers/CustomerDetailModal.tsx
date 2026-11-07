@@ -1149,6 +1149,8 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                       <span className="text-slate-200 text-xs font-semibold">
                         {activeCustomer.managed_by === 'manager'
                           ? 'Manager'
+                          : (activeCustomer.managed_by === 'online_self_service' || (activeCustomer.managed_by && activeCustomer.managed_by.includes('online')))
+                          ? 'Online'
                           : 'Admin'}
                       </span>
                     </div>

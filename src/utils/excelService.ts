@@ -291,7 +291,10 @@ export async function parseCustomerExcel(file: File): Promise<ImportResult> {
           const hasDn = dnVal === 'yes' || dnVal === '1' || dnVal === 'true' || dnVal === 'dn' || dnVal === 'y';
 
           // Match Rate & Overdue
-          const rateVal = parseFloat(String(normalized['monthlyrateaed'] || normalized['monthlyrate'] || normalized['monthlyprice'] || normalized['rate'] || '380').replace(/[^0-9.-]/g, '')) || 380;
+          const count = (hasBf ? 1 : 0) + (hasLn ? 1 : 0) + (hasDn ? 1 : 0);
+          const fallbackRate = count === 1 ? 180 : (count === 2 ? 300 : 380);
+          const rawRate = normalized['monthlyrateaed'] || normalized['monthlyrate'] || normalized['monthlyprice'] || normalized['rate'];
+          const rateVal = rawRate ? (parseFloat(String(rawRate).replace(/[^0-9.-]/g, '')) || fallbackRate) : fallbackRate;
           const overdueVal = parseFloat(String(normalized['totaloverdueaed'] || normalized['totaloverdue'] || normalized['overdue'] || normalized['due'] || '0').replace(/[^0-9.-]/g, '')) || 0;
 
           // Match Status

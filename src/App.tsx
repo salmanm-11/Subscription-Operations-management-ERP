@@ -11,6 +11,7 @@ import { CustomerModal } from './components/customers/CustomerModal';
 import { CustomerDetailModal } from './components/customers/CustomerDetailModal';
 import { NewRegistrationToast } from './components/common/NewRegistrationToast';
 import { playNotificationChime } from './utils/notificationAudio';
+import { syncCustomersWithMealPlans, resolveExpectedMonthlyRate } from './utils/mealPlanPricingService';
 import { BuildingList } from './components/buildings/BuildingList';
 import { MealPlanList } from './components/mealPlans/MealPlanList';
 import { AttendanceSheet } from './components/attendance/AttendanceSheet';
@@ -230,13 +231,19 @@ export const App: React.FC = () => {
       // - Final meal date passed (cancellation_date < today) -> auto-move to 'cancelled'
       // - Scheduled cancellation notice active -> auto-move to 'cancelling_soon'
       const { updatedCustomers, hasChanges } = syncCustomerCancellationStatuses(c);
-      OfflineStorage.setCustomers(updatedCustomers);
-      if (hasChanges) {
-        updatedCustomers.forEach((cust) => {
+
+      // Automatically synchronize customer monthly fees with meal plans (e.g. 1 meal -> 180, 2 meals -> 300)
+      const { updatedCustomers: rateSyncedCustomers, changedCount: rateChanges } =
+        syncCustomersWithMealPlans(updatedCustomers, mp, false);
+      const finalCustomers = rateChanges > 0 ? rateSyncedCustomers : updatedCustomers;
+
+      OfflineStorage.setCustomers(finalCustomers);
+      if (hasChanges || rateChanges > 0) {
+        finalCustomers.forEach((cust) => {
           const original = c.find((orig) => orig.id === cust.id);
-          if (original && original.status !== cust.status) {
+          if (original && (original.status !== cust.status || original.monthly_rate !== cust.monthly_rate || original.meal_plan_id !== cust.meal_plan_id)) {
             saveCustomer(cust).catch(() => {});
-            if (cust.status === 'cancelled') {
+            if (original.status !== cust.status && cust.status === 'cancelled') {
               ActivityLogService.logAction(
                 'Customers',
                 'UPDATE',
@@ -247,10 +254,18 @@ export const App: React.FC = () => {
             }
           }
         });
+        if (rateChanges > 0) {
+          ActivityLogService.logAction(
+            'Customers',
+            'UPDATE',
+            'Monthly Fees Auto-Synced with Meal Plans',
+            `Corrected monthly fees for ${rateChanges} customers to match their active meal plans (e.g. 1-meal @ 180 AED, 2-meal @ 300 AED).`
+          );
+        }
       }
-      setCustomers(updatedCustomers);
+      setCustomers(finalCustomers);
       // Track most recent online customer for status bar
-      const latestOnline = updatedCustomers
+      const latestOnline = finalCustomers
         .filter((cust) => cust.managed_by === 'online_self_service')
         .sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''))[0];
       if (latestOnline) {
@@ -599,13 +614,77 @@ export const App: React.FC = () => {
   const handleSaveMealPlan = async (plan: Partial<MealPlan>) => {
     const isEdit = Boolean(plan.id);
     await saveMealPlan(plan);
-    ActivityLogService.logAction(
-      'Meal Plans',
-      isEdit ? 'UPDATE' : 'ADD',
-      isEdit ? 'Meal Plan Updated' : 'Meal Plan Configured',
-      `${isEdit ? 'Updated' : 'Configured'} meal plan "${plan.name}" with rate AED ${plan.monthly_price}`
-    );
+    const newPrice = Number(plan.monthly_price);
+
+    // AUTOMATIC BULK PROPAGATION:
+    // When a meal plan's price is updated, immediately propagate to all matching customers
+    if (!isNaN(newPrice) && newPrice > 0) {
+      let syncCount = 0;
+      setCustomers((prev) =>
+        prev.map((c) => {
+          const matchesId = Boolean(plan.id && (c.meal_plan_id === plan.id || c.meal_plan?.id === plan.id));
+          const matchesMeals =
+            plan.includes_breakfast !== undefined &&
+            plan.includes_lunch !== undefined &&
+            plan.includes_dinner !== undefined &&
+            Boolean(c.has_breakfast) === Boolean(plan.includes_breakfast) &&
+            Boolean(c.has_lunch) === Boolean(plan.includes_lunch) &&
+            Boolean(c.has_dinner) === Boolean(plan.includes_dinner);
+
+          if (matchesId || matchesMeals) {
+            syncCount++;
+            const updated: Customer = {
+              ...c,
+              meal_plan_id: plan.id || c.meal_plan_id,
+              monthly_rate: newPrice,
+              updated_at: new Date().toISOString(),
+            };
+            OfflineStorage.saveCustomer(updated);
+            saveCustomer(updated).catch(() => {});
+            return updated;
+          }
+          return c;
+        })
+      );
+
+      ActivityLogService.logAction(
+        'Meal Plans',
+        isEdit ? 'UPDATE' : 'ADD',
+        isEdit ? 'Meal Plan Updated' : 'Meal Plan Configured',
+        `${isEdit ? 'Updated' : 'Configured'} meal plan "${plan.name}" with rate AED ${plan.monthly_price}. Automatically synchronized ${syncCount} matching customers.`
+      );
+    } else {
+      ActivityLogService.logAction(
+        'Meal Plans',
+        isEdit ? 'UPDATE' : 'ADD',
+        isEdit ? 'Meal Plan Updated' : 'Meal Plan Configured',
+        `${isEdit ? 'Updated' : 'Configured'} meal plan "${plan.name}" with rate AED ${plan.monthly_price}`
+      );
+    }
+
     await loadData();
+  };
+
+  const handleSyncAllCustomerRates = async () => {
+    const { updatedCustomers, changedCount } = syncCustomersWithMealPlans(customers, mealPlans, true);
+    if (changedCount > 0) {
+      setCustomers(updatedCustomers);
+      OfflineStorage.setCustomers(updatedCustomers);
+      updatedCustomers.forEach((c) => {
+        const orig = customers.find((o) => o.id === c.id);
+        if (orig && (orig.monthly_rate !== c.monthly_rate || orig.meal_plan_id !== c.meal_plan_id)) {
+          saveCustomer(c).catch(() => {});
+        }
+      });
+      ActivityLogService.logAction(
+        'Customers',
+        'UPDATE',
+        'Batch Meal Plan Rates Synced',
+        `Successfully synchronized monthly fee structure for ${changedCount} customers based on configured meal plans.`
+      );
+    }
+    await loadData();
+    return changedCount;
   };
 
   const handleDeleteMealPlan = async (id: string) => {
@@ -1191,6 +1270,7 @@ export const App: React.FC = () => {
               onImportCustomers={handleImportCustomers}
               onRecordPayment={handleRecordPayment}
               onSaveCustomer={handleSaveCustomer}
+              onSyncAllCustomerRates={handleSyncAllCustomerRates}
             />
           )}
 
@@ -1217,6 +1297,7 @@ export const App: React.FC = () => {
               onAddPlan={handleSaveMealPlan}
               onEditPlan={handleSaveMealPlan}
               onDeletePlan={handleDeleteMealPlan}
+              onSyncAllCustomerRates={handleSyncAllCustomerRates}
             />
           )}
 

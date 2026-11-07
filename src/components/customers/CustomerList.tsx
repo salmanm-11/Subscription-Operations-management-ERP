@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { Plus, Search, Filter, Download, Edit, Trash2, Utensils, Phone, PhoneCall, Building2, FileSpreadsheet, Upload, ChevronDown, Clock, Eye, AlertTriangle, Check, X, Share2, Copy, MessageSquare, ExternalLink, Globe, Edit2, RotateCcw } from 'lucide-react';
+import { Plus, Search, Filter, Download, Edit, Trash2, Utensils, Phone, PhoneCall, Building2, FileSpreadsheet, Upload, ChevronDown, Clock, Eye, AlertTriangle, Check, X, Share2, Copy, MessageSquare, ExternalLink, Globe, Edit2, RotateCcw, RefreshCw } from 'lucide-react';
 import { Customer, Building, MealPlan, Invoice, Payment } from '../../types';
 import { formatAED } from '../../utils/currency';
 import { exportCustomersToExcel, downloadCustomerTemplate, ParsedImportRow } from '../../utils/excelService';
@@ -22,6 +22,7 @@ interface CustomerListProps {
   onImportCustomers?: (rows: ParsedImportRow[], mode: 'merge' | 'replace') => void;
   onRecordPayment?: (payment: Partial<Payment>) => Promise<void> | void;
   onSaveCustomer?: (customer: Partial<Customer>) => Promise<void> | void;
+  onSyncAllCustomerRates?: () => Promise<number | void> | void;
 }
 
 export const CustomerList: React.FC<CustomerListProps> = ({
@@ -39,6 +40,7 @@ export const CustomerList: React.FC<CustomerListProps> = ({
   onImportCustomers,
   onRecordPayment,
   onSaveCustomer,
+  onSyncAllCustomerRates,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -131,6 +133,28 @@ export const CustomerList: React.FC<CustomerListProps> = ({
   const handleShareOnWhatsApp = () => {
     const text = `Hello! 👋 Please register for Karama Mess using this link and select your daily meals:\n${getRegistrationLink()}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+  };
+
+  const [isSyncingFees, setIsSyncingFees] = useState(false);
+  const [syncFeedback, setSyncFeedback] = useState<string | null>(null);
+
+  const handleSyncCustomerFees = async () => {
+    if (!onSyncAllCustomerRates) return;
+    setIsSyncingFees(true);
+    setSyncFeedback(null);
+    try {
+      const count = await onSyncAllCustomerRates();
+      setSyncFeedback(
+        typeof count === 'number'
+          ? `Successfully synchronized monthly fees for ${count} customers based on configured meal plans!`
+          : 'Successfully synchronized customer monthly fees with meal plans!'
+      );
+      setTimeout(() => setSyncFeedback(null), 6000);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsSyncingFees(false);
+    }
   };
 
   // Main customer search input ref
@@ -357,7 +381,11 @@ export const CustomerList: React.FC<CustomerListProps> = ({
       // 5. Customer type / handler filter
       if (handlerFilter !== 'all') {
         const managed = (c.managed_by || '').toLowerCase();
-        if (handlerFilter === 'admin') {
+        if (handlerFilter === 'online') {
+          if (managed !== 'online_self_service' && !managed.includes('online')) {
+            return false;
+          }
+        } else if (handlerFilter === 'admin') {
           if (managed && managed !== 'admin' && managed !== 'customer' && managed !== 'regular') {
             return false;
           }
@@ -482,6 +510,19 @@ export const CustomerList: React.FC<CustomerListProps> = ({
             </button>
           )}
 
+          {/* Sync Customer Fees to Meal Plans Button */}
+          {!isReadOnly && onSyncAllCustomerRates && (
+            <button
+              onClick={handleSyncCustomerFees}
+              disabled={isSyncingFees}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 text-xs font-bold transition-all shadow-sm cursor-pointer disabled:opacity-50"
+              title="Automatically update all customer monthly rates to match active meal plans"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isSyncingFees ? 'animate-spin' : ''}`} />
+              <span>{isSyncingFees ? 'Syncing...' : 'Sync Fees to Plans'}</span>
+            </button>
+          )}
+
           {!isReadOnly && (
             <button
               onClick={onAddCustomer}
@@ -493,6 +534,13 @@ export const CustomerList: React.FC<CustomerListProps> = ({
           )}
         </div>
       </div>
+
+      {syncFeedback && (
+        <div className="p-3 bg-emerald-500/15 border border-emerald-500/40 rounded-xl text-xs font-bold text-emerald-300 flex items-center gap-2 animate-fadeIn">
+          <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+          <span>{syncFeedback}</span>
+        </div>
+      )}
 
       {/* Filter toolbar */}
       <div className="bg-[#151c2c] border border-[#222f47]/60 rounded-xl p-3 flex flex-wrap items-center justify-between gap-2.5 shadow-md shadow-black/10">
@@ -746,6 +794,7 @@ export const CustomerList: React.FC<CustomerListProps> = ({
             <option value="all">All Customer Types</option>
             <option value="admin">Admin</option>
             <option value="manager">Manager</option>
+            <option value="online">Online</option>
           </select>
 
           {(searchTerm || statusFilter !== 'all' || areaFilter !== 'all' || buildingFilter !== 'all' || handlerFilter !== 'all') && (
