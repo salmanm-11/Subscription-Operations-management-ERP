@@ -26,6 +26,17 @@ lerna-debug.log*
 customer-self-registration
 customer-self-registration/*
 
+# Android
+android-sdk/
+android/.gradle
+android/build
+android/app/build
+android/local.properties
+android/capacitor-android/build
+android/capacitor-cordova-android-plugins/build
+*.apk
+*.aab
+
 # Editor & OS files
 .vscode/*
 !.vscode/extensions.json

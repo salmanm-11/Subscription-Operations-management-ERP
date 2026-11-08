@@ -28,6 +28,8 @@ import { CustomerOnboardingView } from './components/public/CustomerOnboardingVi
 import { BusinessSettingsView } from './components/settings/BusinessSettingsView';
 import { HelpView } from './components/help/HelpView';
 import { VendorAccountsView } from './components/vendors/VendorAccountsView';
+import { MobileApp } from './mobile/MobileApp';
+import { Capacitor } from '@capacitor/core';
 import { AuthService, AppUser } from './api/authService';
 import { ActivityLogService } from './api/activityLogService';
 import { OfflineStorage } from './api/offlineStorage';
@@ -1125,6 +1127,42 @@ export const App: React.FC = () => {
   }
 
   const isViewer = currentUser?.role === 'viewer';
+  const isNativeApp = typeof window !== 'undefined' && Capacitor.isNativePlatform();
+  const [isMobileScreen, setIsMobileScreen] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return isNativeApp || window.innerWidth < 768;
+  });
+
+  useEffect(() => {
+    if (isNativeApp) return;
+    const handleResize = () => {
+      setIsMobileScreen(window.innerWidth < 768);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [isNativeApp]);
+
+  // Mobile App Experience (Active on Android Native APK & Mobile Devices)
+  if (isNativeApp || isMobileScreen) {
+    return (
+      <MobileApp
+        customers={customers}
+        buildings={buildings}
+        mealPlans={mealPlans}
+        invoices={invoices}
+        payments={payments}
+        settings={settings}
+        cloudStatus={cloudStatus}
+        onRefreshData={loadData}
+        onSaveCustomer={handleSaveCustomer}
+        onDeleteCustomer={handleDeleteCustomer}
+        onRecordPayment={handleRecordPayment}
+        onLogout={handleLogout}
+        userName={currentUser?.username || 'Admin'}
+        userRole={currentUser?.roleTitle || 'Administrator'}
+      />
+    );
+  }
 
   return (
     <div className="flex min-h-screen bg-[#0b0f19] text-slate-100 font-sans antialiased">
