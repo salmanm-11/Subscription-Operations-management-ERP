@@ -29,7 +29,8 @@ import {
   Edit3,
   CalendarX,
   UserMinus,
-  RotateCcw
+  RotateCcw,
+  Trash2
 } from 'lucide-react';
 import { Customer, Building, MealPlan, Invoice, Payment, PaymentMethod } from '../../types';
 import { formatAED } from '../../utils/currency';
@@ -52,6 +53,7 @@ interface CustomerDetailModalProps {
   payments?: Payment[];
   isReadOnly?: boolean;
   onEdit: (customer: Customer) => void;
+  onDeleteCustomer?: (id: string) => void;
   onRecordPayment?: (payment: Partial<Payment>) => Promise<void> | void;
   onSaveCustomer?: (customer: Partial<Customer>) => Promise<void> | void;
 }
@@ -67,6 +69,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
   payments = [],
   isReadOnly = false,
   onEdit,
+  onDeleteCustomer,
   onRecordPayment,
   onSaveCustomer,
 }) => {
@@ -127,6 +130,15 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
     if (!activeCustomer) return undefined;
     return mealPlans.find((m) => m.id === activeCustomer.meal_plan_id) || activeCustomer.meal_plan;
   }, [activeCustomer, mealPlans]);
+
+  const handleDeleteCustomerClick = () => {
+    if (!activeCustomer || !onDeleteCustomer) return;
+    const confirmMessage = `Are you sure you want to permanently delete customer "${activeCustomer.full_name}" (${activeCustomer.customer_code})?\n\nThis will remove their profile and all associated delivery and active meal records.`;
+    if (window.confirm(confirmMessage)) {
+      onClose();
+      onDeleteCustomer(activeCustomer.id);
+    }
+  };
 
   // Resolve customer-specific invoices
   const customerInvoices = useMemo(() => {
@@ -639,22 +651,35 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
           {/* Quick Header Actions */}
           <div className="flex items-center gap-2 shrink-0">
             {!isReadOnly && (
-              <button
-                onClick={() => {
-                  onClose();
-                  onEdit(activeCustomer);
-                }}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-750 text-slate-200 text-xs font-semibold border border-slate-700/80 transition-colors shadow-sm"
-                title="Edit Profile"
-              >
-                <Edit className="w-3.5 h-3.5 text-amber-400" />
-                <span className="hidden sm:inline">Edit Profile</span>
-              </button>
+              <>
+                <button
+                  onClick={() => {
+                    onClose();
+                    onEdit(activeCustomer);
+                  }}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-750 text-slate-200 text-xs font-semibold border border-slate-700/80 transition-colors shadow-sm cursor-pointer"
+                  title="Edit Profile"
+                >
+                  <Edit className="w-3.5 h-3.5 text-amber-400" />
+                  <span className="hidden sm:inline">Edit Profile</span>
+                </button>
+
+                {onDeleteCustomer && (
+                  <button
+                    onClick={handleDeleteCustomerClick}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 hover:text-rose-300 text-xs font-semibold border border-rose-500/30 transition-colors shadow-sm cursor-pointer"
+                    title={`Delete Customer ${activeCustomer.full_name}`}
+                  >
+                    <Trash2 className="w-3.5 h-3.5 text-rose-400" />
+                    <span className="hidden sm:inline">Delete</span>
+                  </button>
+                )}
+              </>
             )}
 
             <button
               onClick={onClose}
-              className="p-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-750 text-slate-400 hover:text-white transition-colors"
+              className="p-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-750 text-slate-400 hover:text-white transition-colors cursor-pointer"
               title="Close (Esc)"
             >
               <X className="w-5 h-5" />
@@ -1574,6 +1599,18 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                   <Edit className="w-3.5 h-3.5" />
                   <span>Edit Customer</span>
                 </button>
+
+                {onDeleteCustomer && (
+                  <button
+                    type="button"
+                    onClick={handleDeleteCustomerClick}
+                    className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-rose-500/15 hover:bg-rose-600 text-rose-300 hover:text-white text-xs font-bold border border-rose-500/30 transition-all shadow-md active:scale-[0.98] cursor-pointer"
+                    title={`Delete customer ${activeCustomer.full_name}`}
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Delete Customer</span>
+                  </button>
+                )}
               </>
             )}
 

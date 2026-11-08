@@ -44,6 +44,7 @@ interface OverdueListProps {
   onOpenPayment?: (customer: Customer) => void;
   onRecordPayment?: (payment: Partial<Payment>) => Promise<void> | void;
   onSaveCustomer?: (customer: Partial<Customer>) => Promise<void> | void;
+  onDeleteCustomer?: (id: string) => void;
 }
 
 export const OverdueList: React.FC<OverdueListProps> = ({
@@ -56,6 +57,7 @@ export const OverdueList: React.FC<OverdueListProps> = ({
   onOpenPayment,
   onRecordPayment,
   onSaveCustomer,
+  onDeleteCustomer,
 }) => {
   const [activeTab, setActiveTab] = useState<'overdue' | 'reminders' | 'cleared'>('overdue');
   const [searchTerm, setSearchTerm] = useState('');
@@ -1486,6 +1488,7 @@ export const OverdueList: React.FC<OverdueListProps> = ({
         }}
         onRecordPayment={onRecordPayment}
         onSaveCustomer={onSaveCustomer}
+        onDeleteCustomer={onDeleteCustomer}
       />
     </div>
   );

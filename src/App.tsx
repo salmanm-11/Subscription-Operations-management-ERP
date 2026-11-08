@@ -1396,6 +1396,7 @@ export const App: React.FC = () => {
               }}
               onRecordPayment={handleRecordPayment}
               onSaveCustomer={handleSaveCustomer}
+              onDeleteCustomer={handleDeleteCustomer}
             />
           )}
 
@@ -1462,6 +1463,7 @@ export const App: React.FC = () => {
         }}
         onRecordPayment={handleRecordPayment}
         onSaveCustomer={handleSaveCustomer}
+        onDeleteCustomer={handleDeleteCustomer}
       />
 
       {/* Modern In-App Logout Confirmation Modal (Never freezes Electron window) */}

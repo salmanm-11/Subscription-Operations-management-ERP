@@ -1087,6 +1087,7 @@ export const CustomerList: React.FC<CustomerListProps> = ({
         }}
         onRecordPayment={onRecordPayment}
         onSaveCustomer={onSaveCustomer}
+        onDeleteCustomer={onDeleteCustomer}
       />
 
       {/* Confirmation Modal for Delete All Customers */}
