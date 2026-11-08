@@ -1,6 +1,6 @@
 {
   "name": "karama-mess-management",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Professional Windows Desktop Application for Karama Mess & Catering, Dubai",
   "main": "electron/dist/main.cjs",
   "scripts": {

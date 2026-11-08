@@ -10,6 +10,8 @@ import { CustomerList } from './components/customers/CustomerList';
 import { CustomerModal } from './components/customers/CustomerModal';
 import { CustomerDetailModal } from './components/customers/CustomerDetailModal';
 import { NewRegistrationToast } from './components/common/NewRegistrationToast';
+import { BackupToast } from './components/common/BackupToast';
+import { AutoBackupService } from './utils/autoBackupService';
 import { playNotificationChime } from './utils/notificationAudio';
 import { syncCustomersWithMealPlans, resolveExpectedMonthlyRate } from './utils/mealPlanPricingService';
 import { BuildingList } from './components/buildings/BuildingList';
@@ -125,6 +127,37 @@ export const App: React.FC = () => {
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [latestRegistrant, setLatestRegistrant] = useState<Customer | null>(null);
   const [newRegistrationAlert, setNewRegistrationAlert] = useState<Customer | null>(null);
+  const [backupToastMsg, setBackupToastMsg] = useState<string | null>(null);
+  const [backupToastFiles, setBackupToastFiles] = useState<string[]>([]);
+
+  // Automatic Background Daily Backup for Windows Desktop Application
+  useEffect(() => {
+    if (!AutoBackupService.isDesktopApp()) return;
+    if (customers.length === 0 && invoices.length === 0) return;
+
+    const timer = setTimeout(async () => {
+      try {
+        const res = await AutoBackupService.executeDailyBackup({
+          customers,
+          buildings,
+          mealPlans,
+          invoices,
+          payments,
+          settings,
+        });
+
+        if (res.supported && res.success) {
+          setBackupToastMsg('All customer records, payments, and invoices automatically backed up to Documents\\Karama Mess Backups');
+          setBackupToastFiles(res.savedFiles || []);
+          setTimeout(() => setBackupToastMsg(null), 8000);
+        }
+      } catch (err) {
+        console.warn('Auto backup background check:', err);
+      }
+    }, 2500);
+
+    return () => clearTimeout(timer);
+  }, [customers.length, invoices.length, payments.length]);
 
   // Synchronize latestRegistrant, newRegistrationAlert and viewingProfileCustomer when customers change or get deleted
   useEffect(() => {
@@ -1419,6 +1452,12 @@ export const App: React.FC = () => {
               settings={settings}
               onSaveSettings={handleSaveSettings}
               currentUsername={currentUser?.username || 'admin'}
+              customers={customers}
+              buildings={buildings}
+              mealPlans={mealPlans}
+              invoices={invoices}
+              payments={payments}
+              onDataRestored={() => loadData()}
             />
           )}
 
@@ -1507,6 +1546,15 @@ export const App: React.FC = () => {
         }}
         onDismiss={() => setNewRegistrationAlert(null)}
       />
+
+      {/* Windows Desktop Daily Auto-Backup Toast */}
+      {backupToastMsg && (
+        <BackupToast
+          message={backupToastMsg}
+          files={backupToastFiles}
+          onDismiss={() => setBackupToastMsg(null)}
+        />
+      )}
     </div>
   );
 };

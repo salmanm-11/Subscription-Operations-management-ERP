@@ -22,10 +22,12 @@ import {
   CalendarX,
   Globe,
   UserPlus,
-  Sparkles
+  Sparkles,
+  ShieldCheck
 } from 'lucide-react';
 import { Customer, Invoice } from '../../types';
 import { formatAED } from '../../utils/currency';
+import { AutoBackupService } from '../../utils/autoBackupService';
 import {
   getApproachingReminders,
   getReminderDaysSetting,
@@ -76,6 +78,27 @@ export const Header: React.FC<HeaderProps> = ({
   const [isCloudPopoverOpen, setIsCloudPopoverOpen] = useState(false);
   const [reminderDays, setReminderDays] = useState<number>(getReminderDaysSetting());
   const [activeReminderTab, setActiveReminderTab] = useState<'due' | 'cancellation' | 'registrations'>('due');
+  const [backupDisplayTime, setBackupDisplayTime] = useState<string | null>(null);
+  const isDesktop = useMemo(() => AutoBackupService.isDesktopApp(), []);
+
+  React.useEffect(() => {
+    if (!isDesktop) return;
+    const checkTime = () => {
+      const savedDate = localStorage.getItem('karama_last_auto_backup_date');
+      const savedTime = localStorage.getItem('karama_last_auto_backup_time');
+      const todayStr = new Date().toISOString().split('T')[0];
+      if (savedDate === todayStr) {
+        setBackupDisplayTime(savedTime ? `Today ${savedTime}` : 'Today');
+      } else if (savedDate) {
+        setBackupDisplayTime(savedDate);
+      } else {
+        setBackupDisplayTime('Active');
+      }
+    };
+    checkTime();
+    const interval = setInterval(checkTime, 10000);
+    return () => clearInterval(interval);
+  }, [isDesktop]);
 
   const today = new Intl.DateTimeFormat('en-GB', {
     weekday: 'long',
@@ -762,12 +785,25 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             onClick={onRefresh}
             disabled={isRefreshing}
-            className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700/60 shadow-sm transition-colors"
+            className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700/60 shadow-sm transition-colors cursor-pointer"
             title="Refresh Data"
           >
             <RefreshCw
               className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-amber-400' : ''}`}
             />
+          </button>
+        )}
+
+        {/* Windows Desktop Auto-Backup Status Pill */}
+        {isDesktop && (
+          <button
+            type="button"
+            onClick={() => AutoBackupService.openBackupFolder()}
+            className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-sky-500/30 bg-sky-950/40 hover:bg-sky-900/60 transition-all text-xs font-bold text-sky-300 shadow-sm cursor-pointer"
+            title="Windows Desktop Daily Backup: Saved to Documents\Karama Mess Backups. Click to open folder."
+          >
+            <ShieldCheck className="w-3.5 h-3.5 text-sky-400" />
+            <span>Backup: {backupDisplayTime || 'Active'}</span>
           </button>
         )}
 

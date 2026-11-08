@@ -161,3 +161,126 @@ ipcMain.handle('window:maximize', () => {
   }
 });
 ipcMain.handle('window:close', () => mainWindow?.close());
+
+// ==========================================
+// AUTOMATIC LOCAL BACKUPS & RESTORE (PC ONLY)
+// ==========================================
+const getBackupDirectory = (): string => {
+  const docsDir = app.getPath('documents');
+  const backupDir = path.join(docsDir, 'Karama Mess Backups');
+  if (!fs.existsSync(backupDir)) {
+    fs.mkdirSync(backupDir, { recursive: true });
+  }
+  return backupDir;
+};
+
+// 1. Get current backup status and list of recent backups
+ipcMain.handle('backup:get-status', async () => {
+  try {
+    const backupDir = getBackupDirectory();
+    const fileNames = fs.readdirSync(backupDir);
+    const files = fileNames
+      .filter((n) => n.endsWith('.xlsx') || n.endsWith('.json'))
+      .map((name) => {
+        const fullPath = path.join(backupDir, name);
+        const stat = fs.statSync(fullPath);
+        return {
+          name,
+          size: stat.size,
+          modified: stat.mtime.toISOString(),
+        };
+      })
+      .sort((a, b) => new Date(b.modified).getTime() - new Date(a.modified).getTime());
+
+    return {
+      backupDir,
+      files,
+      lastBackup: files.length > 0 ? files[0].modified : null,
+    };
+  } catch (err: any) {
+    console.error('Failed to get backup status:', err);
+    return { error: err.message, files: [], lastBackup: null };
+  }
+});
+
+// 2. Save new daily backup (Excel .xlsx and/or JSON System snapshot)
+ipcMain.handle('backup:save-now', async (_event, payload: { excelBase64?: string; jsonString?: string; dateStr: string }) => {
+  try {
+    const backupDir = getBackupDirectory();
+    const { excelBase64, jsonString, dateStr } = payload;
+    const savedFiles: string[] = [];
+
+    // Save Excel Workbook (.xlsx)
+    if (excelBase64) {
+      const xlsxName = `Karama_Mess_Backup_${dateStr}.xlsx`;
+      const xlsxPath = path.join(backupDir, xlsxName);
+      const buffer = Buffer.from(excelBase64, 'base64');
+      fs.writeFileSync(xlsxPath, buffer);
+      savedFiles.push(xlsxName);
+    }
+
+    // Save JSON System Snapshot (.json)
+    if (jsonString) {
+      const jsonName = `Karama_Mess_System_Restore_${dateStr}.json`;
+      const jsonPath = path.join(backupDir, jsonName);
+      fs.writeFileSync(jsonPath, jsonString, 'utf-8');
+      savedFiles.push(jsonName);
+    }
+
+    // Retain rolling 30-day history (clean up older files automatically)
+    try {
+      const nowMs = Date.now();
+      const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000;
+      const allFiles = fs.readdirSync(backupDir);
+      for (const f of allFiles) {
+        if (!f.startsWith('Karama_Mess_')) continue;
+        const fullPath = path.join(backupDir, f);
+        const stat = fs.statSync(fullPath);
+        if (nowMs - stat.mtimeMs > thirtyDaysMs) {
+          fs.unlinkSync(fullPath);
+        }
+      }
+    } catch (cleanErr) {
+      console.warn('Backup cleanup error:', cleanErr);
+    }
+
+    return {
+      success: true,
+      backupDir,
+      savedFiles,
+      timestamp: new Date().toISOString(),
+    };
+  } catch (err: any) {
+    console.error('Failed to save backup:', err);
+    return { success: false, error: err.message };
+  }
+});
+
+// 3. Open Backup folder in Windows Explorer
+ipcMain.handle('backup:open-folder', async () => {
+  try {
+    const backupDir = getBackupDirectory();
+    await shell.openPath(backupDir);
+    return { success: true };
+  } catch (err: any) {
+    console.error('Failed to open backup folder:', err);
+    return { success: false, error: err.message };
+  }
+});
+
+// 4. Read specific backup file for restoration
+ipcMain.handle('backup:read-file', async (_event, fileName: string) => {
+  try {
+    const backupDir = getBackupDirectory();
+    const safeName = path.basename(fileName);
+    const fullPath = path.join(backupDir, safeName);
+    if (!fs.existsSync(fullPath)) {
+      return { success: false, error: 'Backup file not found on disk' };
+    }
+    const content = fs.readFileSync(fullPath, 'utf-8');
+    return { success: true, content };
+  } catch (err: any) {
+    console.error('Failed to read backup file:', err);
+    return { success: false, error: err.message };
+  }
+});
