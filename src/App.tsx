@@ -126,27 +126,51 @@ export const App: React.FC = () => {
   const [latestRegistrant, setLatestRegistrant] = useState<Customer | null>(null);
   const [newRegistrationAlert, setNewRegistrationAlert] = useState<Customer | null>(null);
 
-  // Keep viewingProfileCustomer synchronized when customers reload
+  // Synchronize latestRegistrant, newRegistrationAlert and viewingProfileCustomer when customers change or get deleted
   useEffect(() => {
+    if (latestRegistrant) {
+      const stillExists = customers.some(
+        (c) => c.id === latestRegistrant.id || c.customer_code === latestRegistrant.customer_code
+      );
+      if (!stillExists) {
+        // Customer was deleted: remove notification pill and fallback to next online customer or null
+        const nextOnline = customers
+          .filter((cust) => cust.managed_by === 'online_self_service')
+          .sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''))[0];
+        setLatestRegistrant(nextOnline || null);
+      }
+    }
+    if (newRegistrationAlert) {
+      const stillExists = customers.some(
+        (c) => c.id === newRegistrationAlert.id || c.customer_code === newRegistrationAlert.customer_code
+      );
+      if (!stillExists) {
+        setNewRegistrationAlert(null);
+      }
+    }
     if (viewingProfileCustomer) {
       const fresh = customers.find(
         (c) => c.id === viewingProfileCustomer.id || c.customer_code === viewingProfileCustomer.customer_code
       );
-      if (
-        fresh &&
-        (fresh.status !== viewingProfileCustomer.status ||
+      if (fresh) {
+        if (
+          fresh.status !== viewingProfileCustomer.status ||
           fresh.cancellation_date !== viewingProfileCustomer.cancellation_date ||
           fresh.notes !== viewingProfileCustomer.notes ||
           fresh.total_overdue !== viewingProfileCustomer.total_overdue ||
           fresh.payment_rating !== viewingProfileCustomer.payment_rating ||
           fresh.payment_made_up_to_date !== viewingProfileCustomer.payment_made_up_to_date ||
           fresh.billed_up_to_date !== viewingProfileCustomer.billed_up_to_date ||
-          fresh.billing_end_date !== viewingProfileCustomer.billing_end_date)
-      ) {
-        setViewingProfileCustomer(fresh);
+          fresh.billing_end_date !== viewingProfileCustomer.billing_end_date
+        ) {
+          setViewingProfileCustomer(fresh);
+        }
+      } else {
+        // Customer was deleted while profile was open: close modal
+        setViewingProfileCustomer(null);
       }
     }
-  }, [customers, viewingProfileCustomer]);
+  }, [customers, latestRegistrant, newRegistrationAlert, viewingProfileCustomer]);
 
   // License & remote kill switch status state
   const [licenseState, setLicenseState] = useState<LicenseCheckResult>(() => {
@@ -264,13 +288,22 @@ export const App: React.FC = () => {
         }
       }
       setCustomers(finalCustomers);
-      // Track most recent online customer for status bar
+      // Track most recent online customer for status bar (automatically cleared if customer was deleted)
       const latestOnline = finalCustomers
         .filter((cust) => cust.managed_by === 'online_self_service')
         .sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''))[0];
-      if (latestOnline) {
-        setLatestRegistrant((prev) => prev || latestOnline);
-      }
+      setLatestRegistrant((prev) => {
+        if (prev && finalCustomers.some((c) => c.id === prev.id || c.customer_code === prev.customer_code)) {
+          return finalCustomers.find((c) => c.id === prev.id || c.customer_code === prev.customer_code) || prev;
+        }
+        return latestOnline || null;
+      });
+      setNewRegistrationAlert((prev) => {
+        if (prev && !finalCustomers.some((c) => c.id === prev.id || c.customer_code === prev.customer_code)) {
+          return null;
+        }
+        return prev;
+      });
       setBuildings(b);
       setMealPlans(mp);
       setInvoices(inv);
@@ -347,6 +380,9 @@ export const App: React.FC = () => {
           );
         } else if (event === 'DELETE' && oldId) {
           setCustomers((prev) => prev.filter((c) => c.id !== oldId));
+          setLatestRegistrant((prev) => (prev && (prev.id === oldId || prev.customer_code === oldId) ? null : prev));
+          setNewRegistrationAlert((prev) => (prev && (prev.id === oldId || prev.customer_code === oldId) ? null : prev));
+          setViewingProfileCustomer((prev) => (prev && (prev.id === oldId || prev.customer_code === oldId) ? null : prev));
           OfflineStorage.deleteCustomer(oldId);
         }
       },
@@ -548,6 +584,9 @@ export const App: React.FC = () => {
     const cust = customers.find((c) => c.id === id);
     // Instant optimistic deletion from UI (0ms!)
     setCustomers((prev) => prev.filter((c) => c.id !== id));
+    setLatestRegistrant((prev) => (prev && (prev.id === id || (cust && prev.customer_code === cust.customer_code)) ? null : prev));
+    setNewRegistrationAlert((prev) => (prev && (prev.id === id || (cust && prev.customer_code === cust.customer_code)) ? null : prev));
+    setViewingProfileCustomer((prev) => (prev && (prev.id === id || (cust && prev.customer_code === cust.customer_code)) ? null : prev));
     OfflineStorage.deleteCustomer(id);
 
     try {
@@ -565,6 +604,10 @@ export const App: React.FC = () => {
 
   const handleDeleteAllCustomers = async () => {
     await deleteAllCustomers();
+    setCustomers([]);
+    setLatestRegistrant(null);
+    setNewRegistrationAlert(null);
+    setViewingProfileCustomer(null);
     ActivityLogService.logAction(
       'Customers',
       'DELETE',
@@ -1078,6 +1121,7 @@ export const App: React.FC = () => {
           onSelectTab={setCurrentTab}
           onViewCustomer={(cust) => setViewingProfileCustomer(cust)}
           latestRegistrant={latestRegistrant}
+          onDismissLatestRegistrant={() => setLatestRegistrant(null)}
         />
 
         <main className="p-5 md:p-6 flex-1 min-w-0 max-w-full overflow-y-auto">

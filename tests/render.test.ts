@@ -139,4 +139,36 @@ describe('App rendering verification', () => {
     expect(html).toContain('Vijazla');
     expect(html).toContain('Filter by Building (Click to open search box)');
   });
+
+  it('hides registration notification in Header when customer is deleted from customers roster', async () => {
+    const { Header } = await import('../src/components/layout/Header');
+    const deletedCustomer: Customer = {
+      id: 'cust-deleted-121',
+      customer_code: 'CUST-121',
+      full_name: 'Jsh',
+      managed_by: 'online_self_service',
+    } as Customer;
+
+    // 1. When customer has been deleted (customers array is empty or does not include cust-deleted-121)
+    const htmlDeleted = renderToString(
+      React.createElement(Header, {
+        customers: [],
+        latestRegistrant: deletedCustomer,
+      })
+    );
+    expect(htmlDeleted).not.toContain('New Reg');
+    expect(htmlDeleted).not.toContain('Jsh');
+    expect(htmlDeleted).not.toContain('CUST-121');
+
+    // 2. When customer exists in customers roster, Header shows the registration badge
+    const htmlActive = renderToString(
+      React.createElement(Header, {
+        customers: [deletedCustomer],
+        latestRegistrant: deletedCustomer,
+      })
+    );
+    expect(htmlActive).toContain('New Reg');
+    expect(htmlActive).toContain('Jsh');
+    expect(htmlActive).toContain('CUST-121');
+  });
 });

@@ -51,6 +51,7 @@ interface HeaderProps {
   onSelectTab?: (tab: string) => void;
   onViewCustomer?: (customer: Customer) => void;
   latestRegistrant?: Customer | null;
+  onDismissLatestRegistrant?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -69,6 +70,7 @@ export const Header: React.FC<HeaderProps> = ({
   onSelectTab,
   onViewCustomer,
   latestRegistrant = null,
+  onDismissLatestRegistrant,
 }) => {
   const [isRemindersOpen, setIsRemindersOpen] = useState(false);
   const [isCloudPopoverOpen, setIsCloudPopoverOpen] = useState(false);
@@ -132,29 +134,57 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
 
       <div className="flex items-center gap-3 shrink-0 relative">
-        {/* Real-time Status Bar Pill: Latest Online Registration */}
-        {latestRegistrant && (
-          <button
-            type="button"
-            onClick={() => onViewCustomer?.(latestRegistrant)}
-            className="group flex items-center gap-2 px-3 py-1.5 rounded-xl border border-emerald-500/40 bg-emerald-950/40 hover:bg-emerald-900/60 text-emerald-300 transition-all text-xs font-semibold shadow-sm hover:border-emerald-400 cursor-pointer animate-in fade-in duration-300"
-            title={`Latest registration: ${latestRegistrant.full_name} (${latestRegistrant.customer_code}). Click to open details.`}
-          >
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-            </span>
-            <span className="text-[10px] font-black text-emerald-400 uppercase tracking-wider bg-emerald-500/20 px-1.5 py-0.5 rounded border border-emerald-500/30">
-              New Reg
-            </span>
-            <span className="font-bold text-white group-hover:text-emerald-200 truncate max-w-[110px] sm:max-w-[160px]">
-              {latestRegistrant.full_name}
-            </span>
-            <span className="font-mono text-[10px] text-emerald-300/90 hidden sm:inline">
-              ({latestRegistrant.customer_code})
-            </span>
-          </button>
-        )}
+        {/* Real-time Status Bar Pill: Latest Online Registration (Automatically hides if customer is deleted) */}
+        {(() => {
+          const activeRegistrant =
+            latestRegistrant &&
+            customers.some(
+              (c) => c.id === latestRegistrant.id || c.customer_code === latestRegistrant.customer_code
+            )
+              ? latestRegistrant
+              : null;
+
+          if (!activeRegistrant) return null;
+
+          return (
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-emerald-500/40 bg-emerald-950/40 hover:bg-emerald-900/60 transition-all text-xs font-semibold shadow-sm hover:border-emerald-400 animate-in fade-in duration-300">
+              <button
+                type="button"
+                onClick={() => onViewCustomer?.(activeRegistrant)}
+                className="group flex items-center gap-2 text-emerald-300 cursor-pointer"
+                title={`Latest registration: ${activeRegistrant.full_name} (${activeRegistrant.customer_code}). Click to open details.`}
+              >
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+                <span className="text-[10px] font-black text-emerald-400 uppercase tracking-wider bg-emerald-500/20 px-1.5 py-0.5 rounded border border-emerald-500/30">
+                  New Reg
+                </span>
+                <span className="font-bold text-white group-hover:text-emerald-200 truncate max-w-[110px] sm:max-w-[160px]">
+                  {activeRegistrant.full_name}
+                </span>
+                <span className="font-mono text-[10px] text-emerald-300/90 hidden sm:inline">
+                  ({activeRegistrant.customer_code})
+                </span>
+              </button>
+
+              {onDismissLatestRegistrant && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDismissLatestRegistrant();
+                  }}
+                  className="p-0.5 text-emerald-400/60 hover:text-white hover:bg-emerald-900/60 rounded transition-colors cursor-pointer"
+                  title="Dismiss notification"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+          );
+        })()}
 
         {/* Due Date Approaching Reminders & Cancellation Notices Notification Bell */}
         <div className="relative">
