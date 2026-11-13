@@ -132,6 +132,22 @@ export const App: React.FC = () => {
   const [backupToastMsg, setBackupToastMsg] = useState<string | null>(null);
   const [backupToastFiles, setBackupToastFiles] = useState<string[]>([]);
 
+  // Mobile App Platform & Viewport Detection (Must be declared before early returns)
+  const isNativeApp = typeof window !== 'undefined' && Capacitor.isNativePlatform();
+  const [isMobileScreen, setIsMobileScreen] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return isNativeApp || window.innerWidth < 768;
+  });
+
+  useEffect(() => {
+    if (isNativeApp) return;
+    const handleResize = () => {
+      setIsMobileScreen(window.innerWidth < 768);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [isNativeApp]);
+
   // Automatic Background Daily Backup for Windows Desktop Application
   useEffect(() => {
     if (!AutoBackupService.isDesktopApp()) return;
@@ -1127,20 +1143,6 @@ export const App: React.FC = () => {
   }
 
   const isViewer = currentUser?.role === 'viewer';
-  const isNativeApp = typeof window !== 'undefined' && Capacitor.isNativePlatform();
-  const [isMobileScreen, setIsMobileScreen] = useState(() => {
-    if (typeof window === 'undefined') return false;
-    return isNativeApp || window.innerWidth < 768;
-  });
-
-  useEffect(() => {
-    if (isNativeApp) return;
-    const handleResize = () => {
-      setIsMobileScreen(window.innerWidth < 768);
-    };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, [isNativeApp]);
 
   // Mobile App Experience (Active on Android Native APK & Mobile Devices)
   if (isNativeApp || isMobileScreen) {
