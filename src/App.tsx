@@ -132,21 +132,8 @@ export const App: React.FC = () => {
   const [backupToastMsg, setBackupToastMsg] = useState<string | null>(null);
   const [backupToastFiles, setBackupToastFiles] = useState<string[]>([]);
 
-  // Mobile App Platform & Viewport Detection (Must be declared before early returns)
+  // Mobile App Native Platform Detection (Must be declared before early returns)
   const isNativeApp = typeof window !== 'undefined' && Capacitor.isNativePlatform();
-  const [isMobileScreen, setIsMobileScreen] = useState(() => {
-    if (typeof window === 'undefined') return false;
-    return isNativeApp || window.innerWidth < 768;
-  });
-
-  useEffect(() => {
-    if (isNativeApp) return;
-    const handleResize = () => {
-      setIsMobileScreen(window.innerWidth < 768);
-    };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, [isNativeApp]);
 
   // Automatic Background Daily Backup for Windows Desktop Application
   useEffect(() => {
@@ -1144,8 +1131,8 @@ export const App: React.FC = () => {
 
   const isViewer = currentUser?.role === 'viewer';
 
-  // Mobile App Experience (Active on Android Native APK & Mobile Devices)
-  if (isNativeApp || isMobileScreen) {
+  // Mobile App Experience (Active exclusively on Android Native APK)
+  if (isNativeApp) {
     return (
       <MobileApp
         customers={customers}
@@ -1167,7 +1154,7 @@ export const App: React.FC = () => {
   }
 
   return (
-    <div className="flex min-h-screen bg-[#0b0f19] text-slate-100 font-sans antialiased">
+    <div className="flex min-h-screen bg-[#0b0f19] text-slate-100 font-sans antialiased min-w-[1024px]">
       {/* Sidebar */}
       <Sidebar
         currentTab={currentTab}
