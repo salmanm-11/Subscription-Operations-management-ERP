@@ -21,6 +21,7 @@ import { ActivityLogView } from './ActivityLogView';
 import { getReminderDaysSetting, setReminderDaysSetting } from '../../utils/reminderService';
 import { clearAllBusinessData } from '../../api/supabase';
 import { AutoBackupService } from '../../utils/autoBackupService';
+import * as XLSX from 'xlsx';
 
 interface BusinessSettingsViewProps {
   settings: BusinessSettings;
@@ -129,6 +130,36 @@ export const BusinessSettingsView: React.FC<BusinessSettingsViewProps> = ({
 
   const handleOpenFolder = async () => {
     await AutoBackupService.openBackupFolder();
+  };
+
+  const handleDownloadWebBackupJson = () => {
+    const jsonString = AutoBackupService.generateSystemSnapshotJson({
+      customers,
+      buildings,
+      mealPlans,
+      invoices,
+      payments,
+      settings,
+    });
+    const blob = new Blob([jsonString], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `karama_mess_backup_${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleDownloadWebBackupExcel = () => {
+    const wb = AutoBackupService.generateExcelWorkbook({
+      customers,
+      buildings,
+      mealPlans,
+      invoices,
+      payments,
+      settings,
+    });
+    XLSX.writeFile(wb, `Karama_Mess_Records_${new Date().toISOString().split('T')[0]}.xlsx`);
   };
 
   const handleRestoreFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -403,43 +434,76 @@ export const BusinessSettingsView: React.FC<BusinessSettingsViewProps> = ({
                   <ShieldCheck className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-white">Automatic Local Daily Backups</h3>
+                  <h3 className="text-base font-bold text-white">
+                    {isDesktop ? 'Automatic Local Daily Backups' : 'Data Backups & Security'}
+                  </h3>
                   <p className="text-xs text-slate-300 mt-0.5">
-                    Your software automatically saves all customer profiles, payment receipts, and invoices directly to your computer's hard drive every day.
+                    {isDesktop
+                      ? "Your software automatically saves all customer profiles, payment receipts, and invoices directly to your computer's hard drive every day."
+                      : "On the website, all records are continuously saved and synchronized in the Cloud Database. Automatic background saving to your PC hard drive is exclusive to the installed Windows Desktop Application (.exe)."}
                   </p>
                 </div>
               </div>
 
-              {isDesktop && (
+              {isDesktop ? (
                 <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs font-bold shrink-0">
                   <CheckCircle2 className="w-3.5 h-3.5" />
                   <span>Desktop Auto-Sync: Active</span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-sky-500/15 border border-sky-500/30 text-sky-300 text-xs font-bold shrink-0">
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  <span>Cloud Live Sync: Active</span>
                 </div>
               )}
             </div>
 
             {/* Backup Status Overview Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-              <div className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-700/80 space-y-1">
-                <span className="text-slate-400 font-semibold block">Last Daily Backup:</span>
-                <span className="text-amber-400 font-bold font-mono text-sm block">
-                  {lastBackupTime || 'Saved on launch today'}
-                </span>
-                <span className="text-[11px] text-slate-500">
-                  Automatically generates Excel (.xlsx) and System Restore (.json)
-                </span>
-              </div>
+            {isDesktop ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                <div className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-700/80 space-y-1">
+                  <span className="text-slate-400 font-semibold block">Last Daily Backup:</span>
+                  <span className="text-amber-400 font-bold font-mono text-sm block">
+                    {lastBackupTime || 'Saved on launch today'}
+                  </span>
+                  <span className="text-[11px] text-slate-500">
+                    Automatically generates Excel (.xlsx) and System Restore (.json)
+                  </span>
+                </div>
 
-              <div className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-700/80 space-y-1">
-                <span className="text-slate-400 font-semibold block">Backup Folder Location:</span>
-                <span className="text-sky-300 font-bold font-mono text-xs truncate block" title={backupDir}>
-                  {backupDir}
-                </span>
-                <span className="text-[11px] text-slate-500">
-                  Retains a rolling 30-day history on your PC hard drive
-                </span>
+                <div className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-700/80 space-y-1">
+                  <span className="text-slate-400 font-semibold block">Backup Folder Location:</span>
+                  <span className="text-sky-300 font-bold font-mono text-xs truncate block" title={backupDir}>
+                    {backupDir}
+                  </span>
+                  <span className="text-[11px] text-slate-500">
+                    Retains a rolling 30-day history on your PC hard drive
+                  </span>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                <div className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-700/80 space-y-1">
+                  <span className="text-slate-400 font-semibold block">Website Data Protection:</span>
+                  <span className="text-emerald-400 font-bold font-mono text-sm block">
+                    Live Cloud Sync
+                  </span>
+                  <span className="text-[11px] text-slate-500">
+                    All customers, payments, and invoices are continuously saved to Supabase
+                  </span>
+                </div>
+
+                <div className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-700/80 space-y-1">
+                  <span className="text-slate-400 font-semibold block">Automatic PC Hard Drive Backups:</span>
+                  <span className="text-amber-400 font-bold text-xs block">
+                    Available in Windows Desktop (.exe)
+                  </span>
+                  <span className="text-[11px] text-slate-500">
+                    Web browsers cannot write directly to local PC folders due to security
+                  </span>
+                </div>
+              </div>
+            )}
 
             {/* Success and Error Alerts */}
             {backupSuccessMsg && (
@@ -457,7 +521,7 @@ export const BusinessSettingsView: React.FC<BusinessSettingsViewProps> = ({
 
             {/* Action Buttons */}
             <div className="flex items-center gap-3 flex-wrap pt-2">
-              {isDesktop && (
+              {isDesktop ? (
                 <>
                   <button
                     type="button"
@@ -478,11 +542,31 @@ export const BusinessSettingsView: React.FC<BusinessSettingsViewProps> = ({
                     <span>Open Backups Folder in Windows</span>
                   </button>
                 </>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    onClick={handleDownloadWebBackupExcel}
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md shadow-emerald-600/20 transition-all cursor-pointer active:scale-95"
+                  >
+                    <FileSpreadsheet className="w-3.5 h-3.5" />
+                    <span>Download Excel Backup (.xlsx)</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleDownloadWebBackupJson}
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-md shadow-amber-500/20 transition-all cursor-pointer active:scale-95"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    <span>Download Snapshot (.json)</span>
+                  </button>
+                </>
               )}
 
               {/* Restore From Backup Input */}
               <label className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold text-xs transition-colors cursor-pointer">
-                <Upload className="w-3.5 h-3.5 text-emerald-400" />
+                <Upload className="w-3.5 h-3.5 text-sky-400" />
                 <span>{isRestoring ? 'Restoring...' : 'Restore From Backup (.json)'}</span>
                 <input
                   type="file"
