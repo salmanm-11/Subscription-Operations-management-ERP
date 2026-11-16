@@ -303,16 +303,16 @@ export const AdminView: React.FC<AdminViewProps> = ({ currentUser, onUserSession
         </div>
 
         <div className="overflow-x-auto w-full custom-scrollbar">
-          <table className="w-full text-left">
+          <table className="w-full text-left min-w-[960px]">
             <thead>
               <tr className="bg-[#0f1422] text-slate-300 border-b border-slate-700/80 text-xs uppercase tracking-wider font-bold">
-                <th className="py-3 px-4">User</th>
-                <th className="py-3 px-4">Assigned Role</th>
-                <th className="py-3 px-4">Access Level</th>
-                <th className="py-3 px-4">Password</th>
-                <th className="py-3 px-4">Contact</th>
-                <th className="py-3 px-4 text-center">Status</th>
-                <th className="py-3 px-4 text-right sticky right-0 bg-[#0f1422] z-20 shadow-[-10px_0_12px_-4px_rgba(0,0,0,0.6)] border-l border-slate-800">
+                <th className="py-3 px-4 whitespace-nowrap min-w-[180px]">User</th>
+                <th className="py-3 px-4 whitespace-nowrap min-w-[130px]">Assigned Role</th>
+                <th className="py-3 px-4 whitespace-nowrap min-w-[130px]">Access Level</th>
+                <th className="py-3 px-4 whitespace-nowrap min-w-[130px]">Password</th>
+                <th className="py-3 px-4 whitespace-nowrap min-w-[130px]">Contact</th>
+                <th className="py-3 px-4 text-center whitespace-nowrap min-w-[100px]">Status</th>
+                <th className="py-3 px-4 text-right whitespace-nowrap min-w-[120px]">
                   Actions
                 </th>
               </tr>
@@ -404,7 +404,7 @@ export const AdminView: React.FC<AdminViewProps> = ({ currentUser, onUserSession
                     </td>
 
                     {/* Action Buttons */}
-                    <td className="py-3.5 px-4 text-right whitespace-nowrap sticky right-0 bg-[#151c2c] group-hover:bg-[#1c253a] z-20 shadow-[-10px_0_12px_-4px_rgba(0,0,0,0.6)] border-l border-slate-800/80">
+                    <td className="py-3.5 px-4 text-right whitespace-nowrap min-w-[120px]">
                       <div className="flex items-center justify-end gap-1.5">
                         <button
                           onClick={() => handleOpenEditModal(u)}

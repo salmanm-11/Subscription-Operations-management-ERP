@@ -261,7 +261,7 @@ export const PaymentList: React.FC<PaymentListProps> = ({
                 <th className="py-3 px-3.5 min-w-[220px]">Notes</th>
                 <th className="py-3 px-3 text-right whitespace-nowrap">Amount (AED)</th>
                 <th className="py-3 px-3.5 text-center min-w-[120px] whitespace-nowrap">Status</th>
-                <th className="py-3 px-4 text-right sticky right-0 bg-[#0f1422] z-20 shadow-[-10px_0_12px_-4px_rgba(0,0,0,0.6)] border-l border-slate-800 whitespace-nowrap min-w-[110px]">
+                <th className="py-3 px-4 text-right whitespace-nowrap min-w-[130px]">
                   Action
                 </th>
               </tr>
@@ -343,8 +343,8 @@ export const PaymentList: React.FC<PaymentListProps> = ({
                         </span>
                       </td>
 
-                      {/* Action View / Print & Delete (Sticky & never clipped or overlapping) */}
-                      <td className="py-3 px-4 text-right whitespace-nowrap sticky right-0 bg-[#151c2c] group-hover:bg-[#1c253a] z-20 shadow-[-10px_0_12px_-4px_rgba(0,0,0,0.6)] border-l border-slate-800/80 min-w-[130px]">
+                      {/* Action View / Print & Delete (Clean layout & never clipped or overlapping) */}
+                      <td className="py-3 px-4 text-right whitespace-nowrap min-w-[130px]">
                         <div className="flex items-center justify-end gap-1.5">
                           <button
                             onClick={() => setSelectedReceipt(p)}

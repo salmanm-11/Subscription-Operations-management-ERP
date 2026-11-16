@@ -704,17 +704,17 @@ export const OverdueList: React.FC<OverdueListProps> = ({
       {activeTab === 'overdue' && (
         <div className="bg-[#151c2c] border border-[#222f47]/60 rounded-2xl overflow-hidden shadow-xl shadow-black/30">
           <div className="overflow-x-auto w-full custom-scrollbar">
-            <table className="w-full text-left">
+            <table className="w-full text-left min-w-[1140px]">
               <thead>
                 <tr className="bg-[#0f1422] text-slate-300 border-b border-slate-700/80 text-xs uppercase tracking-wider font-bold">
-                  <th className="py-3 px-3.5">Customer</th>
-                  <th className="py-3 px-3.5">Building &amp; Apt</th>
-                  <th className="py-3 px-3">Contact</th>
-                  <th className="py-3 px-3">Billed Up to</th>
-                  <th className="py-3 px-2.5 text-center">Rating</th>
-                  <th className="py-3 px-3.5">Follow-up Remarks</th>
-                  <th className="py-3 px-3 text-right">Overdue (AED)</th>
-                  <th className="py-3 px-3.5 text-right sticky right-0 bg-[#0f1422] z-20 shadow-[-10px_0_12px_-4px_rgba(0,0,0,0.6)] border-l border-slate-800">
+                  <th className="py-3 px-3.5 whitespace-nowrap min-w-[160px]">Customer</th>
+                  <th className="py-3 px-3.5 whitespace-nowrap min-w-[150px]">Building &amp; Apt</th>
+                  <th className="py-3 px-3 whitespace-nowrap min-w-[120px]">Contact</th>
+                  <th className="py-3 px-3 whitespace-nowrap min-w-[120px]">Billed Up to</th>
+                  <th className="py-3 px-2.5 text-center whitespace-nowrap min-w-[90px]">Rating</th>
+                  <th className="py-3 px-3.5 min-w-[180px]">Follow-up Remarks</th>
+                  <th className="py-3 px-3 text-right whitespace-nowrap min-w-[120px]">Overdue (AED)</th>
+                  <th className="py-3 px-3.5 text-right whitespace-nowrap min-w-[140px]">
                     Actions
                   </th>
                 </tr>
@@ -805,8 +805,8 @@ export const OverdueList: React.FC<OverdueListProps> = ({
                           {formatAED(c.total_overdue)}
                         </td>
 
-                        {/* Sticky Action Options */}
-                        <td className="py-3.5 px-4 text-right whitespace-nowrap sticky right-0 bg-[#0f1422] group-hover:bg-[#161d2d] z-20 shadow-[-10px_0_12px_-4px_rgba(0,0,0,0.6)] border-l border-slate-800">
+                        {/* Action Options */}
+                        <td className="py-3.5 px-4 text-right whitespace-nowrap min-w-[140px]">
                           <div className="flex items-center justify-end gap-1.5">
                             {/* WhatsApp Button */}
                             <button
@@ -865,16 +865,16 @@ export const OverdueList: React.FC<OverdueListProps> = ({
       {activeTab === 'reminders' && (
         <div className="bg-[#151c2c] border border-[#222f47]/60 rounded-2xl overflow-hidden shadow-xl shadow-black/30">
           <div className="overflow-x-auto w-full custom-scrollbar">
-            <table className="w-full text-left">
+            <table className="w-full text-left min-w-[1140px]">
               <thead>
                 <tr className="bg-[#0f1422] text-slate-300 border-b border-slate-700/80 text-xs uppercase tracking-wider font-bold">
-                  <th className="py-3 px-3.5">Customer</th>
-                  <th className="py-3 px-3.5">Building &amp; Apt</th>
-                  <th className="py-3 px-3">Phone</th>
-                  <th className="py-3 px-3 text-center">Due Date (This Date)</th>
-                  <th className="py-3 px-3 text-center">Countdown / Due In</th>
-                  <th className="py-3 px-3 text-right">Expected Fee (AED)</th>
-                  <th className="py-3 px-3.5 text-right sticky right-0 bg-[#0f1422] z-20 shadow-[-10px_0_12px_-4px_rgba(0,0,0,0.6)] border-l border-slate-800">
+                  <th className="py-3 px-3.5 whitespace-nowrap min-w-[160px]">Customer</th>
+                  <th className="py-3 px-3.5 whitespace-nowrap min-w-[150px]">Building &amp; Apt</th>
+                  <th className="py-3 px-3 whitespace-nowrap min-w-[120px]">Phone</th>
+                  <th className="py-3 px-3 text-center whitespace-nowrap min-w-[140px]">Due Date (This Date)</th>
+                  <th className="py-3 px-3 text-center whitespace-nowrap min-w-[140px]">Countdown / Due In</th>
+                  <th className="py-3 px-3 text-right whitespace-nowrap min-w-[130px]">Expected Fee (AED)</th>
+                  <th className="py-3 px-3.5 text-right whitespace-nowrap min-w-[150px]">
                     Reminder Actions
                   </th>
                 </tr>
@@ -958,7 +958,7 @@ export const OverdueList: React.FC<OverdueListProps> = ({
                         </td>
 
                         {/* Action Buttons */}
-                        <td className="py-3.5 px-4 text-right whitespace-nowrap sticky right-0 bg-[#0f1422] group-hover:bg-[#161d2d] z-20 shadow-[-10px_0_12px_-4px_rgba(0,0,0,0.6)] border-l border-slate-800">
+                        <td className="py-3.5 px-4 text-right whitespace-nowrap min-w-[150px]">
                           <div className="flex items-center justify-end gap-1.5">
                             {/* Send WhatsApp Reminder */}
                             <button
@@ -1010,17 +1010,17 @@ export const OverdueList: React.FC<OverdueListProps> = ({
       {activeTab === 'cleared' && (
         <div className="bg-[#151c2c] border border-[#222f47]/60 rounded-2xl overflow-hidden shadow-xl shadow-black/30">
           <div className="overflow-x-auto w-full custom-scrollbar">
-            <table className="w-full text-left">
+            <table className="w-full text-left min-w-[1140px]">
               <thead>
                 <tr className="bg-[#0f1422] text-slate-300 border-b border-slate-700/80 text-xs uppercase tracking-wider font-bold">
-                  <th className="py-3 px-3.5">Receipt # &amp; Date</th>
-                  <th className="py-3 px-3.5">Customer</th>
-                  <th className="py-3 px-3.5">Building &amp; Apt</th>
-                  <th className="py-3 px-3.5 text-right">Cleared Amount (AED)</th>
-                  <th className="py-3 px-3">Payment Method</th>
-                  <th className="py-3 px-3 text-center">Account Status Now</th>
-                  <th className="py-3 px-3.5">Remarks / Purpose</th>
-                  <th className="py-3 px-3.5 text-right sticky right-0 bg-[#0f1422] z-20 shadow-[-10px_0_12px_-4px_rgba(0,0,0,0.6)] border-l border-slate-800">
+                  <th className="py-3 px-3.5 whitespace-nowrap min-w-[140px]">Receipt # &amp; Date</th>
+                  <th className="py-3 px-3.5 whitespace-nowrap min-w-[150px]">Customer</th>
+                  <th className="py-3 px-3.5 whitespace-nowrap min-w-[150px]">Building &amp; Apt</th>
+                  <th className="py-3 px-3.5 text-right whitespace-nowrap min-w-[130px]">Cleared Amount (AED)</th>
+                  <th className="py-3 px-3 whitespace-nowrap min-w-[110px]">Payment Method</th>
+                  <th className="py-3 px-3 text-center whitespace-nowrap min-w-[130px]">Account Status Now</th>
+                  <th className="py-3 px-3.5 min-w-[180px]">Remarks / Purpose</th>
+                  <th className="py-3 px-3.5 text-right whitespace-nowrap min-w-[130px]">
                     Actions
                   </th>
                 </tr>
@@ -1135,8 +1135,8 @@ export const OverdueList: React.FC<OverdueListProps> = ({
                           </div>
                         </td>
 
-                        {/* Sticky Action Options */}
-                        <td className="py-3.5 px-4 text-right whitespace-nowrap sticky right-0 bg-[#0f1422] group-hover:bg-[#161d2d] z-20 shadow-[-10px_0_12px_-4px_rgba(0,0,0,0.6)] border-l border-slate-800">
+                        {/* Action Options */}
+                        <td className="py-3.5 px-4 text-right whitespace-nowrap min-w-[140px]">
                           <div className="flex items-center justify-end gap-1.5">
                             {/* Official Receipt Modal View */}
                             <button

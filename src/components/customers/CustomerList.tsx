@@ -819,20 +819,20 @@ export const CustomerList: React.FC<CustomerListProps> = ({
       {/* Customers Table */}
       <div className="bg-[#151c2c] border border-[#222f47]/60 rounded-2xl overflow-hidden shadow-xl shadow-black/30">
         <div className="overflow-x-auto w-full custom-scrollbar">
-          <table className="w-full text-left">
+          <table className="w-full text-left min-w-[1360px]">
             <thead>
               <tr className="bg-[#0f1422] text-slate-300 border-b border-slate-700/80 text-xs uppercase tracking-wider font-bold">
-                <th className="py-3 px-3">Code</th>
-                <th className="py-3 px-3">Customer</th>
-                <th className="py-3 px-3">Building &amp; Room</th>
-                <th className="py-3 px-2 text-center">Meals</th>
+                <th className="py-3 px-3 whitespace-nowrap min-w-[95px]">Code</th>
+                <th className="py-3 px-3 whitespace-nowrap min-w-[150px]">Customer</th>
+                <th className="py-3 px-3 whitespace-nowrap min-w-[160px]">Building &amp; Room</th>
+                <th className="py-3 px-2 text-center whitespace-nowrap min-w-[95px]">Meals</th>
                 <th className="py-3 px-3.5 min-w-[220px]">Dietary &amp; Delivery Notes</th>
-                <th className="py-3 px-2.5 text-right whitespace-nowrap">Monthly Fee</th>
-                <th className="py-3 px-2 text-center whitespace-nowrap">Payment Made Up To</th>
-                <th className="py-3 px-2 text-center whitespace-nowrap">Billed Up To</th>
-                <th className="py-3 px-2.5 text-right whitespace-nowrap">Overdue</th>
-                <th className="py-3 px-2 text-center">Status</th>
-                <th className="py-3 px-3 text-right sticky right-0 bg-[#0f1422] z-20 shadow-[-10px_0_12px_-4px_rgba(0,0,0,0.6)] border-l border-slate-800">
+                <th className="py-3 px-2.5 text-right whitespace-nowrap min-w-[115px]">Monthly Fee</th>
+                <th className="py-3 px-2 text-center whitespace-nowrap min-w-[150px]">Payment Made Up To</th>
+                <th className="py-3 px-2 text-center whitespace-nowrap min-w-[130px]">Billed Up To</th>
+                <th className="py-3 px-2.5 text-right whitespace-nowrap min-w-[115px]">Overdue</th>
+                <th className="py-3 px-2 text-center whitespace-nowrap min-w-[110px]">Status</th>
+                <th className="py-3 px-3 text-right whitespace-nowrap min-w-[135px]">
                   Actions
                 </th>
               </tr>
@@ -854,12 +854,12 @@ export const CustomerList: React.FC<CustomerListProps> = ({
                       className="hover:bg-slate-800/60 cursor-pointer transition-colors group"
                       title="Click anywhere to view full customer details"
                     >
-                      <td className="py-3 px-3 font-mono text-amber-400 font-bold whitespace-nowrap">
+                      <td className="py-3 px-3 font-mono text-amber-400 font-bold whitespace-nowrap min-w-[95px]">
                         <span className="hover:underline flex items-center gap-1 text-amber-300">
                           {c.customer_code}
                         </span>
                       </td>
-                      <td className="py-3 px-3 min-w-[160px]">
+                      <td className="py-3 px-3 min-w-[150px]">
                         <div className="font-bold text-white text-sm sm:text-base tracking-tight hover:text-amber-300 transition-colors flex items-center gap-1.5 flex-wrap">
                           <span>{c.full_name}</span>
                           {c.managed_by === 'online_self_service' && (
@@ -895,7 +895,7 @@ export const CustomerList: React.FC<CustomerListProps> = ({
                           );
                         })()}
                       </td>
-                      <td className="py-3 px-3 text-slate-200">
+                      <td className="py-3 px-3 text-slate-200 min-w-[160px]">
                         <div className="font-bold text-xs sm:text-sm flex items-center gap-1.5">
                           <Building2 className="w-3.5 h-3.5 text-sky-400 shrink-0" />
                           <span>{c.building_name_cache || c.building?.name || 'Unassigned'}</span>
@@ -909,7 +909,7 @@ export const CustomerList: React.FC<CustomerListProps> = ({
                           )}
                         </div>
                       </td>
-                      <td className="py-3 px-2 whitespace-nowrap text-center">
+                      <td className="py-3 px-2 whitespace-nowrap text-center min-w-[95px]">
                         <div className="inline-flex items-center gap-1">
                           <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${c.has_breakfast ? 'bg-amber-500/25 text-amber-300 border border-amber-500/40' : 'bg-slate-800/60 text-slate-600'}`}>BF</span>
                           <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${c.has_lunch ? 'bg-emerald-500/25 text-emerald-300 border border-emerald-500/40' : 'bg-slate-800/60 text-slate-600'}`}>LN</span>
@@ -944,27 +944,27 @@ export const CustomerList: React.FC<CustomerListProps> = ({
                           )}
                         </div>
                       </td>
-                      <td className="py-3 px-2.5 text-right font-bold text-white whitespace-nowrap font-mono text-xs sm:text-sm">
+                      <td className="py-3 px-2.5 text-right font-bold text-white whitespace-nowrap font-mono text-xs sm:text-sm min-w-[115px]">
                         {formatAED(c.monthly_rate)}
                       </td>
                       {/* Payment Made Up To The Date */}
-                      <td className="py-3 px-2 text-center whitespace-nowrap">
+                      <td className="py-3 px-2 text-center whitespace-nowrap min-w-[150px]">
                         <span className="inline-flex items-center font-mono text-xs font-bold text-emerald-300 bg-emerald-500/15 px-2 py-0.5 rounded border border-emerald-500/30">
                           {c.payment_made_up_to_date || c.billing_start_date || '31 Oct 2026'}
                         </span>
                       </td>
                       {/* Billed Up To The Date */}
-                      <td className="py-3 px-2 text-center whitespace-nowrap">
+                      <td className="py-3 px-2 text-center whitespace-nowrap min-w-[130px]">
                         <span className="inline-flex items-center font-mono text-xs font-bold text-slate-200 bg-slate-800/90 px-2 py-0.5 rounded border border-slate-700/70">
                           {c.billed_up_to_date || c.billing_end_date || '31 Oct 2026'}
                         </span>
                       </td>
-                      <td className="py-3 px-2.5 text-right font-black whitespace-nowrap font-mono text-xs sm:text-sm">
+                      <td className="py-3 px-2.5 text-right font-black whitespace-nowrap font-mono text-xs sm:text-sm min-w-[115px]">
                         <span className={overdue > 0 ? 'text-rose-400 drop-shadow-sm' : 'text-emerald-400'}>
                           {formatAED(overdue)}
                         </span>
                       </td>
-                      <td className="py-3 px-2 text-center whitespace-nowrap">
+                      <td className="py-3 px-2 text-center whitespace-nowrap min-w-[110px]">
                         <span
                           className={`px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase border shadow-sm ${
                             c.status === 'active'
@@ -1001,8 +1001,8 @@ export const CustomerList: React.FC<CustomerListProps> = ({
                           );
                         })()}
                       </td>
-                      {/* Sticky Action Options */}
-                      <td className="py-3 px-3 text-right whitespace-nowrap sticky right-0 bg-[#151c2c] group-hover:bg-[#1c253a] z-20 shadow-[-10px_0_12px_-4px_rgba(0,0,0,0.6)] border-l border-slate-800/80">
+                      {/* Action Options */}
+                      <td className="py-3 px-3 text-right whitespace-nowrap min-w-[135px]">
                         <div className="flex items-center justify-end gap-1.5">
                           {/* 1-Click View Button */}
                           <button

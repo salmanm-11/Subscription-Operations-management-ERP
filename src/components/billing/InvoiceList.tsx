@@ -408,18 +408,18 @@ export const InvoiceList: React.FC<InvoiceListProps> = ({
       {/* Invoices Table */}
       <div className="bg-[#151c2c] border border-[#222f47]/60 rounded-2xl overflow-hidden shadow-xl shadow-black/30">
         <div className="overflow-x-auto w-full custom-scrollbar">
-          <table className="w-full text-left">
+          <table className="w-full text-left min-w-[1140px]">
             <thead>
               <tr className="bg-[#0f1422] text-slate-300 border-b border-slate-700/80 text-xs uppercase tracking-wider font-bold">
-                <th className="py-3 px-3.5">Invoice #</th>
-                <th className="py-3 px-3.5">Customer Name &amp; Details</th>
-                <th className="py-3 px-3">Billing Period</th>
-                <th className="py-3 px-3">Due Date</th>
-                <th className="py-3 px-3 text-right">Total (AED)</th>
-                <th className="py-3 px-3 text-right">Paid (AED)</th>
-                <th className="py-3 px-3 text-right">Balance (AED)</th>
-                <th className="py-3 px-2.5 text-center">Status</th>
-                <th className="py-3 px-3.5 text-right sticky right-0 bg-[#0f1422] z-20 shadow-[-10px_0_12px_-4px_rgba(0,0,0,0.6)] border-l border-slate-800">
+                <th className="py-3 px-3.5 whitespace-nowrap min-w-[120px]">Invoice #</th>
+                <th className="py-3 px-3.5 min-w-[200px]">Customer Name &amp; Details</th>
+                <th className="py-3 px-3 whitespace-nowrap min-w-[160px]">Billing Period</th>
+                <th className="py-3 px-3 whitespace-nowrap min-w-[110px]">Due Date</th>
+                <th className="py-3 px-3 text-right whitespace-nowrap min-w-[110px]">Total (AED)</th>
+                <th className="py-3 px-3 text-right whitespace-nowrap min-w-[110px]">Paid (AED)</th>
+                <th className="py-3 px-3 text-right whitespace-nowrap min-w-[110px]">Balance (AED)</th>
+                <th className="py-3 px-2.5 text-center whitespace-nowrap min-w-[100px]">Status</th>
+                <th className="py-3 px-3.5 text-right whitespace-nowrap min-w-[140px]">
                   Actions
                 </th>
               </tr>
@@ -527,7 +527,7 @@ export const InvoiceList: React.FC<InvoiceListProps> = ({
                       </td>
 
                       {/* Actions: View/Print, Edit, Delete */}
-                      <td className="py-3 px-3.5 text-right whitespace-nowrap sticky right-0 bg-[#151c2c] group-hover:bg-[#1c253a] z-20 shadow-[-10px_0_12px_-4px_rgba(0,0,0,0.6)] border-l border-slate-800/80">
+                      <td className="py-3 px-3.5 text-right whitespace-nowrap min-w-[140px]">
                         <div className="flex items-center justify-end gap-1.5">
                           <button
                             type="button"
