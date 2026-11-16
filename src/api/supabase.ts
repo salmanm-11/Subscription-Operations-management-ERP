@@ -435,11 +435,47 @@ export async function saveCustomer(customer: Partial<Customer>): Promise<Custome
 }
 
 export async function deleteCustomer(id: string): Promise<boolean> {
+  const localCust = OfflineStorage.getCustomers().find(c => c.id === id || c.customer_code === id);
   OfflineStorage.deleteCustomer(id);
   const client = getSupabaseClient();
   if (client) {
     try {
-      await client.from('customers').delete().eq('id', id);
+      const targetId = localCust?.id || id;
+      const targetCode = localCust?.customer_code;
+
+      // 1. Delete associated payments first (satisfies ON DELETE RESTRICT foreign key)
+      await client.from('payments').delete().eq('customer_id', targetId);
+      if (targetCode && targetCode !== targetId) {
+        await client.from('payments').delete().eq('customer_id', targetCode);
+      }
+
+      // 2. Delete invoice items and invoices for this customer
+      const { data: customerInvoices } = await client
+        .from('invoices')
+        .select('id')
+        .or(`customer_id.eq.${targetId}${targetCode ? `,customer_id.eq.${targetCode}` : ''}`);
+
+      if (customerInvoices && customerInvoices.length > 0) {
+        const invoiceIds = customerInvoices.map((inv) => inv.id);
+        await client.from('invoice_items').delete().in('invoice_id', invoiceIds);
+      }
+      await client.from('invoices').delete().eq('customer_id', targetId);
+      if (targetCode && targetCode !== targetId) {
+        await client.from('invoices').delete().eq('customer_id', targetCode);
+      }
+
+      // 3. Delete meal attendance records for this customer
+      await client.from('meal_attendance').delete().eq('customer_id', targetId);
+      if (targetCode && targetCode !== targetId) {
+        await client.from('meal_attendance').delete().eq('customer_id', targetCode);
+      }
+
+      // 4. Finally delete the customer record
+      const { error } = await client.from('customers').delete().eq('id', targetId);
+      if (error && targetCode) {
+        // Fallback retry deleting by customer_code if id was a client-side alias
+        await client.from('customers').delete().eq('customer_code', targetCode);
+      }
     } catch (err) {
       console.error('Cloud sync error deleting customer:', err);
     }
@@ -452,7 +488,13 @@ export async function deleteAllCustomers(): Promise<void> {
   const client = getSupabaseClient();
   if (client) {
     try {
-      await client.from('customers').delete().neq('id', 'placeholder-none');
+      // Must delete in reverse dependency order to satisfy ON DELETE RESTRICT foreign keys.
+      // Using .not('id', 'is', null) safely targets all rows without PostgreSQL UUID syntax errors!
+      await client.from('payments').delete().not('id', 'is', null);
+      await client.from('invoice_items').delete().not('id', 'is', null);
+      await client.from('invoices').delete().not('id', 'is', null);
+      await client.from('meal_attendance').delete().not('id', 'is', null);
+      await client.from('customers').delete().not('id', 'is', null);
     } catch (err) {
       console.error('Cloud clear customers error:', err);
     }
@@ -1009,14 +1051,16 @@ export async function clearAllBusinessData(): Promise<void> {
   const client = getSupabaseClient();
   if (client) {
     try {
-      await Promise.allSettled([
-        client.from('customers').delete().neq('id', 'placeholder-none'),
-        client.from('invoices').delete().neq('id', 'placeholder-none'),
-        client.from('payments').delete().neq('id', 'placeholder-none'),
-        client.from('vendors').delete().neq('id', 'placeholder-none'),
-        client.from('vendor_transactions').delete().neq('id', 'placeholder-none'),
-        client.from('vendor_payments').delete().neq('id', 'placeholder-none'),
-      ]);
+      // Must delete dependent child tables first to satisfy ON DELETE RESTRICT constraints!
+      // Using .not('id', 'is', null) safely matches all UUID records without syntax errors.
+      await client.from('payments').delete().not('id', 'is', null);
+      await client.from('invoice_items').delete().not('id', 'is', null);
+      await client.from('invoices').delete().not('id', 'is', null);
+      await client.from('meal_attendance').delete().not('id', 'is', null);
+      await client.from('vendor_payments').delete().not('id', 'is', null);
+      await client.from('vendor_transactions').delete().not('id', 'is', null);
+      await client.from('customers').delete().not('id', 'is', null);
+      await client.from('vendors').delete().not('id', 'is', null);
     } catch (err) {
       console.error('Cloud reset error:', err);
     }

@@ -619,16 +619,20 @@ export const App: React.FC = () => {
   };
 
   const handleDeleteCustomer = async (id: string) => {
-    const cust = customers.find((c) => c.id === id);
-    // Instant optimistic deletion from UI (0ms!)
-    setCustomers((prev) => prev.filter((c) => c.id !== id));
-    setLatestRegistrant((prev) => (prev && (prev.id === id || (cust && prev.customer_code === cust.customer_code)) ? null : prev));
-    setNewRegistrationAlert((prev) => (prev && (prev.id === id || (cust && prev.customer_code === cust.customer_code)) ? null : prev));
-    setViewingProfileCustomer((prev) => (prev && (prev.id === id || (cust && prev.customer_code === cust.customer_code)) ? null : prev));
-    OfflineStorage.deleteCustomer(id);
+    const cust = customers.find((c) => c.id === id || c.customer_code === id);
+    const targetId = cust ? cust.id : id;
+    const targetCode = cust ? cust.customer_code : undefined;
+
+    // Instant optimistic deletion from UI
+    setCustomers((prev) => prev.filter((c) => c.id !== targetId && (targetCode ? c.customer_code !== targetCode : true)));
+    setInvoices((prev) => prev.filter((inv) => inv.customer_id !== targetId && (targetCode ? inv.customer_id !== targetCode : true)));
+    setPayments((prev) => prev.filter((p) => p.customer_id !== targetId && (targetCode ? p.customer_id !== targetCode : true)));
+    setLatestRegistrant((prev) => (prev && (prev.id === targetId || (targetCode && prev.customer_code === targetCode)) ? null : prev));
+    setNewRegistrationAlert((prev) => (prev && (prev.id === targetId || (targetCode && prev.customer_code === targetCode)) ? null : prev));
+    setViewingProfileCustomer((prev) => (prev && (prev.id === targetId || (targetCode && prev.customer_code === targetCode)) ? null : prev));
 
     try {
-      await deleteCustomer(id);
+      await deleteCustomer(targetId);
       ActivityLogService.logAction(
         'Customers',
         'DELETE',
@@ -641,17 +645,25 @@ export const App: React.FC = () => {
   };
 
   const handleDeleteAllCustomers = async () => {
-    await deleteAllCustomers();
+    // Optimistic UI clear
     setCustomers([]);
+    setInvoices([]);
+    setPayments([]);
     setLatestRegistrant(null);
     setNewRegistrationAlert(null);
     setViewingProfileCustomer(null);
+
+    // Delete completely from Supabase and OfflineStorage
+    await deleteAllCustomers();
+
     ActivityLogService.logAction(
       'Customers',
       'DELETE',
       'All Customer Records Deleted',
       'Permanently removed all customer profiles with user confirmation.'
     );
+
+    // Re-verify with cloud data
     await loadData();
   };
 

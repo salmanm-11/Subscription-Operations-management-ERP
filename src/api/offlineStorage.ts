@@ -363,9 +363,23 @@ export class OfflineStorage {
 
   static deleteCustomer(id: string): boolean {
     const customers = this.getCustomers();
-    const filtered = customers.filter(c => c.id !== id);
+    const target = customers.find(c => c.id === id || c.customer_code === id);
+    const targetId = target ? target.id : id;
+    const targetCode = target ? target.customer_code : undefined;
+
+    const filtered = customers.filter(c => c.id !== targetId && (targetCode ? c.customer_code !== targetCode : true));
     if (filtered.length !== customers.length) {
       this.setItem(STORAGE_KEYS.CUSTOMERS, filtered);
+
+      // Clean up orphaned invoices and payments in local storage
+      const invoices = this.getInvoices();
+      const filteredInvoices = invoices.filter(inv => inv.customer_id !== targetId && (targetCode ? inv.customer_id !== targetCode : true));
+      this.setItem(STORAGE_KEYS.INVOICES, filteredInvoices);
+
+      const payments = this.getPayments();
+      const filteredPayments = payments.filter(p => p.customer_id !== targetId && (targetCode ? p.customer_id !== targetCode : true));
+      this.setItem(STORAGE_KEYS.PAYMENTS, filteredPayments);
+
       return true;
     }
     return false;
@@ -373,6 +387,8 @@ export class OfflineStorage {
 
   static deleteAllCustomers(): void {
     this.setItem(STORAGE_KEYS.CUSTOMERS, []);
+    this.setItem(STORAGE_KEYS.INVOICES, []);
+    this.setItem(STORAGE_KEYS.PAYMENTS, []);
   }
 
   static setCustomers(customers: Customer[]): void {
