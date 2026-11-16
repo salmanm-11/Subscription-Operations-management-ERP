@@ -42,6 +42,7 @@ import { getApproachingCancellations, sendCancellationWhatsApp, syncCustomerCanc
 import {
   fetchCustomers,
   saveCustomer,
+  saveCustomersBatch,
   deleteCustomer,
   deleteAllCustomers,
   fetchBuildings,
@@ -958,19 +959,18 @@ export const App: React.FC = () => {
 
   const handleImportCustomers = async (importedRows: ParsedImportRow[], mode: 'merge' | 'replace') => {
     if (mode === 'replace') {
-      localStorage.removeItem('karama_customers');
+      await deleteAllCustomers();
     }
-    for (const row of importedRows) {
-      await saveCustomer(row as any);
-    }
+    const saved = await saveCustomersBatch(importedRows as any);
+    setCustomers(saved);
     ActivityLogService.logAction(
       'Customers',
       'IMPORT',
       'Customers Imported from Excel',
-      `Imported ${importedRows.length} customers into database using ${mode} mode.`
+      `Imported ${saved.length} customers into database using ${mode} mode.`
     );
     await loadData();
-    alert(`Successfully imported ${importedRows.length} customers into the mess database!`);
+    alert(`Successfully imported all ${saved.length} customers into the mess database!`);
   };
 
   const handleLogout = () => {

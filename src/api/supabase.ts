@@ -4,6 +4,7 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { OfflineStorage, DEFAULT_BUSINESS } from './offlineStorage';
 import { Customer, Building, Room, MealPlan, Invoice, Payment, BusinessSettings, DashboardMetrics, Vendor, VendorTransaction, VendorPayment } from '../types';
+import { generateUUID, isValidUUID } from '../utils/uuid';
 
 // Built-in Internal Supabase Cloud Credentials (Hidden from frontend UI)
 export const BUILTIN_SUPABASE_URL = 'https://bbqrieuujxazhqgelppr.supabase.co';
@@ -361,6 +362,11 @@ export async function fetchCustomers(): Promise<Customer[]> {
 
 export async function saveCustomer(customer: Partial<Customer>): Promise<Customer> {
   const localSaved = OfflineStorage.saveCustomer(customer);
+  if (!isValidUUID(localSaved.id)) {
+    localSaved.id = generateUUID();
+    OfflineStorage.saveCustomer(localSaved);
+  }
+
   const client = getSupabaseClient();
   if (client) {
     try {
@@ -432,6 +438,81 @@ export async function saveCustomer(customer: Partial<Customer>): Promise<Custome
     }
   }
   return localSaved;
+}
+
+export async function saveCustomersBatch(customerList: Partial<Customer>[]): Promise<Customer[]> {
+  const savedCustomers: Customer[] = [];
+  const payloads: any[] = [];
+
+  for (const c of customerList) {
+    const local = OfflineStorage.saveCustomer(c);
+    if (!isValidUUID(local.id)) {
+      local.id = generateUUID();
+      OfflineStorage.saveCustomer(local);
+    }
+    savedCustomers.push(local);
+
+    let syncedNotes = local.notes || '';
+    syncedNotes = syncedNotes.replace(/\[NOTICE: Cancelling on [^\]]+\]\s*/g, '').trim();
+    if (local.cancellation_date && local.status !== 'cancelled') {
+      const noticeTag = `[NOTICE: Cancelling on ${local.cancellation_date}${local.cancellation_reason ? ` | Reason: ${local.cancellation_reason}` : ''}]`;
+      syncedNotes = syncedNotes ? `${noticeTag} ${syncedNotes}` : noticeTag;
+    }
+
+    payloads.push({
+      id: local.id,
+      business_id: local.business_id || DEFAULT_BUSINESS.id,
+      customer_code: local.customer_code,
+      full_name: local.full_name,
+      phone: local.phone || '',
+      email: local.email || '',
+      building_id: (local.building_id && local.building_id !== 'custom') ? local.building_id : null,
+      room_id: local.room_id || null,
+      building_name_cache: local.building_name_cache || '',
+      apartment_cache: local.apartment_cache || '',
+      meal_plan_id: local.meal_plan_id || null,
+      has_breakfast: Boolean(local.has_breakfast),
+      has_lunch: local.has_lunch !== undefined ? Boolean(local.has_lunch) : true,
+      has_dinner: local.has_dinner !== undefined ? Boolean(local.has_dinner) : true,
+      monthly_rate: local.monthly_rate || 380,
+      dietary_preferences: local.dietary_preferences || '',
+      delivery_time: local.delivery_time || '',
+      door_passcode: local.door_passcode || '',
+      joining_date: local.joining_date || new Date().toISOString().split('T')[0],
+      billing_start_date: local.billing_start_date || null,
+      billing_end_date: local.cancellation_date || local.billing_end_date || null,
+      status: local.status || 'active',
+      payment_rating: local.payment_rating || 'Good',
+      total_overdue: local.total_overdue || 0,
+      payment_made_up_to_date: local.payment_made_up_to_date || null,
+      billed_up_to_date: local.billed_up_to_date || null,
+      managed_by: local.managed_by || 'customer',
+      notes: syncedNotes,
+      updated_at: new Date().toISOString()
+    });
+  }
+
+  const client = getSupabaseClient();
+  if (client && payloads.length > 0) {
+    try {
+      // Chunk into batches of 40 for fast, reliable bulk upload
+      const chunkSize = 40;
+      for (let i = 0; i < payloads.length; i += chunkSize) {
+        const chunk = payloads.slice(i, i + chunkSize);
+        const { error } = await client.from('customers').upsert(chunk, { onConflict: 'id' });
+        if (error) {
+          console.warn(`Supabase batch upsert chunk error (rows ${i}-${i + chunk.length}):`, error.message);
+          for (const item of chunk) {
+            await client.from('customers').upsert(item);
+          }
+        }
+      }
+    } catch (err) {
+      console.error('Batch customer cloud sync error:', err);
+    }
+  }
+
+  return savedCustomers;
 }
 
 export async function deleteCustomer(id: string): Promise<boolean> {

@@ -8,6 +8,7 @@ import { getMonthlySubscriptionRate } from '../utils/billingCycleService';
 import fullData from './fullInitialData.json';
 import initialVendorData from './initialVendorData.json';
 import { ActivityLogService } from './activityLogService';
+import { generateUUID, isValidUUID } from '../utils/uuid';
 
 const STORAGE_KEYS = {
   CURRENT_USER: 'karama_current_user',
@@ -320,7 +321,7 @@ export class OfflineStorage {
     const nextCodeNum = Math.max(maxCodeNum + 1, customers.length + 1);
 
     const newCustomer: Customer = {
-      id: cust.id || `c-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      id: cust.id || generateUUID(),
       business_id: DEFAULT_BUSINESS.id,
       customer_code: cust.customer_code || `CUST-${String(nextCodeNum).padStart(3, '0')}`,
       full_name: cust.full_name || 'New Customer',

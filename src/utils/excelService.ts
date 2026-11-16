@@ -234,7 +234,7 @@ export function downloadCustomerTemplate(format: 'xlsx' | 'csv' = 'xlsx') {
   exportTableToExcel(sampleData, 'Karama_Mess_Customer_Import_Template', 'Template', format);
 }
 
-// 6. Parse Uploaded Excel or CSV File
+// 6. Parse Uploaded Excel or CSV File (Multi-Sheet and Header Offset Resilient)
 export async function parseCustomerExcel(file: File): Promise<ImportResult> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -243,109 +243,245 @@ export async function parseCustomerExcel(file: File): Promise<ImportResult> {
       try {
         const buffer = e.target?.result;
         const workbook = XLSX.read(buffer, { type: 'array' });
-        const firstSheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[firstSheetName];
-        const rawJson: any[] = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
 
-        if (!rawJson || rawJson.length === 0) {
+        if (!workbook.SheetNames || workbook.SheetNames.length === 0) {
           resolve({
             success: false,
             totalRows: 0,
             validRows: [],
-            errors: ['The selected file is empty or contains no readable rows.']
+            errors: ['The selected file contains no sheets.']
           });
           return;
         }
 
-        const validRows: ParsedImportRow[] = [];
-        const errors: string[] = [];
-
-        rawJson.forEach((row, index) => {
-          // Normalize row keys (lowercase, remove spaces & symbols)
-          const normalized: Record<string, any> = {};
-          Object.keys(row).forEach(k => {
-            const cleanKey = k.toLowerCase().replace(/[^a-z0-9]/g, '');
-            normalized[cleanKey] = row[k];
-          });
-
-          // Match Name
-          const name = normalized['customername'] || normalized['name'] || normalized['fullname'] || normalized['customer'] || '';
-          if (!name || String(name).trim().length === 0 || String(name).toLowerCase() === 'total') {
-            return; // Skip empty rows or summary footer
+        // Helper to detect table header row offset (up to row 10)
+        const findHeaderRowOffset = (sheet: XLSX.WorkSheet): number => {
+          if (!sheet['!ref']) return 0;
+          const range = XLSX.utils.decode_range(sheet['!ref']);
+          for (let R = range.s.r; R <= Math.min(range.e.r, 10); ++R) {
+            let keywordMatches = 0;
+            for (let C = range.s.c; C <= range.e.c; ++C) {
+              const cell = sheet[XLSX.utils.encode_cell({ r: R, c: C })];
+              if (cell && cell.v) {
+                const val = String(cell.v).toLowerCase().replace(/[^a-z0-9]/g, '');
+                if (
+                  val.includes('name') ||
+                  val.includes('customer') ||
+                  val.includes('phone') ||
+                  val.includes('building') ||
+                  val.includes('room') ||
+                  val.includes('flat') ||
+                  val.includes('apartment') ||
+                  val.includes('rate') ||
+                  val.includes('meal') ||
+                  val.includes('status') ||
+                  val.includes('area')
+                ) {
+                  keywordMatches++;
+                }
+              }
+            }
+            if (keywordMatches >= 2) return R;
           }
+          return 0;
+        };
 
-          // Match Building & Area
-          const building = normalized['buildingname'] || normalized['building'] || normalized['bld'] || 'Karama Central';
-          const area = normalized['area'] || normalized['zone'] || 'Karama Central';
-          const apartment = String(normalized['apartment'] || normalized['flat'] || normalized['room'] || normalized['flatroom'] || '');
-          const phone = String(normalized['phonenumber'] || normalized['phone'] || normalized['mobile'] || normalized['phnumber'] || '');
-          const emergencyContact = String(normalized['emergencycontact'] || normalized['emergencyphone'] || normalized['soscontact'] || normalized['sos'] || normalized['emergency'] || '');
+        // Scan all sheets in the workbook and pick the sheet with the most valid customer rows
+        let bestRows: ParsedImportRow[] = [];
+        let bestRawCount = 0;
+        let bestSheetName = workbook.SheetNames[0];
 
-          // Match Meals
-          const bfVal = String(normalized['breakfastbf'] || normalized['breakfast'] || normalized['bf'] || '').toLowerCase();
-          const lnVal = String(normalized['lunchln'] || normalized['lunch'] || normalized['ln'] || '').toLowerCase();
-          const dnVal = String(normalized['dinnerdn'] || normalized['dinner'] || normalized['dn'] || '').toLowerCase();
+        for (const sheetName of workbook.SheetNames) {
+          const worksheet = workbook.Sheets[sheetName];
+          if (!worksheet || !worksheet['!ref']) continue;
 
-          const hasBf = bfVal === 'yes' || bfVal === '1' || bfVal === 'true' || bfVal === 'bf' || bfVal === 'y';
-          const hasLn = lnVal === 'yes' || lnVal === '1' || lnVal === 'true' || lnVal === 'ln' || lnVal === 'y';
-          const hasDn = dnVal === 'yes' || dnVal === '1' || dnVal === 'true' || dnVal === 'dn' || dnVal === 'y';
-
-          // Match Rate & Overdue
-          const count = (hasBf ? 1 : 0) + (hasLn ? 1 : 0) + (hasDn ? 1 : 0);
-          const fallbackRate = count === 1 ? 180 : (count === 2 ? 300 : 380);
-          const rawRate = normalized['monthlyrateaed'] || normalized['monthlyrate'] || normalized['monthlyprice'] || normalized['rate'];
-          const rateVal = rawRate ? (parseFloat(String(rawRate).replace(/[^0-9.-]/g, '')) || fallbackRate) : fallbackRate;
-          const overdueVal = parseFloat(String(normalized['totaloverdueaed'] || normalized['totaloverdue'] || normalized['overdue'] || normalized['due'] || '0').replace(/[^0-9.-]/g, '')) || 0;
-
-          // Match Status
-          const rawStatus = String(normalized['status'] || 'active').toLowerCase();
-          let status: 'active' | 'paused' | 'left' | 'trial' = 'active';
-          if (rawStatus.includes('trial')) status = 'trial';
-          else if (rawStatus.includes('notice') || rawStatus.includes('pause')) status = 'paused';
-          else if (rawStatus.includes('cancel') || rawStatus.includes('left') || rawStatus.includes('stop')) status = 'left';
-
-          // Match Rating
-          const rawRating = String(normalized['paymentrating'] || normalized['rating'] || '').toLowerCase();
-          let rating: 'Good' | 'Late payer' | 'Bad' = 'Good';
-          if (rawRating.includes('bad')) rating = 'Bad';
-          else if (rawRating.includes('late') || overdueVal > 0) rating = 'Late payer';
-
-          // Dietary Preferences & Notes
-          const dietary = String(normalized['dietarypreferences'] || normalized['dietary'] || normalized['label'] || '').trim();
-          const notes = String(normalized['remarksnotes'] || normalized['remarks'] || normalized['notes'] || '').trim();
-
-          // Dates
-          const paymentMadeUpTo = String(normalized['paymentmadeuptothedate'] || normalized['paymentmadeupto'] || normalized['paidupto'] || '').trim();
-          const billedUpTo = String(normalized['billeduptothedate'] || normalized['billedupto'] || '').trim();
-          const managedBy = String(normalized['whoisthiscustomer'] || normalized['whoisthiscustomermanagedby'] || normalized['managedby'] || normalized['handler'] || 'admin').trim();
-
-          validRows.push({
-            full_name: String(name).trim(),
-            area: String(area).trim(),
-            building_name_cache: String(building).trim(),
-            apartment_cache: apartment.trim(),
-            phone: phone.trim(),
-            emergency_contact: emergencyContact.trim() || undefined,
-            status,
-            has_breakfast: hasBf,
-            has_lunch: hasLn || (!hasBf && !hasDn), // default lunch if none specified
-            has_dinner: hasDn,
-            monthly_rate: rateVal,
-            total_overdue: overdueVal,
-            payment_rating: rating,
-            dietary_preferences: dietary || 'Standard Menu',
-            notes,
-            payment_made_up_to_date: paymentMadeUpTo || undefined,
-            billed_up_to_date: billedUpTo || undefined,
-            managed_by: managedBy || 'admin',
+          const headerOffset = findHeaderRowOffset(worksheet);
+          const rawJson: any[] = XLSX.utils.sheet_to_json(worksheet, {
+            range: headerOffset,
+            defval: ''
           });
-        });
+
+          if (!rawJson || rawJson.length === 0) continue;
+
+          const sheetValidRows: ParsedImportRow[] = [];
+
+          rawJson.forEach((row) => {
+            // Normalize row keys (lowercase, remove spaces & symbols)
+            const normalized: Record<string, any> = {};
+            Object.keys(row).forEach((k) => {
+              const cleanKey = k.toLowerCase().replace(/[^a-z0-9]/g, '');
+              normalized[cleanKey] = row[k];
+            });
+
+            // Match Name (Broad multi-language & ERP variations)
+            const nameKey = Object.keys(normalized).find((k) => k.includes('name')) || '';
+            const name =
+              normalized['customername'] ||
+              normalized['name'] ||
+              normalized['fullname'] ||
+              normalized['customer'] ||
+              normalized['clientname'] ||
+              normalized['client'] ||
+              normalized['membername'] ||
+              normalized['member'] ||
+              normalized['person'] ||
+              normalized['resident'] ||
+              normalized['tenant'] ||
+              normalized['subscriber'] ||
+              normalized['custname'] ||
+              normalized['cname'] ||
+              normalized['empname'] ||
+              normalized['employee'] ||
+              (nameKey ? normalized[nameKey] : '');
+
+            if (!name || String(name).trim().length === 0 || String(name).toLowerCase() === 'total' || String(name).toLowerCase() === 'grand total') {
+              return; // Skip empty rows or summary footer
+            }
+
+            // Match Building & Area
+            const building =
+              normalized['buildingname'] ||
+              normalized['building'] ||
+              normalized['bld'] ||
+              normalized['buildingarea'] ||
+              normalized['property'] ||
+              normalized['address'] ||
+              'Karama Central';
+            const area = normalized['area'] || normalized['zone'] || normalized['deliveryarea'] || 'Karama Central';
+            const apartment = String(
+              normalized['apartment'] ||
+              normalized['flat'] ||
+              normalized['room'] ||
+              normalized['flatroom'] ||
+              normalized['roomno'] ||
+              normalized['flatno'] ||
+              normalized['apt'] ||
+              ''
+            );
+            const phone = String(
+              normalized['phonenumber'] ||
+              normalized['phone'] ||
+              normalized['mobile'] ||
+              normalized['contact'] ||
+              normalized['phnumber'] ||
+              normalized['mob'] ||
+              normalized['cell'] ||
+              ''
+            );
+            const emergencyContact = String(
+              normalized['emergencycontact'] ||
+              normalized['emergencyphone'] ||
+              normalized['soscontact'] ||
+              normalized['sos'] ||
+              normalized['emergency'] ||
+              ''
+            );
+
+            // Match Meals
+            const bfVal = String(normalized['breakfastbf'] || normalized['breakfast'] || normalized['bf'] || '').toLowerCase();
+            const lnVal = String(normalized['lunchln'] || normalized['lunch'] || normalized['ln'] || '').toLowerCase();
+            const dnVal = String(normalized['dinnerdn'] || normalized['dinner'] || normalized['dn'] || '').toLowerCase();
+
+            const hasBf = bfVal === 'yes' || bfVal === '1' || bfVal === 'true' || bfVal === 'bf' || bfVal === 'y';
+            const hasLn = lnVal === 'yes' || lnVal === '1' || lnVal === 'true' || lnVal === 'ln' || lnVal === 'y';
+            const hasDn = dnVal === 'yes' || dnVal === '1' || dnVal === 'true' || dnVal === 'dn' || dnVal === 'y';
+
+            // Match Rate & Overdue
+            const count = (hasBf ? 1 : 0) + (hasLn ? 1 : 0) + (hasDn ? 1 : 0);
+            const fallbackRate = count === 1 ? 180 : (count === 2 ? 300 : 380);
+            const rawRate =
+              normalized['monthlyrateaed'] ||
+              normalized['monthlyrate'] ||
+              normalized['monthlyprice'] ||
+              normalized['rate'] ||
+              normalized['price'] ||
+              normalized['amount'];
+            const rateVal = rawRate ? (parseFloat(String(rawRate).replace(/[^0-9.-]/g, '')) || fallbackRate) : fallbackRate;
+            const overdueVal =
+              parseFloat(
+                String(
+                  normalized['totaloverdueaed'] ||
+                  normalized['totaloverdue'] ||
+                  normalized['overdue'] ||
+                  normalized['due'] ||
+                  normalized['balance'] ||
+                  '0'
+                ).replace(/[^0-9.-]/g, '')
+              ) || 0;
+
+            // Match Status
+            const rawStatus = String(normalized['status'] || 'active').toLowerCase();
+            let status: 'active' | 'paused' | 'left' | 'trial' = 'active';
+            if (rawStatus.includes('trial')) status = 'trial';
+            else if (rawStatus.includes('notice') || rawStatus.includes('pause')) status = 'paused';
+            else if (rawStatus.includes('cancel') || rawStatus.includes('left') || rawStatus.includes('stop')) status = 'left';
+
+            // Match Rating
+            const rawRating = String(normalized['paymentrating'] || normalized['rating'] || '').toLowerCase();
+            let rating: 'Good' | 'Late payer' | 'Bad' = 'Good';
+            if (rawRating.includes('bad')) rating = 'Bad';
+            else if (rawRating.includes('late') || overdueVal > 0) rating = 'Late payer';
+
+            // Dietary Preferences & Notes
+            const dietary = String(normalized['dietarypreferences'] || normalized['dietary'] || normalized['label'] || '').trim();
+            const notes = String(normalized['remarksnotes'] || normalized['remarks'] || normalized['notes'] || '').trim();
+
+            // Dates
+            const paymentMadeUpTo = String(
+              normalized['paymentmadeuptothedate'] ||
+              normalized['paymentmadeupto'] ||
+              normalized['paidupto'] ||
+              normalized['lastpaid'] ||
+              ''
+            ).trim();
+            const billedUpTo = String(
+              normalized['billeduptothedate'] ||
+              normalized['billedupto'] ||
+              normalized['billedto'] ||
+              ''
+            ).trim();
+            const managedBy = String(
+              normalized['whoisthiscustomer'] ||
+              normalized['whoisthiscustomermanagedby'] ||
+              normalized['managedby'] ||
+              normalized['handler'] ||
+              'admin'
+            ).trim();
+
+            sheetValidRows.push({
+              full_name: String(name).trim(),
+              area: String(area).trim(),
+              building_name_cache: String(building).trim(),
+              apartment_cache: apartment.trim(),
+              phone: phone.trim(),
+              emergency_contact: emergencyContact.trim() || undefined,
+              status,
+              has_breakfast: hasBf,
+              has_lunch: hasLn || (!hasBf && !hasDn), // default lunch if none specified
+              has_dinner: hasDn,
+              monthly_rate: rateVal,
+              total_overdue: overdueVal,
+              payment_rating: rating,
+              dietary_preferences: dietary || 'Standard Menu',
+              notes,
+              payment_made_up_to_date: paymentMadeUpTo || undefined,
+              billed_up_to_date: billedUpTo || undefined,
+              managed_by: managedBy || 'admin',
+            });
+          });
+
+          if (sheetValidRows.length > bestRows.length) {
+            bestRows = sheetValidRows;
+            bestRawCount = rawJson.length;
+            bestSheetName = sheetName;
+          }
+        }
 
         resolve({
-          success: validRows.length > 0,
-          totalRows: rawJson.length,
-          validRows,
-          errors
+          success: bestRows.length > 0,
+          totalRows: bestRawCount,
+          validRows: bestRows,
+          errors: bestRows.length === 0 ? ['No valid customer rows could be parsed. Please check column headers.'] : []
         });
       } catch (err: any) {
         reject(new Error(`Failed to parse Excel file: ${err.message}`));
