@@ -234,6 +234,29 @@ export function downloadCustomerTemplate(format: 'xlsx' | 'csv' = 'xlsx') {
   exportTableToExcel(sampleData, 'Karama_Mess_Customer_Import_Template', 'Template', format);
 }
 
+export function normalizeToDateString(val: any): string | undefined {
+  if (!val) return undefined;
+  if (typeof val === 'number') {
+    const date = new Date(Math.round((val - 25569) * 86400 * 1000));
+    return !isNaN(date.getTime()) ? date.toISOString().split('T')[0] : undefined;
+  }
+  const str = String(val).trim();
+  if (!str) return undefined;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str;
+  if (/^\d+(\.\d+)?$/.test(str)) {
+    const num = parseFloat(str);
+    if (num > 20000 && num < 60000) {
+      const date = new Date(Math.round((num - 25569) * 86400 * 1000));
+      return !isNaN(date.getTime()) ? date.toISOString().split('T')[0] : undefined;
+    }
+  }
+  const parsed = new Date(str);
+  if (!isNaN(parsed.getTime())) {
+    return parsed.toISOString().split('T')[0];
+  }
+  return undefined;
+}
+
 // 6. Parse Uploaded Excel or CSV File (Multi-Sheet and Header Offset Resilient)
 export async function parseCustomerExcel(file: File): Promise<ImportResult> {
   return new Promise((resolve, reject) => {
@@ -427,19 +450,17 @@ export async function parseCustomerExcel(file: File): Promise<ImportResult> {
             const notes = String(normalized['remarksnotes'] || normalized['remarks'] || normalized['notes'] || '').trim();
 
             // Dates
-            const paymentMadeUpTo = String(
+            const paymentMadeUpTo = normalizeToDateString(
               normalized['paymentmadeuptothedate'] ||
               normalized['paymentmadeupto'] ||
               normalized['paidupto'] ||
-              normalized['lastpaid'] ||
-              ''
-            ).trim();
-            const billedUpTo = String(
+              normalized['lastpaid']
+            );
+            const billedUpTo = normalizeToDateString(
               normalized['billeduptothedate'] ||
               normalized['billedupto'] ||
-              normalized['billedto'] ||
-              ''
-            ).trim();
+              normalized['billedto']
+            );
             const managedBy = String(
               normalized['whoisthiscustomer'] ||
               normalized['whoisthiscustomermanagedby'] ||
