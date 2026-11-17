@@ -8,6 +8,8 @@ import {
   X,
   Clock,
   Calendar,
+  CalendarX,
+  CalendarClock,
   Bell,
   Eye,
   CheckCircle2,
@@ -18,7 +20,8 @@ import {
   Download,
   Receipt,
   Check,
-  RotateCcw
+  RotateCcw,
+  UserMinus
 } from 'lucide-react';
 import { Customer, Building, MealPlan, Invoice, Payment, PaymentMethod } from '../../types';
 import { formatAED } from '../../utils/currency';
@@ -32,6 +35,11 @@ import {
   sendWhatsAppReminder,
   CustomerDueDateInfo
 } from '../../utils/reminderService';
+import {
+  getApproachingCancellations,
+  sendCancellationWhatsApp,
+  ApproachingCancellation
+} from '../../utils/cancellationService';
 import { CustomerDetailModal } from '../customers/CustomerDetailModal';
 
 interface OverdueListProps {
@@ -41,6 +49,8 @@ interface OverdueListProps {
   invoices?: Invoice[];
   payments?: Payment[];
   isReadOnly?: boolean;
+  initialTab?: 'overdue' | 'reminders' | 'leaving' | 'cleared';
+  mode?: 'overdue' | 'due-dates-leaving';
   onOpenPayment?: (customer: Customer) => void;
   onRecordPayment?: (payment: Partial<Payment>) => Promise<void> | void;
   onSaveCustomer?: (customer: Partial<Customer>) => Promise<void> | void;
@@ -54,12 +64,26 @@ export const OverdueList: React.FC<OverdueListProps> = ({
   invoices = [],
   payments = [],
   isReadOnly = false,
+  initialTab,
+  mode = 'overdue',
   onOpenPayment,
   onRecordPayment,
   onSaveCustomer,
   onDeleteCustomer,
 }) => {
-  const [activeTab, setActiveTab] = useState<'overdue' | 'reminders' | 'cleared'>('overdue');
+  const [activeTab, setActiveTab] = useState<'overdue' | 'reminders' | 'leaving' | 'cleared'>(() => {
+    if (initialTab) return initialTab;
+    if (mode === 'due-dates-leaving') return 'reminders';
+    return 'overdue';
+  });
+
+  useEffect(() => {
+    if (initialTab) {
+      setActiveTab(initialTab);
+    } else if (mode === 'due-dates-leaving') {
+      setActiveTab('reminders');
+    }
+  }, [initialTab, mode]);
   const [searchTerm, setSearchTerm] = useState('');
   const [reminderDays, setReminderDays] = useState<number>(getReminderDaysSetting());
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
@@ -193,6 +217,33 @@ export const OverdueList: React.FC<OverdueListProps> = ({
   const dueTodayCount = useMemo(() => {
     return allReminders.filter((r) => r.isDueToday).length;
   }, [allReminders]);
+
+  // 2b. Scheduled Leaving & Cancellation Notices
+  const allCancellations = useMemo(() => {
+    return getApproachingCancellations(customers, Math.max(reminderDays, 30));
+  }, [customers, reminderDays]);
+
+  const filteredCancellations = useMemo(() => {
+    const term = searchTerm.toLowerCase().trim();
+    if (!term) return allCancellations;
+    return allCancellations.filter((item) => {
+      const c = item.customer;
+      return (
+        c.full_name.toLowerCase().includes(term) ||
+        (c.customer_code && c.customer_code.toLowerCase().includes(term)) ||
+        (c.building_name_cache && c.building_name_cache.toLowerCase().includes(term)) ||
+        (c.apartment_cache && c.apartment_cache.toLowerCase().includes(term)) ||
+        (c.phone && c.phone.toLowerCase().includes(term)) ||
+        item.targetDateDisplay.toLowerCase().includes(term) ||
+        item.badge.label.toLowerCase().includes(term) ||
+        (item.reason && item.reason.toLowerCase().includes(term))
+      );
+    });
+  }, [allCancellations, searchTerm]);
+
+  const totalLeavingProRata = useMemo(() => {
+    return filteredCancellations.reduce((acc, item) => acc + item.proRata.proRataAmount, 0);
+  }, [filteredCancellations]);
 
   // 3. Cleared Dues & Settlement History
   const clearedHistory = useMemo(() => {
@@ -403,29 +454,25 @@ export const OverdueList: React.FC<OverdueListProps> = ({
       {/* Top Header & Metrics Banner */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 w-full">
         <div className="min-w-0">
-          <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">
-            Overdue Accounts &amp; Due Date Reminders
+          <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight flex items-center gap-2">
+            {mode === 'due-dates-leaving' ? (
+              <>
+                <CalendarClock className="w-6 h-6 text-amber-400 shrink-0" />
+                <span>Due Dates &amp; Leaving Hub</span>
+              </>
+            ) : (
+              <span>Overdue Accounts &amp; Due Date Reminders</span>
+            )}
           </h2>
           <p className="text-xs sm:text-sm text-slate-300 font-medium mt-0.5">
-            Track delinquent balances, clear outstanding dues, and view full settlement history
+            {mode === 'due-dates-leaving'
+              ? 'Track approaching dues, departing customer notices, and verify who paid right now and settled'
+              : 'Track delinquent balances, clear outstanding dues, and view full settlement history'}
           </p>
         </div>
 
         {/* Top KPI Cards */}
         <div className="flex items-center gap-2.5 flex-wrap shrink-0">
-          {/* Overdue KPI */}
-          <div className="bg-rose-500/15 border border-rose-500/35 px-3.5 py-2 rounded-xl flex items-center gap-2.5 shadow-md shadow-black/20">
-            <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
-            <div>
-              <div className="text-[10px] uppercase font-extrabold text-rose-300 tracking-wider">
-                Total Overdue
-              </div>
-              <div className="text-base sm:text-lg font-black text-rose-400 font-mono">
-                {formatAED(totalDues)}
-              </div>
-            </div>
-          </div>
-
           {/* Due Soon KPI */}
           <div className="bg-amber-500/15 border border-amber-500/35 px-3.5 py-2 rounded-xl flex items-center gap-2.5 shadow-md shadow-black/20">
             <Clock className="w-4 h-4 text-amber-400 shrink-0" />
@@ -439,15 +486,41 @@ export const OverdueList: React.FC<OverdueListProps> = ({
             </div>
           </div>
 
-          {/* Cleared Dues KPI */}
+          {/* Leaving on Notice KPI */}
+          <div className="bg-rose-500/15 border border-rose-500/35 px-3.5 py-2 rounded-xl flex items-center gap-2.5 shadow-md shadow-black/20">
+            <CalendarX className="w-4 h-4 text-rose-400 shrink-0" />
+            <div>
+              <div className="text-[10px] uppercase font-extrabold text-rose-300 tracking-wider">
+                Leaving on Notice
+              </div>
+              <div className="text-base sm:text-lg font-black text-rose-400 font-mono">
+                {allCancellations.length} <span className="text-xs font-medium text-slate-400">({formatAED(totalLeavingProRata)})</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Paid & Settled KPI */}
           <div className="bg-emerald-500/15 border border-emerald-500/35 px-3.5 py-2 rounded-xl flex items-center gap-2.5 shadow-md shadow-black/20">
             <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
             <div>
               <div className="text-[10px] uppercase font-extrabold text-emerald-300 tracking-wider">
-                Total Cleared Dues
+                Paid &amp; Settled
               </div>
               <div className="text-base sm:text-lg font-black text-emerald-400 font-mono">
-                {formatAED(totalClearedAmount)} <span className="text-xs font-medium text-slate-400">({clearedHistory.length} Settled)</span>
+                {formatAED(totalClearedAmount)} <span className="text-xs font-medium text-slate-400">({clearedHistory.length})</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Total Overdue KPI */}
+          <div className="bg-slate-800/80 border border-slate-700/80 px-3.5 py-2 rounded-xl flex items-center gap-2.5 shadow-md shadow-black/20">
+            <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+            <div>
+              <div className="text-[10px] uppercase font-extrabold text-slate-400 tracking-wider">
+                Total Overdue
+              </div>
+              <div className="text-base sm:text-lg font-black text-rose-400 font-mono">
+                {formatAED(totalDues)}
               </div>
             </div>
           </div>
@@ -493,20 +566,22 @@ export const OverdueList: React.FC<OverdueListProps> = ({
 
       {/* Primary Tab Navigation */}
       <div className="flex items-center gap-2 border-b border-slate-800 pb-2 overflow-x-auto custom-scrollbar">
-        <button
-          onClick={() => setActiveTab('overdue')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm shrink-0 cursor-pointer ${
-            activeTab === 'overdue'
-              ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40 shadow-rose-500/10'
-              : 'bg-slate-800/60 text-slate-400 hover:text-white border border-slate-700/60'
-          }`}
-        >
-          <AlertCircle className="w-3.5 h-3.5 text-rose-400" />
-          <span>Overdue Balances</span>
-          <span className="font-mono text-[10px] px-1.5 py-0.2 rounded-full bg-slate-800 text-rose-300 border border-rose-500/30">
-            {allDebtors.length}
-          </span>
-        </button>
+        {mode === 'overdue' && (
+          <button
+            onClick={() => setActiveTab('overdue')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm shrink-0 cursor-pointer ${
+              activeTab === 'overdue'
+                ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40 shadow-rose-500/10'
+                : 'bg-slate-800/60 text-slate-400 hover:text-white border border-slate-700/60'
+            }`}
+          >
+            <AlertCircle className="w-3.5 h-3.5 text-rose-400" />
+            <span>Overdue Balances</span>
+            <span className="font-mono text-[10px] px-1.5 py-0.2 rounded-full bg-slate-800 text-rose-300 border border-rose-500/30">
+              {allDebtors.length}
+            </span>
+          </button>
+        )}
 
         <button
           onClick={() => setActiveTab('reminders')}
@@ -529,6 +604,21 @@ export const OverdueList: React.FC<OverdueListProps> = ({
         </button>
 
         <button
+          onClick={() => setActiveTab('leaving')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm shrink-0 cursor-pointer ${
+            activeTab === 'leaving'
+              ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40 shadow-rose-500/10'
+              : 'bg-slate-800/60 text-slate-400 hover:text-white border border-slate-700/60'
+          }`}
+        >
+          <CalendarX className="w-3.5 h-3.5 text-rose-400" />
+          <span>Leaving on Notice</span>
+          <span className="font-mono text-[10px] px-1.5 py-0.2 rounded-full bg-slate-800 text-rose-300 border border-rose-500/30">
+            {allCancellations.length}
+          </span>
+        </button>
+
+        <button
           onClick={() => setActiveTab('cleared')}
           className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm shrink-0 cursor-pointer ${
             activeTab === 'cleared'
@@ -537,11 +627,28 @@ export const OverdueList: React.FC<OverdueListProps> = ({
           }`}
         >
           <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-          <span>Cleared Dues History</span>
+          <span>Paid Right Now &amp; Settled</span>
           <span className="font-mono text-[10px] px-1.5 py-0.2 rounded-full bg-slate-800 text-emerald-300 border border-emerald-500/30">
             {clearedHistory.length}
           </span>
         </button>
+
+        {mode !== 'overdue' && (
+          <button
+            onClick={() => setActiveTab('overdue')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm shrink-0 cursor-pointer ${
+              activeTab === 'overdue'
+                ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40 shadow-rose-500/10'
+                : 'bg-slate-800/60 text-slate-400 hover:text-white border border-slate-700/60'
+            }`}
+          >
+            <AlertCircle className="w-3.5 h-3.5 text-rose-400" />
+            <span>Overdue Balances</span>
+            <span className="font-mono text-[10px] px-1.5 py-0.2 rounded-full bg-slate-800 text-rose-300 border border-rose-500/30">
+              {allDebtors.length}
+            </span>
+          </button>
+        )}
       </div>
 
       {/* TAB 2 CONTROLS: Reminder Alert Window Chips (When Reminders Tab is selected) */}
@@ -596,9 +703,9 @@ export const OverdueList: React.FC<OverdueListProps> = ({
               {(
                 [
                   { id: 'all', label: 'All History' },
-                  { id: 'month', label: 'This Month' },
+                  { id: 'today', label: 'Paid Right Now (Today)' },
                   { id: 'week', label: 'This Week' },
-                  { id: 'today', label: 'Today' },
+                  { id: 'month', label: 'This Month' },
                 ] as const
               ).map((f) => (
                 <button
@@ -1005,6 +1112,206 @@ export const OverdueList: React.FC<OverdueListProps> = ({
       )}
 
       {/* ---------------------------------------------------- */}
+      {/* TAB: LEAVING ON NOTICE TABLE                         */}
+      {/* ---------------------------------------------------- */}
+      {activeTab === 'leaving' && (
+        <div className="space-y-3">
+          {/* Leaving Notice Info Banner */}
+          <div className="bg-[#151c2c] border border-rose-500/30 rounded-xl p-3.5 shadow-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-rose-500/20 border border-rose-500/40 text-rose-300 flex items-center justify-center shrink-0">
+                <CalendarX className="w-4 h-4" />
+              </div>
+              <div>
+                <div className="text-xs font-bold text-white flex items-center gap-2">
+                  <span>Scheduled Customer Cancellations &amp; Departures</span>
+                  <span className="font-mono text-[10px] px-2 py-0.5 rounded bg-rose-500/25 text-rose-300 font-bold border border-rose-500/40">
+                    {filteredCancellations.length} Active Notice{filteredCancellations.length !== 1 ? 's' : ''}
+                  </span>
+                </div>
+                <div className="text-[11px] text-slate-400 mt-0.5">
+                  Customers who gave departure notice. Mid-month pro-rata dues are automatically calculated by active meal days.
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0">
+              <div className="bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-800 text-right">
+                <span className="text-[10px] uppercase font-bold text-slate-400 block">Total Notice Dues</span>
+                <span className="text-sm font-black font-mono text-amber-400">
+                  {formatAED(totalLeavingProRata)}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-[#151c2c] border border-[#222f47]/60 rounded-2xl overflow-hidden shadow-xl shadow-black/30">
+            <div className="overflow-x-auto w-full custom-scrollbar">
+              <table className="w-full text-left min-w-[1140px]">
+                <thead>
+                  <tr className="bg-[#0f1422] text-slate-300 border-b border-slate-700/80 text-xs uppercase tracking-wider font-bold">
+                    <th className="py-3 px-3.5 whitespace-nowrap min-w-[170px]">Customer</th>
+                    <th className="py-3 px-3.5 whitespace-nowrap min-w-[150px]">Building &amp; Room</th>
+                    <th className="py-3 px-3 whitespace-nowrap min-w-[120px]">Phone</th>
+                    <th className="py-3 px-3 text-center whitespace-nowrap min-w-[150px]">Scheduled Exit Date</th>
+                    <th className="py-3 px-3 text-center whitespace-nowrap min-w-[130px]">Notice Status</th>
+                    <th className="py-3 px-3 text-center whitespace-nowrap min-w-[140px]">Meal Days Active</th>
+                    <th className="py-3 px-3 text-right whitespace-nowrap min-w-[140px]">Mid-Month Due (AED)</th>
+                    <th className="py-3 px-3.5 min-w-[180px]">Departure Reason</th>
+                    <th className="py-3 px-3.5 text-right whitespace-nowrap min-w-[150px]">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-800/80 text-xs sm:text-sm">
+                  {filteredCancellations.length === 0 ? (
+                    <tr>
+                      <td colSpan={9} className="py-12 text-center text-slate-400 text-xs sm:text-sm">
+                        {searchTerm
+                          ? 'No scheduled departures match your search criteria.'
+                          : 'No customers are currently scheduled to leave on notice. Any customer cancellation notices will automatically appear here with pro-rata settlement details.'}
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredCancellations.map((item) => {
+                      const c = item.customer;
+                      return (
+                        <tr
+                          key={c.id}
+                          onClick={() => setSelectedCustomer(c)}
+                          className="hover:bg-slate-800/50 cursor-pointer transition-colors group select-none"
+                          title="Click to view full customer profile"
+                        >
+                          {/* Customer */}
+                          <td className="py-3.5 px-3.5 min-w-[170px]">
+                            <div className="font-bold text-white text-sm tracking-tight group-hover:text-amber-400 transition-colors">
+                              {c.full_name}
+                            </div>
+                            {c.customer_code && (
+                              <span className="inline-block mt-0.5 font-mono text-amber-400 font-bold text-xs">
+                                #{c.customer_code}
+                              </span>
+                            )}
+                          </td>
+
+                          {/* Building & Room */}
+                          <td className="py-3.5 px-3.5 text-slate-200">
+                            <div className="font-bold text-xs flex items-center gap-1.5">
+                              <Building2 className="w-3.5 h-3.5 text-sky-400 shrink-0" />
+                              <span>{c.building_name_cache || 'Belrasheed Building'}</span>
+                            </div>
+                            <div className="text-[11px] text-slate-400 font-medium mt-0.5 ml-5">
+                              Apt {c.apartment_cache || 'N/A'}
+                            </div>
+                          </td>
+
+                          {/* Phone */}
+                          <td className="py-3.5 px-3 font-mono text-xs text-slate-300 whitespace-nowrap">
+                            {c.phone || '-'}
+                          </td>
+
+                          {/* Scheduled Exit Date */}
+                          <td className="py-3.5 px-3 text-center whitespace-nowrap">
+                            <div className="font-mono text-xs font-black text-rose-300 flex items-center justify-center gap-1">
+                              <Calendar className="w-3 h-3 text-rose-400" />
+                              <span>{item.targetDateDisplay}</span>
+                            </div>
+                            <div className="text-[10px] text-slate-400 mt-0.5">
+                              {item.daysRemaining === 0
+                                ? 'Leaves Today'
+                                : item.daysRemaining === 1
+                                ? 'Leaves Tomorrow'
+                                : item.daysRemaining > 1
+                                ? `Leaves in ${item.daysRemaining} days`
+                                : `Exit date passed (${Math.abs(item.daysRemaining)}d ago)`}
+                            </div>
+                          </td>
+
+                          {/* Notice Status Badge */}
+                          <td className="py-3.5 px-3 text-center whitespace-nowrap">
+                            <span
+                              className={`inline-flex items-center justify-center px-2.5 py-1 rounded-full text-[11px] font-bold border shadow-sm ${item.badge.bg} ${item.badge.textColor} ${item.badge.border}`}
+                            >
+                              {item.badge.label}
+                            </span>
+                          </td>
+
+                          {/* Active Days */}
+                          <td className="py-3.5 px-3 text-center whitespace-nowrap">
+                            <div className="font-mono text-xs font-bold text-white">
+                              {item.proRata.activeDays} Days Active
+                            </div>
+                            <div className="text-[10px] text-slate-400 mt-0.5">
+                              @ AED {item.proRata.dailyRate.toFixed(2)} / day
+                            </div>
+                          </td>
+
+                          {/* Mid-Month Pro Rata Due */}
+                          <td className="py-3.5 px-3 text-right font-black whitespace-nowrap text-base font-mono text-amber-400">
+                            {formatAED(item.proRata.proRataAmount)}
+                          </td>
+
+                          {/* Cancellation Reason */}
+                          <td className="py-3.5 px-3.5 max-w-[220px]">
+                            <div className="text-slate-300 text-xs font-medium leading-relaxed line-clamp-2">
+                              {item.reason || 'Notice given / departing'}
+                            </div>
+                          </td>
+
+                          {/* Actions */}
+                          <td className="py-3.5 px-3.5 text-right whitespace-nowrap min-w-[150px]">
+                            <div className="flex items-center justify-end gap-1.5">
+                              {/* Send WhatsApp Confirmation */}
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  sendCancellationWhatsApp(item);
+                                }}
+                                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-md shadow-emerald-600/20 transition-all active:scale-95 cursor-pointer"
+                                title={`Send Departure Confirmation & Final Due to ${c.full_name} on WhatsApp`}
+                              >
+                                <MessageSquare className="w-3.5 h-3.5" />
+                                <span>Confirm</span>
+                              </button>
+
+                              {/* Settle Due Button */}
+                              {!isReadOnly && (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleOpenQuickSettle(c);
+                                  }}
+                                  className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-md shadow-amber-500/20 transition-all active:scale-95 cursor-pointer"
+                                  title="Clear / Settle Departure Balance"
+                                >
+                                  <CreditCard className="w-3.5 h-3.5" />
+                                  <span>Settle</span>
+                                </button>
+                              )}
+
+                              {/* View Full Profile */}
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedCustomer(c);
+                                }}
+                                className="inline-flex items-center gap-1 px-2 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition-all shadow-sm cursor-pointer"
+                                title="View Customer Profile"
+                              >
+                                <Eye className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ---------------------------------------------------- */}
       {/* TAB 3: CLEARED DUES & SETTLEMENT HISTORY TABLE       */}
       {/* ---------------------------------------------------- */}
       {activeTab === 'cleared' && (
@@ -1047,8 +1354,16 @@ export const OverdueList: React.FC<OverdueListProps> = ({
                       >
                         {/* Receipt # & Date */}
                         <td className="py-3.5 px-4 whitespace-nowrap">
-                          <div className="font-mono text-xs font-black text-amber-400">
-                            {item.payment_number || 'REC-SETTLED'}
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="font-mono text-xs font-black text-amber-400">
+                              {item.payment_number || 'REC-SETTLED'}
+                            </span>
+                            {(item.payment_date === new Date().toISOString().split('T')[0] ||
+                              item.created_at?.split('T')[0] === new Date().toISOString().split('T')[0]) && (
+                              <span className="px-1.5 py-0.5 rounded bg-emerald-500/25 text-emerald-300 border border-emerald-500/40 font-mono text-[9px] font-black uppercase tracking-wider animate-pulse">
+                                Paid Today
+                              </span>
+                            )}
                           </div>
                           <div className="text-[11px] text-slate-400 font-mono mt-0.5 flex items-center gap-1">
                             <Calendar className="w-3 h-3 text-slate-500" />

@@ -1454,6 +1454,26 @@ export const App: React.FC = () => {
             <VendorAccountsView currentUser={currentUser} />
           )}
 
+          {currentTab === 'due-dates-leaving' && (
+            <OverdueList
+              customers={customers}
+              buildings={buildings}
+              mealPlans={mealPlans}
+              invoices={invoices}
+              payments={payments}
+              isReadOnly={isViewer}
+              mode="due-dates-leaving"
+              initialTab="reminders"
+              onOpenPayment={(c) => {
+                setEditingCustomer(c);
+                setIsCustomerModalOpen(true);
+              }}
+              onRecordPayment={handleRecordPayment}
+              onSaveCustomer={handleSaveCustomer}
+              onDeleteCustomer={handleDeleteCustomer}
+            />
+          )}
+
           {currentTab === 'overdue' && (
             <OverdueList
               customers={customers}
@@ -1462,6 +1482,8 @@ export const App: React.FC = () => {
               invoices={invoices}
               payments={payments}
               isReadOnly={isViewer}
+              mode="overdue"
+              initialTab="overdue"
               onOpenPayment={(c) => {
                 setEditingCustomer(c);
                 setIsCustomerModalOpen(true);

@@ -830,7 +830,7 @@ export const CustomerList: React.FC<CustomerListProps> = ({
                 <th className="py-3 px-2.5 text-right whitespace-nowrap min-w-[115px]">Monthly Fee</th>
                 <th className="py-3 px-2 text-center whitespace-nowrap min-w-[150px]">Payment Made Up To</th>
                 <th className="py-3 px-2 text-center whitespace-nowrap min-w-[130px]">Billed Up To</th>
-                <th className="py-3 px-2.5 text-right whitespace-nowrap min-w-[115px]">Overdue</th>
+                <th className="py-3 px-3 text-right whitespace-nowrap min-w-[125px]">Overdue</th>
                 <th className="py-3 px-2 text-center whitespace-nowrap min-w-[110px]">Status</th>
                 <th className="py-3 px-3 text-right whitespace-nowrap min-w-[135px]">
                   Actions
@@ -959,7 +959,7 @@ export const CustomerList: React.FC<CustomerListProps> = ({
                           {c.billed_up_to_date || c.billing_end_date || '31 Oct 2026'}
                         </span>
                       </td>
-                      <td className="py-3 px-2.5 text-right font-black whitespace-nowrap font-mono text-xs sm:text-sm min-w-[115px]">
+                      <td className="py-3 px-3 text-right font-black whitespace-nowrap font-mono text-xs sm:text-sm min-w-[125px]">
                         <span className={overdue > 0 ? 'text-rose-400 drop-shadow-sm' : 'text-emerald-400'}>
                           {formatAED(overdue)}
                         </span>

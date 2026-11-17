@@ -212,13 +212,13 @@ export const BusinessSettingsView: React.FC<BusinessSettingsViewProps> = ({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div>
           <h2 className="text-xl font-bold text-white tracking-tight">Business Configuration</h2>
           <p className="text-xs text-slate-400 mt-0.5">Manage business profile, UAE localization, and system activity logs</p>
         </div>
 
-        <div className="flex items-center gap-2 bg-slate-800/80 p-1 rounded-xl border border-slate-700 text-xs">
+        <div className="flex items-center gap-2 bg-slate-800/80 p-1 rounded-xl border border-slate-700 text-xs flex-wrap">
           <button
             onClick={() => setActiveTab('profile')}
             className={`px-3.5 py-1.5 rounded-lg font-bold transition-colors cursor-pointer ${
