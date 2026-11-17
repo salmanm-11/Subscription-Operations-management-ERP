@@ -349,15 +349,15 @@ export function sendCancellationWhatsApp(item: ApproachingCancellation): void {
   const greetingName = c.full_name || 'Valued Customer';
 
   const message = `Hello ${greetingName},\n\n` +
-    `This is Karama Mess confirming your scheduled cancellation request for *${item.targetDateDisplay}*.\n\n` +
+    `This is Karama Homely Mess confirming your scheduled cancellation request for *${item.targetDateDisplay}*.\n\n` +
     `📋 *Cancellation Summary:*\n` +
     `• Customer Code: #${c.customer_code}\n` +
     `• Final Delivery Day: ${item.targetDateDisplay}\n` +
     `• Active Days in Cycle: ${item.proRata.activeDays} days\n` +
     `• Mid-Month Settlement Amount: AED ${item.proRata.proRataAmount.toFixed(2)}\n` +
     (item.reason ? `• Notes: ${item.reason}\n` : '') +
-    `\nThank you for dining with Karama Mess! If your plans change and you would like to continue your meals, please let us know anytime.\n\n` +
-    `Best regards,\nKarama Mess Management\n📞 +971 50 123 4567`;
+    `\nThank you for dining with Karama Homely Mess! If your plans change and you would like to continue your meals, please let us know anytime.\n\n` +
+    `Best regards,\nKarama Homely Mess\n📞 +971 50 123 4567`;
 
   const encoded = encodeURIComponent(message);
   const url = `https://wa.me/${cleanPhone}?text=${encoded}`;

@@ -206,7 +206,7 @@ export const CustomerOnboardingView: React.FC<CustomerOnboardingViewProps> = ({ 
       submittedCustomer.has_dinner ? 'Dinner' : '',
     ].filter(Boolean).join(' + ');
 
-    const msg = `Hi Karama Mess! 👋\nI have just registered for the mess service online.\n\n👤 *Name:* ${submittedCustomer.full_name}\n🔢 *Code:* #${submittedCustomer.customer_code}\n🏢 *Building:* ${submittedCustomer.building_name_cache} (Apt: ${submittedCustomer.apartment_cache})\n🍽️ *Meals:* ${mealsText} (AED ${submittedCustomer.monthly_rate}/mo)\n📅 *Joining Date:* ${submittedCustomer.joining_date}\n\nPlease confirm my daily delivery!`;
+    const msg = `Hi Karama Homely Mess! 👋\nI have just registered for the mess service online.\n\n👤 *Name:* ${submittedCustomer.full_name}\n🔢 *Code:* #${submittedCustomer.customer_code}\n🏢 *Building:* ${submittedCustomer.building_name_cache} (Apt: ${submittedCustomer.apartment_cache})\n🍽️ *Meals:* ${mealsText} (AED ${submittedCustomer.monthly_rate}/mo)\n📅 *Joining Date:* ${submittedCustomer.joining_date}\n\nPlease confirm my daily delivery!`;
     return `https://wa.me/${messPhone}?text=${encodeURIComponent(msg)}`;
   };
 
@@ -801,7 +801,7 @@ export const CustomerOnboardingView: React.FC<CustomerOnboardingViewProps> = ({ 
       {/* Footer */}
       <footer className="relative z-10 py-6 px-4 border-t border-slate-800/80 text-center text-xs text-slate-500 space-y-1">
         <p className="font-semibold text-slate-400">
-          Karama Mess Management &amp; Catering • Al Karama, Dubai, UAE
+          Karama Homely Mess • Al Karama, Dubai, UAE
         </p>
         <p className="text-[11px]">
           Direct Customer Service WhatsApp: {settings?.phone || '+971 50 123 4567'}

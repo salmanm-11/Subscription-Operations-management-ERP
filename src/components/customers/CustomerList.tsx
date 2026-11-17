@@ -131,7 +131,7 @@ export const CustomerList: React.FC<CustomerListProps> = ({
   };
 
   const handleShareOnWhatsApp = () => {
-    const text = `Hello! 👋 Please register for Karama Mess using this link and select your daily meals:\n${getRegistrationLink()}`;
+    const text = `Hello! 👋 Please register for Karama Homely Mess using this link and select your daily meals:\n${getRegistrationLink()}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
   };
 

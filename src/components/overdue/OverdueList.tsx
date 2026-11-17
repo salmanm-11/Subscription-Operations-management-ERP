@@ -326,11 +326,11 @@ export const OverdueList: React.FC<OverdueListProps> = ({
   // WhatsApp Overdue Notice
   const handleSendWhatsAppOverdue = (cust: Customer) => {
     const text =
-      `*Karama Mess & Catering - Payment Reminder*\n\n` +
+      `*Karama Homely Mess - Payment Reminder*\n\n` +
       `Dear ${cust.full_name},\n` +
       `Friendly reminder that your mess dues of *${formatAED(cust.total_overdue)}* is pending.\n` +
       `Kindly arrange settlement at your earliest convenience.\n` +
-      `Thank you!\n*Karama Mess Operations*`;
+      `Thank you!\n*Karama Homely Mess*`;
 
     let phone = (cust.phone || '').replace(/[^0-9]/g, '');
     if (phone.startsWith('05')) phone = '971' + phone.substring(1);
@@ -355,7 +355,7 @@ export const OverdueList: React.FC<OverdueListProps> = ({
       : `Remaining Due Balance: ${formatAED(cust?.total_overdue)}`;
 
     const text =
-      `*Karama Mess & Catering - Payment Receipt*\n\n` +
+      `*Karama Homely Mess - Payment Receipt*\n\n` +
       `Dear *${name}*,\n` +
       `Your payment of *${amountStr}* has been received with thanks!\n\n` +
       `• *Receipt No:* ${recNo}\n` +
@@ -363,7 +363,7 @@ export const OverdueList: React.FC<OverdueListProps> = ({
       `• *Payment Date:* ${dateStr}\n` +
       `• *Method:* ${(item.payment_method || 'Cash').toUpperCase().replace('_', ' ')}\n` +
       `• *Status:* ${dueStatus}\n\n` +
-      `Thank you for choosing Karama Mess!\n*Karama Mess & Catering, Dubai*`;
+      `Thank you for choosing Karama Homely Mess!\n*Karama Homely Mess, Dubai*`;
 
     let phone = (cust?.phone || '').replace(/[^0-9]/g, '');
     if (phone.startsWith('05')) phone = '971' + phone.substring(1);
@@ -1362,7 +1362,7 @@ export const OverdueList: React.FC<OverdueListProps> = ({
               <div>
                 <h3 className="text-xl font-black text-white">Official Payment Receipt</h3>
                 <p className="text-xs text-amber-400 font-bold uppercase tracking-wider mt-0.5">
-                  Karama Mess &amp; Catering - Dubai, UAE
+                  Karama Homely Mess - Dubai, UAE
                 </p>
               </div>
               <button

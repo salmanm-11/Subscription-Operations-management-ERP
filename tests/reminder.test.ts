@@ -171,7 +171,7 @@ describe('Payment Due Date Approaching Reminders System', () => {
     };
 
     const message = generateWhatsAppReminderMessage(customer, '31 Oct 2026', 3, 310);
-    expect(message).toContain('KARAMA MESS & CATERING - PAYMENT REMINDER');
+    expect(message).toContain('KARAMA HOMELY MESS - PAYMENT REMINDER');
     expect(message).toContain('Dear Saran');
     expect(message).toContain('310.00');
     expect(message).toContain('31 Oct 2026');

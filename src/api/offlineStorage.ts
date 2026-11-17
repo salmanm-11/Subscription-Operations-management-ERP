@@ -31,7 +31,7 @@ const STORAGE_KEYS = {
 // Initial default business
 export const DEFAULT_BUSINESS: Business = {
   id: 'b0000000-0000-0000-0000-000000000001',
-  name: 'Karama Mess & Catering',
+  name: 'Karama Homely Mess',
   trade_license_no: 'DXB-MESS-2026-889',
   owner_id: 'u0000000-0000-0000-0000-000000000001',
   created_at: '2026-01-01T00:00:00Z'

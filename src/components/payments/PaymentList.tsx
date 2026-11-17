@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { CreditCard, Plus, Search, Printer, X, FileSpreadsheet, Building2, Phone, CheckCircle2, RotateCcw, Receipt, Trash2, AlertTriangle } from 'lucide-react';
+import { CreditCard, Plus, Search, Printer, X, FileSpreadsheet, Building2, Phone, CheckCircle2, RotateCcw, Receipt, Trash2, AlertTriangle, MessageSquare } from 'lucide-react';
 import { Payment, Customer, Invoice, PaymentMethod } from '../../types';
 import { formatAED } from '../../utils/currency';
 import { getMonthlySubscriptionRate } from '../../utils/billingCycleService';
@@ -23,6 +23,7 @@ export const PaymentList: React.FC<PaymentListProps> = ({
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedReceipt, setSelectedReceipt] = useState<Payment | null>(null);
+  const [justRecordedPayment, setJustRecordedPayment] = useState<Payment | null>(null);
   const [paymentToDelete, setPaymentToDelete] = useState<Payment | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [methodFilter, setMethodFilter] = useState<string>('all');
@@ -133,12 +134,49 @@ export const PaymentList: React.FC<PaymentListProps> = ({
       .reduce((sum, p) => sum + (p.amount || 0), 0);
   }, [filteredPayments]);
 
+  // WhatsApp Receipt Dispatcher
+  const handleSendWhatsAppReceipt = (p: Payment) => {
+    const info = getCustomerInfo(p);
+    const cust = p.customer || (p.customer_id ? customerMap.get(p.customer_id) : undefined);
+    const name = info.name || 'Valued Customer';
+    const amountStr = formatAED(p.amount);
+    const recNo = p.payment_number || 'N/A';
+    const dateStr = p.payment_date || new Date().toISOString().split('T')[0];
+    const isZeroDue = cust ? (cust.total_overdue || 0) === 0 : false;
+    const dueStatus = cust
+      ? isZeroDue
+        ? 'All mess dues cleared in full (AED 0.00)'
+        : `Remaining Due Balance: ${formatAED(cust.total_overdue)}`
+      : 'Payment Received & Recorded';
+
+    const text =
+      `*Karama Homely Mess - Payment Receipt*\n\n` +
+      `Dear *${name}*,\n` +
+      `We have received your payment with thanks!\n\n` +
+      `• *Receipt No:* ${recNo}\n` +
+      `• *Amount Paid:* ${amountStr}\n` +
+      `• *Payment Date:* ${dateStr}\n` +
+      `• *Method:* ${(p.payment_method || 'Cash').toUpperCase().replace('_', ' ')}\n` +
+      (p.reference_number ? `• *Reference:* ${p.reference_number}\n` : '') +
+      `• *Status:* ${dueStatus}\n\n` +
+      `Thank you for dining with Karama Homely Mess!\n*Karama Homely Mess, Dubai*`;
+
+    let phone = (cust?.phone || info.phone || '').replace(/[^0-9]/g, '');
+    if (phone.startsWith('05')) phone = '971' + phone.substring(1);
+    else if (phone.length === 9) phone = '971' + phone;
+
+    const url = phone
+      ? `https://wa.me/${phone}?text=${encodeURIComponent(text)}`
+      : `https://wa.me/?text=${encodeURIComponent(text)}`;
+    window.open(url, '_blank');
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!customerId || amount <= 0) return;
     const cust = customers.find((c) => c.id === customerId);
 
-    onRecordPayment({
+    const paymentPayload: Partial<Payment> = {
       customer_id: customerId,
       customer: cust,
       amount: Number(amount),
@@ -146,11 +184,30 @@ export const PaymentList: React.FC<PaymentListProps> = ({
       payment_method: paymentMethod,
       reference_number: referenceNumber.trim(),
       notes: notes.trim(),
-    });
+    };
+
+    onRecordPayment(paymentPayload);
+
+    // Optimistic payment object for immediate receipt confirmation with WhatsApp option
+    const recordedReceiptData: Payment = {
+      id: 'pay-' + Date.now(),
+      business_id: 'b0000000-0000-0000-0000-000000000001',
+      payment_number: 'REC-' + Math.floor(100000 + Math.random() * 900000),
+      customer_id: customerId,
+      customer: cust,
+      amount: Number(amount),
+      payment_date: paymentDate,
+      payment_method: paymentMethod,
+      reference_number: referenceNumber.trim(),
+      notes: notes.trim(),
+      is_reversed: false,
+      created_at: new Date().toISOString(),
+    };
 
     setIsModalOpen(false);
     setReferenceNumber('');
     setNotes('');
+    setJustRecordedPayment(recordedReceiptData);
   };
 
   return (
@@ -261,7 +318,7 @@ export const PaymentList: React.FC<PaymentListProps> = ({
                 <th className="py-3 px-3.5 min-w-[220px]">Notes</th>
                 <th className="py-3 px-3 text-right whitespace-nowrap">Amount (AED)</th>
                 <th className="py-3 px-3.5 text-center min-w-[120px] whitespace-nowrap">Status</th>
-                <th className="py-3 px-4 text-right whitespace-nowrap min-w-[130px]">
+                <th className="py-3 px-4 text-right whitespace-nowrap min-w-[190px]">
                   Action
                 </th>
               </tr>
@@ -344,8 +401,16 @@ export const PaymentList: React.FC<PaymentListProps> = ({
                       </td>
 
                       {/* Action View / Print & Delete (Clean layout & never clipped or overlapping) */}
-                      <td className="py-3 px-4 text-right whitespace-nowrap min-w-[130px]">
+                      <td className="py-3 px-4 text-right whitespace-nowrap min-w-[190px]">
                         <div className="flex items-center justify-end gap-1.5">
+                          <button
+                            onClick={() => handleSendWhatsAppReceipt(p)}
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-emerald-600/20 hover:bg-emerald-600/35 text-emerald-400 hover:text-emerald-300 rounded-lg font-bold text-xs border border-emerald-500/30 shadow-sm transition-colors cursor-pointer"
+                            title="Message Receipt on WhatsApp"
+                          >
+                            <MessageSquare className="w-3.5 h-3.5 text-emerald-400" />
+                            <span className="hidden sm:inline">WhatsApp</span>
+                          </button>
                           <button
                             onClick={() => setSelectedReceipt(p)}
                             className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-750 text-slate-200 hover:text-white rounded-lg font-bold text-xs border border-slate-700 shadow-sm transition-colors cursor-pointer"
@@ -381,7 +446,7 @@ export const PaymentList: React.FC<PaymentListProps> = ({
             <div className="flex items-center justify-between border-b border-slate-800 pb-4">
               <div>
                 <h3 className="text-xl font-black text-white">Official Payment Receipt</h3>
-                <p className="text-xs text-amber-400 font-bold uppercase tracking-wider mt-0.5">Karama Mess &amp; Catering - Dubai, UAE</p>
+                <p className="text-xs text-amber-400 font-bold uppercase tracking-wider mt-0.5">Karama Homely Mess - Dubai, UAE</p>
               </div>
               <button
                 onClick={() => setSelectedReceipt(null)}
@@ -442,22 +507,100 @@ export const PaymentList: React.FC<PaymentListProps> = ({
               );
             })()}
 
-            <div className="flex justify-end gap-3 pt-2">
+            <div className="flex flex-wrap items-center justify-end gap-3 pt-2">
               <button
                 type="button"
                 onClick={() => setSelectedReceipt(null)}
-                className="px-5 py-2.5 rounded-xl bg-slate-800 text-slate-300 font-bold text-xs"
+                className="px-4 py-2.5 rounded-xl bg-slate-800 text-slate-300 hover:text-white font-bold text-xs cursor-pointer"
               >
                 Close
               </button>
               <button
                 type="button"
+                onClick={() => handleSendWhatsAppReceipt(selectedReceipt)}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs shadow-md shadow-emerald-600/20 transition-all cursor-pointer"
+                title="Send Receipt to Customer on WhatsApp"
+              >
+                <MessageSquare className="w-4 h-4" />
+                <span>Message on WhatsApp</span>
+              </button>
+              <button
+                type="button"
                 onClick={() => window.print()}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-md shadow-amber-500/20"
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-md shadow-amber-500/20 cursor-pointer"
               >
                 <Printer className="w-4 h-4" />
-                <span>Print Official Receipt</span>
+                <span>Print Receipt</span>
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Post-Payment Success Modal with Instant WhatsApp Receipt Option */}
+      {justRecordedPayment && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-[#151c2c] border border-emerald-500/50 rounded-2xl w-full max-w-md p-6 sm:p-7 shadow-2xl text-white space-y-5 animate-in zoom-in-95 duration-200">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 flex items-center justify-center shrink-0">
+                <CheckCircle2 className="w-7 h-7" />
+              </div>
+              <div>
+                <h3 className="text-lg font-black text-white">Payment Recorded Successfully!</h3>
+                <p className="text-xs text-slate-300">
+                  Official receipt created for {getCustomerInfo(justRecordedPayment).name}
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-slate-900/90 rounded-xl p-4 border border-slate-800 space-y-2.5 text-xs">
+              <div className="flex justify-between items-center text-slate-400">
+                <span>Receipt Number:</span>
+                <span className="font-mono text-amber-400 font-bold">{justRecordedPayment.payment_number}</span>
+              </div>
+              <div className="flex justify-between items-center text-slate-400">
+                <span>Amount Paid:</span>
+                <span className="font-mono text-emerald-400 font-black text-base">{formatAED(justRecordedPayment.amount)}</span>
+              </div>
+              <div className="flex justify-between items-center text-slate-400">
+                <span>Payment Method:</span>
+                <span className="font-bold text-white uppercase">{justRecordedPayment.payment_method.replace('_', ' ')}</span>
+              </div>
+            </div>
+
+            <div className="space-y-2.5 pt-1">
+              <button
+                type="button"
+                onClick={() => {
+                  handleSendWhatsAppReceipt(justRecordedPayment);
+                }}
+                className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-sm shadow-lg shadow-emerald-500/25 transition-all active:scale-[0.98] cursor-pointer"
+              >
+                <MessageSquare className="w-4 h-4 fill-current" />
+                <span>Message Receipt on WhatsApp</span>
+              </button>
+
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const pay = justRecordedPayment;
+                    setJustRecordedPayment(null);
+                    setSelectedReceipt(pay);
+                  }}
+                  className="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs border border-slate-700 transition-colors cursor-pointer"
+                >
+                  <Receipt className="w-3.5 h-3.5 text-amber-400" />
+                  <span>View / Print Receipt</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setJustRecordedPayment(null)}
+                  className="py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-750 text-slate-400 hover:text-white font-bold text-xs border border-slate-700 transition-colors cursor-pointer"
+                >
+                  Done
+                </button>
+              </div>
             </div>
           </div>
         </div>

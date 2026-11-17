@@ -411,7 +411,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
       : `Remaining Due Balance: ${formatAED(activeCustomer.total_overdue)}`;
 
     const text =
-      `*Karama Mess & Catering - Payment Receipt*\n\n` +
+      `*Karama Homely Mess - Payment Receipt*\n\n` +
       `Dear *${name}*,\n` +
       `We have received your payment with thanks!\n\n` +
       `• *Receipt No:* ${recNo}\n` +
@@ -419,7 +419,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
       `• *Payment Date:* ${dateStr}\n` +
       `• *Method:* ${(p.payment_method || 'Cash').toUpperCase().replace('_', ' ')}\n` +
       `• *Status:* ${dueStatus}\n\n` +
-      `Thank you for dining with Karama Mess!\n*Karama Mess & Catering, Dubai*`;
+      `Thank you for dining with Karama Homely Mess!\n*Karama Homely Mess, Dubai*`;
 
     let phone = (activeCustomer.phone || '').replace(/[^0-9]/g, '');
     if (phone.startsWith('05')) phone = '971' + phone.substring(1);
@@ -1998,7 +1998,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                 <div>
                   <h3 className="text-xl font-black text-white">Official Payment Receipt</h3>
                   <p className="text-xs text-amber-400 font-bold uppercase tracking-wider mt-0.5">
-                    Karama Mess &amp; Catering - Dubai, UAE
+                    Karama Homely Mess - Dubai, UAE
                   </p>
                 </div>
                 <button

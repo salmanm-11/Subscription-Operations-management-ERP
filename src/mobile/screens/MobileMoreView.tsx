@@ -93,7 +93,7 @@ export const MobileMoreView: React.FC<MobileMoreViewProps> = ({
 
         {/* Business Contact & UAE Info */}
         <div className="bg-white rounded-3xl p-4 border border-[#EFE8DE] shadow-sm space-y-3 text-xs">
-          <h4 className="font-black text-stone-900">Karama Mess &amp; Catering</h4>
+          <h4 className="font-black text-stone-900">Karama Homely Mess</h4>
           <div className="space-y-2 text-stone-600 font-medium">
             <div className="flex items-center gap-2">
               <MapPin className="w-4 h-4 text-stone-400 shrink-0" />

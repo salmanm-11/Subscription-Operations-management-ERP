@@ -116,6 +116,28 @@ export const Header: React.FC<HeaderProps> = ({
     return 'Good evening';
   };
 
+  // Dismissed alert IDs tracked locally so dismissed alerts disappear immediately
+  const [dismissedAlertIds, setDismissedAlertIds] = useState<string[]>(() => {
+    try {
+      const stored = localStorage.getItem('karama_dismissed_alert_ids');
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const handleDismissAlert = (id: string) => {
+    setDismissedAlertIds((prev) => {
+      const updated = prev.includes(id) ? prev : [...prev, id];
+      try {
+        localStorage.setItem('karama_dismissed_alert_ids', JSON.stringify(updated));
+      } catch (err) {
+        console.warn('Failed to save dismissed alerts:', err);
+      }
+      return updated;
+    });
+  };
+
   // Approaching Due Reminders calculation
   const reminders = useMemo(() => {
     return getApproachingReminders(customers, invoices, reminderDays);
@@ -133,11 +155,45 @@ export const Header: React.FC<HeaderProps> = ({
       .sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''));
   }, [customers]);
 
-  const totalAlertsCount = reminders.length + approachingCancellations.length;
+  // Filter out any dismissed alert notifications
+  const activeReminders = useMemo(() => {
+    return reminders.filter((r) => !dismissedAlertIds.includes(r.customer.id));
+  }, [reminders, dismissedAlertIds]);
+
+  const activeCancellations = useMemo(() => {
+    return approachingCancellations.filter((c) => !dismissedAlertIds.includes(c.customer.id));
+  }, [approachingCancellations, dismissedAlertIds]);
+
+  const activeRegistrations = useMemo(() => {
+    return onlineRegistrations.filter((c) => !dismissedAlertIds.includes(c.id));
+  }, [onlineRegistrations, dismissedAlertIds]);
+
+  const totalAlertsCount = activeReminders.length + activeCancellations.length;
 
   const dueTodayCount = useMemo(() => {
-    return reminders.filter((r) => r.isDueToday).length;
-  }, [reminders]);
+    return activeReminders.filter((r) => r.isDueToday).length;
+  }, [activeReminders]);
+
+  const handleClearCurrentTabAlerts = () => {
+    const idsToDismiss: string[] = [];
+    if (activeReminderTab === 'due') {
+      activeReminders.forEach((r) => idsToDismiss.push(r.customer.id));
+    } else if (activeReminderTab === 'cancellation') {
+      activeCancellations.forEach((c) => idsToDismiss.push(c.customer.id));
+    } else if (activeReminderTab === 'registrations') {
+      activeRegistrations.forEach((c) => idsToDismiss.push(c.id));
+    }
+
+    setDismissedAlertIds((prev) => {
+      const updated = Array.from(new Set([...prev, ...idsToDismiss]));
+      try {
+        localStorage.setItem('karama_dismissed_alert_ids', JSON.stringify(updated));
+      } catch (err) {
+        console.warn('Failed to save dismissed alerts:', err);
+      }
+      return updated;
+    });
+  };
 
   const handleUpdateReminderDays = (days: number) => {
     setReminderDays(days);
@@ -226,7 +282,7 @@ export const Header: React.FC<HeaderProps> = ({
                 {totalAlertsCount}
               </span>
             )}
-            {(dueTodayCount > 0 || approachingCancellations.some((c) => c.isToday || c.daysRemaining === 1)) && (
+            {(dueTodayCount > 0 || activeCancellations.some((c) => c.isToday || c.daysRemaining === 1)) && (
               <span className="w-2.5 h-2.5 rounded-full bg-rose-500 absolute top-1 right-1 animate-ping" />
             )}
           </button>
@@ -266,7 +322,7 @@ export const Header: React.FC<HeaderProps> = ({
                   }`}
                 >
                   <Clock className="w-3.5 h-3.5 text-amber-400" />
-                  <span>Dues ({reminders.length})</span>
+                  <span>Dues ({activeReminders.length})</span>
                 </button>
 
                 <button
@@ -279,13 +335,13 @@ export const Header: React.FC<HeaderProps> = ({
                   }`}
                 >
                   <CalendarX className="w-3.5 h-3.5 text-rose-400" />
-                  <span>Leaving ({approachingCancellations.length})</span>
-                  {approachingCancellations.some((c) => c.daysRemaining === 1) && (
+                  <span>Leaving ({activeCancellations.length})</span>
+                  {activeCancellations.some((c) => c.daysRemaining === 1) && (
                     <span className="font-mono text-[9px] font-black px-1.5 py-0.2 rounded bg-amber-500 text-slate-950 animate-pulse">
                       1d
                     </span>
                   )}
-                  {approachingCancellations.some((c) => c.daysRemaining === 0) && (
+                  {activeCancellations.some((c) => c.daysRemaining === 0) && (
                     <span className="font-mono text-[9px] font-black px-1.5 py-0.2 rounded bg-rose-500 text-white animate-pulse">
                       NOW
                     </span>
@@ -302,43 +358,58 @@ export const Header: React.FC<HeaderProps> = ({
                   }`}
                 >
                   <Globe className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>Online ({onlineRegistrations.length})</span>
+                  <span>Online ({activeRegistrations.length})</span>
                 </button>
               </div>
 
-              {/* Alert Window Quick Switcher */}
+              {/* Alert Window Quick Switcher & Clear Button */}
               <div className="px-4 py-2 bg-slate-900/90 border-b border-slate-800 flex items-center justify-between text-[11px]">
-                <span className="text-slate-400 font-semibold">Alert Window:</span>
-                <div className="flex items-center gap-1">
-                  {[1, 3, 5, 7, 10, 15].map((d) => (
-                    <button
-                      key={d}
-                      onClick={() => handleUpdateReminderDays(d)}
-                      className={`px-2 py-0.5 rounded text-[10px] font-bold border transition-all cursor-pointer ${
-                        reminderDays === d
-                          ? 'bg-amber-500 text-slate-950 border-amber-400'
-                          : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-750'
-                      }`}
-                    >
-                      {d}d
-                    </button>
-                  ))}
+                <div className="flex items-center gap-2">
+                  <span className="text-slate-400 font-semibold">Alert Window:</span>
+                  <div className="flex items-center gap-1">
+                    {[1, 3, 5, 7, 10, 15].map((d) => (
+                      <button
+                        key={d}
+                        onClick={() => handleUpdateReminderDays(d)}
+                        className={`px-2 py-0.5 rounded text-[10px] font-bold border transition-all cursor-pointer ${
+                          reminderDays === d
+                            ? 'bg-amber-500 text-slate-950 border-amber-400'
+                            : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-750'
+                        }`}
+                      >
+                        {d}d
+                      </button>
+                    ))}
+                  </div>
                 </div>
+
+                {((activeReminderTab === 'due' && activeReminders.length > 0) ||
+                  (activeReminderTab === 'cancellation' && activeCancellations.length > 0) ||
+                  (activeReminderTab === 'registrations' && activeRegistrations.length > 0)) && (
+                  <button
+                    type="button"
+                    onClick={handleClearCurrentTabAlerts}
+                    className="text-[10px] text-slate-400 hover:text-amber-300 font-bold px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-750 border border-slate-700/80 transition-colors cursor-pointer"
+                    title="Clear and dismiss all alerts in this tab"
+                  >
+                    Clear All
+                  </button>
+                )}
               </div>
 
               {/* Content List */}
               <div className="max-h-80 overflow-y-auto divide-y divide-slate-800/80 custom-scrollbar">
                 {activeReminderTab === 'due' && (
-                  reminders.length === 0 ? (
+                  activeReminders.length === 0 ? (
                     <div className="p-6 text-center text-slate-400 text-xs space-y-1">
                       <CheckCircle2 className="w-6 h-6 text-emerald-400 mx-auto" />
                       <div className="font-bold text-slate-300">No Pending Dues</div>
                       <div className="text-[11px] text-slate-500">
-                        No customers due in the next {reminderDays} days.
+                        No active customer due alerts in the next {reminderDays} days.
                       </div>
                     </div>
                   ) : (
-                    reminders.map((item) => {
+                    activeReminders.map((item) => {
                       const c = item.customer;
                       return (
                         <div
@@ -373,7 +444,7 @@ export const Header: React.FC<HeaderProps> = ({
                             </div>
                           </div>
 
-                          {/* Quick WhatsApp Reminder & Pay */}
+                          {/* Quick WhatsApp Reminder, Pay & Dismiss */}
                           <div className="flex items-center gap-1.5 shrink-0">
                             <button
                               onClick={() => {
@@ -404,6 +475,18 @@ export const Header: React.FC<HeaderProps> = ({
                             >
                               <span>Pay</span>
                             </button>
+
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDismissAlert(c.id);
+                              }}
+                              className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 transition-all cursor-pointer"
+                              title="Delete / Dismiss this alert notification"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
                           </div>
                         </div>
                       );
@@ -412,16 +495,16 @@ export const Header: React.FC<HeaderProps> = ({
                 )}
 
                 {activeReminderTab === 'cancellation' && (
-                  approachingCancellations.length === 0 ? (
+                  activeCancellations.length === 0 ? (
                     <div className="p-6 text-center text-slate-400 text-xs space-y-1">
                       <CheckCircle2 className="w-6 h-6 text-emerald-400 mx-auto" />
                       <div className="font-bold text-slate-300">No Cancellations Scheduled</div>
                       <div className="text-[11px] text-slate-500">
-                        No customers scheduled to stop mess within the next {reminderDays} days.
+                        No customer cancellation alerts within the next {reminderDays} days.
                       </div>
                     </div>
                   ) : (
-                    approachingCancellations.map((item) => {
+                    activeCancellations.map((item) => {
                       const c = item.customer;
                       return (
                         <div
@@ -482,6 +565,18 @@ export const Header: React.FC<HeaderProps> = ({
                             >
                               <span>View</span>
                             </button>
+
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDismissAlert(c.id);
+                              }}
+                              className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 transition-all cursor-pointer"
+                              title="Delete / Dismiss this alert notification"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
                           </div>
                         </div>
                       );
@@ -490,7 +585,7 @@ export const Header: React.FC<HeaderProps> = ({
                 )}
 
                 {activeReminderTab === 'registrations' && (
-                  onlineRegistrations.length === 0 ? (
+                  activeRegistrations.length === 0 ? (
                     <div className="p-6 text-center text-slate-400 text-xs space-y-1">
                       <Globe className="w-6 h-6 text-emerald-400 mx-auto" />
                       <div className="font-bold text-slate-300">No Online Registrations</div>
@@ -499,7 +594,7 @@ export const Header: React.FC<HeaderProps> = ({
                       </div>
                     </div>
                   ) : (
-                    onlineRegistrations.map((c) => (
+                    activeRegistrations.map((c) => (
                       <div
                         key={c.id}
                         className="p-3 hover:bg-slate-800/40 transition-colors flex items-center justify-between gap-3"
@@ -538,20 +633,34 @@ export const Header: React.FC<HeaderProps> = ({
                           </div>
                         </div>
 
-                        <button
-                          onClick={() => {
-                            setIsRemindersOpen(false);
-                            if (onViewCustomer) {
-                              onViewCustomer(c);
-                            } else if (onSelectTab) {
-                              onSelectTab('customers');
-                            }
-                          }}
-                          className="px-2.5 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-sm transition-all cursor-pointer shrink-0"
-                          title="View Customer Profile"
-                        >
-                          View
-                        </button>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <button
+                            onClick={() => {
+                              setIsRemindersOpen(false);
+                              if (onViewCustomer) {
+                                onViewCustomer(c);
+                              } else if (onSelectTab) {
+                                onSelectTab('customers');
+                              }
+                            }}
+                            className="px-2.5 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-sm transition-all cursor-pointer"
+                            title="View Customer Profile"
+                          >
+                            View
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDismissAlert(c.id);
+                            }}
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 transition-all cursor-pointer"
+                            title="Delete / Dismiss this alert notification"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       </div>
                     ))
                   )
