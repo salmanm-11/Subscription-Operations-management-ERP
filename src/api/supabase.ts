@@ -208,19 +208,7 @@ export interface LicenseCheckResult {
 }
 
 export async function checkSystemLicense(): Promise<LicenseCheckResult> {
-  // 1. Check local persistent lock status first (works offline so internet disconnect cannot bypass)
-  const localStatus = OfflineStorage.getLicenseStatus();
-  if (localStatus && (localStatus.startsWith('SUSPENDED') || localStatus.startsWith('LOCKED') || localStatus.startsWith('EXPIRED'))) {
-    return {
-      isLocked: true,
-      status: 'SUSPENDED',
-      reason: localStatus.replace(/^(SUSPENDED|LOCKED|EXPIRED):?\s*/i, '') || 'Software license has been temporarily suspended.',
-      contactEmail: 'contact@karamamess.ae',
-      contactPhone: '+971 50 123 4567',
-    };
-  }
-
-  // 2. Check cloud status if Supabase is reachable
+  // 1. Check cloud status first whenever Supabase is reachable (source of truth)
   const client = getSupabaseClient();
   if (client) {
     try {
@@ -232,11 +220,12 @@ export async function checkSystemLicense(): Promise<LicenseCheckResult> {
 
       if (!error && data) {
         const tradeNo = (data.trade_license_no || '').trim();
-        if (
+        const isSuspended =
           tradeNo.toUpperCase().startsWith('SUSPENDED') ||
           tradeNo.toUpperCase().startsWith('LOCKED') ||
-          tradeNo.toUpperCase().startsWith('EXPIRED')
-        ) {
+          tradeNo.toUpperCase().startsWith('EXPIRED');
+
+        if (isSuspended) {
           const reason = tradeNo.replace(/^(SUSPENDED|LOCKED|EXPIRED):?\s*/i, '') || 'Software license has been suspended due to pending payment.';
           OfflineStorage.setLicenseStatus(tradeNo);
           return {
@@ -247,13 +236,30 @@ export async function checkSystemLicense(): Promise<LicenseCheckResult> {
             contactPhone: '+971 50 123 4567',
           };
         } else {
-          // Cloud indicates license is in good standing
+          // Cloud explicitly confirms active and unlocked in good standing
           OfflineStorage.setLicenseStatus('ACTIVE');
+          return {
+            isLocked: false,
+            status: 'ACTIVE',
+            reason: '',
+          };
         }
       }
     } catch (err) {
       console.warn('License verification cloud check error:', err);
     }
+  }
+
+  // 2. Fallback to local persistent lock status ONLY when network/cloud is unreachable (offline defense)
+  const localStatus = OfflineStorage.getLicenseStatus();
+  if (localStatus && (localStatus.startsWith('SUSPENDED') || localStatus.startsWith('LOCKED') || localStatus.startsWith('EXPIRED'))) {
+    return {
+      isLocked: true,
+      status: 'SUSPENDED',
+      reason: localStatus.replace(/^(SUSPENDED|LOCKED|EXPIRED):?\s*/i, '') || 'Software license has been temporarily suspended.',
+      contactEmail: 'contact@karamamess.ae',
+      contactPhone: '+971 50 123 4567',
+    };
   }
 
   return {

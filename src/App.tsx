@@ -255,12 +255,29 @@ export const App: React.FC = () => {
     }
   };
 
-  // Periodic license check (runs even before login)
+  // Periodic & Realtime license check (runs globally across all screens, even when locked or logged out)
   useEffect(() => {
     verifyLicense();
-    const interval = setInterval(verifyLicense, 30000);
-    return () => clearInterval(interval);
-  }, []);
+    // Fast 4-second poll when locked so remote unlock reflects immediately; 20-second poll otherwise
+    const intervalTime = licenseState.isLocked ? 4000 : 20000;
+    const interval = setInterval(verifyLicense, intervalTime);
+
+    // Live Supabase subscription for instant kill-switch toggle updates
+    const unsubscribe = subscribeToRealtimeChanges({
+      onLicenseChange: (isLocked, reason) => {
+        setLicenseState({
+          isLocked,
+          status: isLocked ? 'SUSPENDED' : 'ACTIVE',
+          reason: reason || 'Software license has been temporarily suspended.',
+        });
+      },
+    });
+
+    return () => {
+      clearInterval(interval);
+      unsubscribe();
+    };
+  }, [licenseState.isLocked]);
 
   // Cloud Live Status state
   const [cloudStatus, setCloudStatus] = useState<CloudStatusResult>(() => getCachedCloudStatus());

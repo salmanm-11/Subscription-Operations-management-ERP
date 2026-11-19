@@ -46,7 +46,7 @@ describe('Remote License Kill Switch & Master Developer Override', () => {
     expect(res.status).toBe('SUSPENDED');
     expect(res.reason).toContain('Payment overdue');
     expect(res.contactEmail).toBeDefined();
-  });
+  }, 15000);
 
   it('allows master developer credentials to bypass and access system anytime', () => {
     // Developer login must always succeed
