@@ -536,103 +536,105 @@ export const PaymentList: React.FC<PaymentListProps> = ({
 
       {/* Official Printable Receipt Preview Modal */}
       {selectedReceipt && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-[#151c2c] border border-slate-700 rounded-2xl w-full max-w-lg p-6 sm:p-8 shadow-2xl text-white space-y-6">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-[#151c2c] border border-slate-700/80 rounded-2xl w-full max-w-lg shadow-2xl text-white flex flex-col max-h-[92vh] overflow-hidden">
+            <div className="flex items-center justify-between border-b border-slate-800 px-5 py-4 shrink-0 bg-[#151c2c]">
               <div>
-                <h3 className="text-xl font-black text-white">Official Payment Receipt</h3>
+                <h3 className="text-lg font-black text-white">Official Payment Receipt</h3>
                 <p className="text-xs text-amber-400 font-bold uppercase tracking-wider mt-0.5">Karama Homely Mess - Dubai, UAE</p>
               </div>
               <button
                 onClick={() => setSelectedReceipt(null)}
-                className="p-2 rounded-lg bg-slate-800 text-slate-400 hover:text-white"
+                className="p-1.5 rounded-lg bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 transition-colors cursor-pointer"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" />
               </button>
             </div>
 
-            {(() => {
-              const info = getCustomerInfo(selectedReceipt);
-              return (
-                <div className="space-y-4 bg-slate-900/80 p-5 rounded-xl border border-slate-800">
-                  <div className="flex justify-between items-center pb-3 border-b border-slate-800">
-                    <span className="text-xs text-slate-400 font-bold uppercase">Receipt Number</span>
-                    <span className="font-mono text-base font-black text-amber-400">{selectedReceipt.payment_number}</span>
-                  </div>
-
-                  <div className="flex justify-between items-center pb-3 border-b border-slate-800">
-                    <span className="text-xs text-slate-400 font-bold uppercase">Payment Date</span>
-                    <span className="text-sm font-bold text-slate-200">{selectedReceipt.payment_date}</span>
-                  </div>
-
-                  <div className="pb-3 border-b border-slate-800">
-                    <span className="text-xs text-slate-400 font-bold uppercase block mb-1">Received From</span>
-                    <div className="text-base font-black text-white">{info.name}</div>
-                    <div className="text-xs text-slate-300 font-semibold">{info.sub}</div>
-                  </div>
-
-                  <div className="flex justify-between items-center pb-3 border-b border-slate-800">
-                    <span className="text-xs text-slate-400 font-bold uppercase">Payment Method</span>
-                    <span className="text-xs font-black uppercase px-2.5 py-1 rounded bg-slate-800 text-slate-200 border border-slate-700">
-                      {selectedReceipt.payment_method.replace('_', ' ')}
-                    </span>
-                  </div>
-
-                  {selectedReceipt.reference_number && (
-                    <div className="flex justify-between items-center pb-3 border-b border-slate-800">
-                      <span className="text-xs text-slate-400 font-bold uppercase">Reference / Cheque</span>
-                      <span className="font-mono text-xs font-bold text-slate-200">{selectedReceipt.reference_number}</span>
+            <div className="overflow-y-auto p-5 space-y-4 custom-scrollbar flex-1">
+              {(() => {
+                const info = getCustomerInfo(selectedReceipt);
+                return (
+                  <div className="space-y-3.5 bg-slate-900/80 p-4 sm:p-5 rounded-xl border border-slate-800">
+                    <div className="flex justify-between items-center pb-2.5 border-b border-slate-800">
+                      <span className="text-xs text-slate-400 font-bold uppercase">Receipt Number</span>
+                      <span className="font-mono text-base font-black text-amber-400">{selectedReceipt.payment_number}</span>
                     </div>
-                  )}
 
-                  {selectedReceipt.notes && (
-                    <div className="pb-3 border-b border-slate-800">
-                      <span className="text-xs text-slate-400 font-bold uppercase block mb-1">Notes</span>
-                      <div className="text-xs text-slate-300 font-medium">{selectedReceipt.notes}</div>
+                    <div className="flex justify-between items-center pb-2.5 border-b border-slate-800">
+                      <span className="text-xs text-slate-400 font-bold uppercase">Payment Date</span>
+                      <span className="text-sm font-bold text-slate-200">{selectedReceipt.payment_date}</span>
                     </div>
-                  )}
 
-                  {selectedReceipt.discount_amount && selectedReceipt.discount_amount > 0 && (
-                    <div className="flex justify-between items-center pb-3 border-b border-slate-800">
-                      <span className="text-xs text-slate-400 font-bold uppercase">Discount Applied</span>
-                      <span className="font-mono text-xs font-bold text-amber-400">
-                        -{formatAED(selectedReceipt.discount_amount)}
-                        {selectedReceipt.discount_type === 'percentage' && selectedReceipt.discount_value ? ` (${selectedReceipt.discount_value}%)` : ''}
+                    <div className="pb-2.5 border-b border-slate-800">
+                      <span className="text-xs text-slate-400 font-bold uppercase block mb-1">Received From</span>
+                      <div className="text-base font-black text-white">{info.name}</div>
+                      <div className="text-xs text-slate-300 font-semibold">{info.sub}</div>
+                    </div>
+
+                    <div className="flex justify-between items-center pb-2.5 border-b border-slate-800">
+                      <span className="text-xs text-slate-400 font-bold uppercase">Payment Method</span>
+                      <span className="text-xs font-black uppercase px-2.5 py-1 rounded bg-slate-800 text-slate-200 border border-slate-700">
+                        {selectedReceipt.payment_method.replace('_', ' ')}
                       </span>
                     </div>
-                  )}
 
-                  {selectedReceipt.covered_until_date && (
-                    <div className="flex justify-between items-center pb-3 border-b border-slate-800">
-                      <span className="text-xs text-slate-400 font-bold uppercase">Valid Until (Expiry)</span>
-                      <span className="font-mono text-xs font-bold text-sky-400">
-                        {selectedReceipt.covered_until_date}
+                    {selectedReceipt.reference_number && (
+                      <div className="flex justify-between items-center pb-2.5 border-b border-slate-800">
+                        <span className="text-xs text-slate-400 font-bold uppercase">Reference / Cheque</span>
+                        <span className="font-mono text-xs font-bold text-slate-200">{selectedReceipt.reference_number}</span>
+                      </div>
+                    )}
+
+                    {selectedReceipt.notes && (
+                      <div className="pb-2.5 border-b border-slate-800">
+                        <span className="text-xs text-slate-400 font-bold uppercase block mb-1">Notes</span>
+                        <div className="text-xs text-slate-300 font-medium">{selectedReceipt.notes}</div>
+                      </div>
+                    )}
+
+                    {selectedReceipt.discount_amount && selectedReceipt.discount_amount > 0 && (
+                      <div className="flex justify-between items-center pb-2.5 border-b border-slate-800">
+                        <span className="text-xs text-slate-400 font-bold uppercase">Discount Applied</span>
+                        <span className="font-mono text-xs font-bold text-amber-400">
+                          -{formatAED(selectedReceipt.discount_amount)}
+                          {selectedReceipt.discount_type === 'percentage' && selectedReceipt.discount_value ? ` (${selectedReceipt.discount_value}%)` : ''}
+                        </span>
+                      </div>
+                    )}
+
+                    {selectedReceipt.covered_until_date && (
+                      <div className="flex justify-between items-center pb-2.5 border-b border-slate-800">
+                        <span className="text-xs text-slate-400 font-bold uppercase">Valid Until (Expiry)</span>
+                        <span className="font-mono text-xs font-bold text-sky-400">
+                          {selectedReceipt.covered_until_date}
+                        </span>
+                      </div>
+                    )}
+
+                    <div className="flex justify-between items-center pt-1.5">
+                      <span className="text-sm text-slate-300 font-black uppercase">Amount Received</span>
+                      <span className="font-mono text-2xl font-black text-emerald-400">
+                        {formatAED(selectedReceipt.amount)}
                       </span>
                     </div>
-                  )}
-
-                  <div className="flex justify-between items-center pt-2">
-                    <span className="text-sm text-slate-300 font-black uppercase">Amount Received</span>
-                    <span className="font-mono text-2xl font-black text-emerald-400">
-                      {formatAED(selectedReceipt.amount)}
-                    </span>
                   </div>
-                </div>
-              );
-            })()}
+                );
+              })()}
+            </div>
 
-            <div className="flex flex-wrap items-center justify-end gap-3 pt-2">
+            <div className="flex flex-wrap items-center justify-end gap-2.5 px-5 py-3.5 border-t border-slate-800 bg-[#0f1422] shrink-0">
               <button
                 type="button"
                 onClick={() => setSelectedReceipt(null)}
-                className="px-4 py-2.5 rounded-xl bg-slate-800 text-slate-300 hover:text-white font-bold text-xs cursor-pointer"
+                className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 hover:text-white font-bold text-xs cursor-pointer"
               >
                 Close
               </button>
               <button
                 type="button"
                 onClick={() => handleSendWhatsAppReceipt(selectedReceipt)}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs shadow-md shadow-emerald-600/20 transition-all cursor-pointer"
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs shadow-md shadow-emerald-600/20 transition-all cursor-pointer"
                 title="Send Receipt to Customer on WhatsApp"
               >
                 <MessageSquare className="w-4 h-4" />
@@ -641,7 +643,7 @@ export const PaymentList: React.FC<PaymentListProps> = ({
               <button
                 type="button"
                 onClick={() => window.print()}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-md shadow-amber-500/20 cursor-pointer"
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-md shadow-amber-500/20 cursor-pointer"
               >
                 <Printer className="w-4 h-4" />
                 <span>Print Receipt</span>
@@ -737,223 +739,234 @@ export const PaymentList: React.FC<PaymentListProps> = ({
 
       {/* Record Payment Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-[#151c2c] border border-slate-700 rounded-2xl w-full max-w-lg p-6 sm:p-7 shadow-2xl">
-            <div className="flex items-center justify-between mb-5 border-b border-slate-800 pb-3">
-              <h3 className="text-lg font-black text-white">Record Customer Payment</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-[#151c2c] border border-slate-700/80 rounded-2xl w-full max-w-lg shadow-2xl flex flex-col max-h-[92vh] overflow-hidden">
+            {/* Modal Header (Fixed at top) */}
+            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-800 bg-[#151c2c] shrink-0">
+              <div>
+                <h3 className="text-base sm:text-lg font-black text-white">Record Customer Payment</h3>
+                <p className="text-[11px] text-slate-400">Issue official receipt, apply discount & update subscription</p>
+              </div>
               <button
+                type="button"
                 onClick={() => setIsModalOpen(false)}
-                className="p-1.5 rounded-lg bg-slate-800 text-slate-400 hover:text-white"
+                className="p-1.5 rounded-lg bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 transition-colors cursor-pointer"
+                title="Close modal"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4 text-xs sm:text-sm">
-              <div>
-                <label className="block text-slate-200 font-bold mb-1.5">Customer Name *</label>
-                <select
-                  required
-                  value={customerId}
-                  onChange={(e) => handleSelectCustomer(e.target.value)}
-                  className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white font-medium focus:outline-none focus:border-amber-500"
-                >
-                  <option value="">Select customer...</option>
-                  {customers.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.full_name} ({c.building_name_cache || 'Building'} Apt {c.apartment_cache || 'N/A'})
-                      {c.company_name ? ` [${c.company_name}]` : ''}
-                      {c.total_overdue ? ` - Overdue: ${formatAED(c.total_overdue)}` : ''}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Standard Due / Fee */}
-              <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <label className="block text-slate-200 font-bold">Standard Fee / Original Due (AED)</label>
-                  <span className="text-[11px] text-slate-400 font-mono">Original Billing Amount</span>
-                </div>
-                <input
-                  type="number"
-                  step="0.5"
-                  required
-                  value={baseAmount}
-                  onChange={(e) => {
-                    const newBase = parseFloat(e.target.value) || 0;
-                    setBaseAmount(newBase);
-                    updateDiscount(discountType, discountValue, newBase);
-                  }}
-                  className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono font-bold text-sm focus:outline-none focus:border-amber-500"
-                />
-              </div>
-
-              {/* Discount Section with Toggle (Number only on open, click for %) */}
-              <div className="bg-slate-900/80 border border-slate-700/80 rounded-xl p-3.5 space-y-2.5">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
-                    <Percent className="w-3.5 h-3.5 text-amber-400" />
-                    <span>Apply Discount</span>
-                  </label>
-
-                  {/* Toggle: Number (AED) vs Percentage (%) */}
-                  <div className="inline-flex items-center p-0.5 rounded-lg bg-slate-950 border border-slate-800">
-                    <button
-                      type="button"
-                      onClick={() => updateDiscount('fixed', discountValue)}
-                      className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-bold transition-all ${
-                        discountType === 'fixed'
-                          ? 'bg-amber-500 text-slate-950 shadow-sm'
-                          : 'text-slate-400 hover:text-white'
-                      }`}
-                      title="Flat AED amount discount"
-                    >
-                      <Hash className="w-3 h-3" />
-                      <span>Number (AED)</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => updateDiscount('percentage', discountValue)}
-                      className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-bold transition-all ${
-                        discountType === 'percentage'
-                          ? 'bg-amber-500 text-slate-950 shadow-sm'
-                          : 'text-slate-400 hover:text-white'
-                      }`}
-                      title="Percentage (%) discount"
-                    >
-                      <Percent className="w-3 h-3" />
-                      <span>Percentage (%)</span>
-                    </button>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-center">
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400 font-mono">
-                      {discountType === 'fixed' ? 'AED' : '%'}
-                    </span>
-                    <input
-                      type="number"
-                      step={discountType === 'percentage' ? '1' : '0.5'}
-                      min="0"
-                      max={discountType === 'percentage' ? '100' : baseAmount}
-                      value={discountValue || ''}
-                      onChange={(e) => updateDiscount(discountType, parseFloat(e.target.value) || 0)}
-                      placeholder={discountType === 'fixed' ? '0.00' : '0'}
-                      className="w-full pl-12 pr-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-white font-mono font-bold text-sm focus:outline-none focus:border-amber-400"
-                    />
-                  </div>
-                  <div className="text-right">
-                    {calculatedDiscountAmount > 0 ? (
-                      <div className="text-xs">
-                        <span className="text-slate-400">Discount: </span>
-                        <span className="font-mono font-black text-amber-400">
-                          -AED {calculatedDiscountAmount.toFixed(2)}
-                        </span>
-                      </div>
-                    ) : (
-                      <span className="text-[11px] text-slate-500 italic">No discount applied</span>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Net Amount Paid */}
-              <div>
-                <label className="block text-slate-200 font-bold mb-1.5 flex items-center justify-between">
-                  <span>Net Amount Paid (AED) *</span>
-                  {calculatedDiscountAmount > 0 && (
-                    <span className="text-[11px] text-emerald-400 font-mono font-bold">
-                      After Discount
-                    </span>
-                  )}
-                </label>
-                <input
-                  type="number"
-                  step="0.5"
-                  required
-                  value={amount}
-                  onChange={(e) => setAmount(parseFloat(e.target.value) || 0)}
-                  className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono font-black text-base focus:outline-none focus:border-emerald-500"
-                />
-              </div>
-
-              {/* Covered Until / Subscription Expiry Date */}
-              <div>
-                <label className="block text-slate-200 font-bold mb-1.5 flex items-center gap-1.5">
-                  <CalendarCheck className="w-3.5 h-3.5 text-sky-400" />
-                  <span>Subscription Valid Until (Expiry Date)</span>
-                  <span className="text-[10px] text-slate-400 font-normal">(Sent in WhatsApp receipt)</span>
-                </label>
-                <input
-                  type="date"
-                  value={coveredUntilDate}
-                  onChange={(e) => setCoveredUntilDate(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono text-sm focus:outline-none focus:border-sky-500"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            {/* Modal Form with Scrollable Body and Sticky Footer */}
+            <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0 overflow-hidden text-xs sm:text-sm">
+              {/* Scrollable Fields */}
+              <div className="overflow-y-auto px-5 py-4 space-y-3.5 custom-scrollbar flex-1">
                 <div>
-                  <label className="block text-slate-200 font-bold mb-1.5">Payment Date</label>
-                  <input
-                    type="date"
-                    required
-                    value={paymentDate}
-                    onChange={(e) => setPaymentDate(e.target.value)}
-                    className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white font-medium focus:outline-none focus:border-amber-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-slate-200 font-bold mb-1.5">Method</label>
+                  <label className="block text-slate-200 font-bold mb-1">Customer Name *</label>
                   <select
-                    value={paymentMethod}
-                    onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
-                    className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-amber-500 uppercase font-bold"
+                    required
+                    value={customerId}
+                    onChange={(e) => handleSelectCustomer(e.target.value)}
+                    className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-medium focus:outline-none focus:border-amber-500 text-xs sm:text-sm"
                   >
-                    <option value="cash">Cash</option>
-                    <option value="bank_transfer">Bank Transfer</option>
-                    <option value="card">Card</option>
-                    <option value="cheque">Cheque</option>
-                    <option value="other">Other</option>
+                    <option value="">Select customer...</option>
+                    {customers.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.full_name} ({c.building_name_cache || 'Building'} Apt {c.apartment_cache || 'N/A'})
+                        {c.company_name ? ` [${c.company_name}]` : ''}
+                        {c.total_overdue ? ` - Overdue: ${formatAED(c.total_overdue)}` : ''}
+                      </option>
+                    ))}
                   </select>
                 </div>
+
+                {/* Standard Due / Fee */}
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-slate-200 font-bold">Standard Fee / Original Due (AED)</label>
+                    <span className="text-[10px] text-slate-400 font-mono">Original Billing Amount</span>
+                  </div>
+                  <input
+                    type="number"
+                    step="0.5"
+                    required
+                    value={baseAmount}
+                    onChange={(e) => {
+                      const newBase = parseFloat(e.target.value) || 0;
+                      setBaseAmount(newBase);
+                      updateDiscount(discountType, discountValue, newBase);
+                    }}
+                    className="w-full px-3.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono font-bold text-xs sm:text-sm focus:outline-none focus:border-amber-500"
+                  />
+                </div>
+
+                {/* Discount Section with Toggle (Number only on open, click for %) */}
+                <div className="bg-slate-900/80 border border-slate-700/80 rounded-xl p-3 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
+                      <Percent className="w-3.5 h-3.5 text-amber-400" />
+                      <span>Apply Discount</span>
+                    </label>
+
+                    {/* Toggle: Number (AED) vs Percentage (%) */}
+                    <div className="inline-flex items-center p-0.5 rounded-lg bg-slate-950 border border-slate-800">
+                      <button
+                        type="button"
+                        onClick={() => updateDiscount('fixed', discountValue)}
+                        className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-bold transition-all ${
+                          discountType === 'fixed'
+                            ? 'bg-amber-500 text-slate-950 shadow-sm'
+                            : 'text-slate-400 hover:text-white'
+                        }`}
+                        title="Flat AED amount discount"
+                      >
+                        <Hash className="w-3 h-3" />
+                        <span>Number (AED)</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => updateDiscount('percentage', discountValue)}
+                        className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-bold transition-all ${
+                          discountType === 'percentage'
+                            ? 'bg-amber-500 text-slate-950 shadow-sm'
+                            : 'text-slate-400 hover:text-white'
+                        }`}
+                        title="Percentage (%) discount"
+                      >
+                        <Percent className="w-3 h-3" />
+                        <span>Percentage (%)</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 items-center">
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400 font-mono">
+                        {discountType === 'fixed' ? 'AED' : '%'}
+                      </span>
+                      <input
+                        type="number"
+                        step={discountType === 'percentage' ? '1' : '0.5'}
+                        min="0"
+                        max={discountType === 'percentage' ? '100' : baseAmount}
+                        value={discountValue || ''}
+                        onChange={(e) => updateDiscount(discountType, parseFloat(e.target.value) || 0)}
+                        placeholder={discountType === 'fixed' ? '0.00' : '0'}
+                        className="w-full pl-12 pr-3 py-1.5 bg-slate-950 border border-slate-700 rounded-xl text-white font-mono font-bold text-xs sm:text-sm focus:outline-none focus:border-amber-400"
+                      />
+                    </div>
+                    <div className="text-right">
+                      {calculatedDiscountAmount > 0 ? (
+                        <div className="text-xs">
+                          <span className="text-slate-400">Discount: </span>
+                          <span className="font-mono font-black text-amber-400">
+                            -AED {calculatedDiscountAmount.toFixed(2)}
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-[11px] text-slate-500 italic">No discount applied</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Net Amount Paid */}
+                <div>
+                  <label className="block text-slate-200 font-bold mb-1 flex items-center justify-between">
+                    <span>Net Amount Paid (AED) *</span>
+                    {calculatedDiscountAmount > 0 && (
+                      <span className="text-[11px] text-emerald-400 font-mono font-bold">
+                        After Discount
+                      </span>
+                    )}
+                  </label>
+                  <input
+                    type="number"
+                    step="0.5"
+                    required
+                    value={amount}
+                    onChange={(e) => setAmount(parseFloat(e.target.value) || 0)}
+                    className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono font-black text-base focus:outline-none focus:border-emerald-500"
+                  />
+                </div>
+
+                {/* Covered Until / Subscription Expiry Date */}
+                <div>
+                  <label className="block text-slate-200 font-bold mb-1 flex items-center gap-1.5">
+                    <CalendarCheck className="w-3.5 h-3.5 text-sky-400" />
+                    <span>Subscription Valid Until (Expiry Date)</span>
+                    <span className="text-[10px] text-slate-400 font-normal">(Sent in WhatsApp receipt)</span>
+                  </label>
+                  <input
+                    type="date"
+                    value={coveredUntilDate}
+                    onChange={(e) => setCoveredUntilDate(e.target.value)}
+                    className="w-full px-3.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono text-xs sm:text-sm focus:outline-none focus:border-sky-500"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-slate-200 font-bold mb-1">Payment Date</label>
+                    <input
+                      type="date"
+                      required
+                      value={paymentDate}
+                      onChange={(e) => setPaymentDate(e.target.value)}
+                      className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white font-medium focus:outline-none focus:border-amber-500 text-xs sm:text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-200 font-bold mb-1">Method</label>
+                    <select
+                      value={paymentMethod}
+                      onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
+                      className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-amber-500 uppercase font-bold text-xs sm:text-sm"
+                    >
+                      <option value="cash">Cash</option>
+                      <option value="bank_transfer">Bank Transfer</option>
+                      <option value="card">Card</option>
+                      <option value="cheque">Cheque</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-slate-200 font-bold mb-1">Transaction Ref / Cheque No.</label>
+                  <input
+                    type="text"
+                    value={referenceNumber}
+                    onChange={(e) => setReferenceNumber(e.target.value)}
+                    placeholder="e.g. TXN-998822 / Cash hand collection"
+                    className="w-full px-3.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono focus:outline-none focus:border-amber-500 text-xs sm:text-sm"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-slate-200 font-bold mb-1">Payment Notes</label>
+                  <input
+                    type="text"
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    placeholder="e.g. October monthly mess dues settled in full"
+                    className="w-full px-3.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-amber-500 text-xs sm:text-sm"
+                  />
+                </div>
               </div>
 
-              <div>
-                <label className="block text-slate-200 font-bold mb-1.5">Transaction Ref / Cheque No.</label>
-                <input
-                  type="text"
-                  value={referenceNumber}
-                  onChange={(e) => setReferenceNumber(e.target.value)}
-                  placeholder="e.g. TXN-998822 / Cash hand collection"
-                  className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono focus:outline-none focus:border-amber-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-slate-200 font-bold mb-1.5">Payment Notes</label>
-                <input
-                  type="text"
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder="e.g. October monthly mess dues settled in full"
-                  className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-amber-500"
-                />
-              </div>
-
-              <div className="pt-3 flex justify-end gap-3">
+              {/* Modal Footer (Sticky at bottom, ALWAYS visible!) */}
+              <div className="px-5 py-3.5 border-t border-slate-800 bg-[#0f1422] flex items-center justify-end gap-3 shrink-0">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-5 py-2.5 rounded-xl bg-slate-800 text-slate-300 font-bold text-xs"
+                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-750 text-slate-300 hover:text-white font-bold text-xs transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs shadow-md shadow-emerald-500/20"
+                  className="px-5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs shadow-md shadow-emerald-500/20 transition-all active:scale-[0.98] cursor-pointer"
                 >
                   Confirm &amp; Record Receipt
                 </button>
