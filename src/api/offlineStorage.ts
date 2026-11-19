@@ -325,6 +325,7 @@ export class OfflineStorage {
       business_id: DEFAULT_BUSINESS.id,
       customer_code: cust.customer_code || `CUST-${String(nextCodeNum).padStart(3, '0')}`,
       full_name: cust.full_name || 'New Customer',
+      company_name: cust.company_name || undefined,
       phone: cust.phone || '',
       emergency_contact: cust.emergency_contact || '',
       email: cust.email || '',
@@ -822,6 +823,11 @@ export class OfflineStorage {
       customer_id: pay.customer_id || '',
       invoice_id: pay.invoice_id,
       amount: roundCurrency(amount),
+      original_amount: pay.original_amount !== undefined ? roundCurrency(pay.original_amount) : undefined,
+      discount_amount: pay.discount_amount !== undefined ? roundCurrency(pay.discount_amount) : undefined,
+      discount_type: pay.discount_type,
+      discount_value: pay.discount_value,
+      covered_until_date: pay.covered_until_date,
       payment_date: pay.payment_date || new Date().toISOString().split('T')[0],
       payment_method: pay.payment_method || 'cash',
       reference_number: pay.reference_number || '',
@@ -840,7 +846,9 @@ export class OfflineStorage {
       targetCustomer = customers.find(item => item.id === pay.customer_id || item.customer_code === pay.customer_id);
       if (targetCustomer) {
         targetCustomer.total_overdue = Math.max(0, subtractCurrency(targetCustomer.total_overdue || 0, amount));
-        if (targetCustomer.total_overdue === 0) {
+        if (pay.covered_until_date) {
+          targetCustomer.payment_made_up_to_date = pay.covered_until_date;
+        } else if (targetCustomer.total_overdue === 0) {
           targetCustomer.payment_rating = 'Good';
           if (targetCustomer.billed_up_to_date) {
             targetCustomer.payment_made_up_to_date = targetCustomer.billed_up_to_date;
@@ -1002,7 +1010,13 @@ export class OfflineStorage {
       totalOutstandingDues: totalDues,
       dueSoonCount: dueSoon,
       overdueInvoicesCount: customers.filter(c => (c.total_overdue || 0) > 0).length,
-      recentCustomers: customers.slice(0, 5),
+      recentCustomers: [...customers]
+        .sort((a, b) => {
+          const dateA = new Date(a.created_at || a.joining_date || a.billing_start_date || 0).getTime();
+          const dateB = new Date(b.created_at || b.joining_date || b.billing_start_date || 0).getTime();
+          return dateB - dateA;
+        })
+        .slice(0, 10),
       upcomingPayments: upcomingPayments.length > 0 ? upcomingPayments : customers.filter(c => (c.total_overdue || 0) >= 0).slice(0, 5)
     };
   }

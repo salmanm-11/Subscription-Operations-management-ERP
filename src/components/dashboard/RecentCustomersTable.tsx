@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Utensils, UserX, UserCheck, Users } from 'lucide-react';
+import { Utensils, UserX, UserCheck, Users, UserPlus, Building2, Sparkles } from 'lucide-react';
 import { Customer } from '../../types';
 
 interface RecentCustomersTableProps {
@@ -19,6 +19,15 @@ export const RecentCustomersTable: React.FC<RecentCustomersTableProps> = ({
 
   const fullList = allCustomers && allCustomers.length > 0 ? allCustomers : customers;
 
+  // Sort by newest registration / creation / joining date descending
+  const sortedNewest = useMemo(() => {
+    return [...fullList].sort((a, b) => {
+      const dateA = new Date(a.created_at || a.joining_date || a.billing_start_date || 0).getTime();
+      const dateB = new Date(b.created_at || b.joining_date || b.billing_start_date || 0).getTime();
+      return dateB - dateA;
+    });
+  }, [fullList]);
+
   const cancelledCount = useMemo(() => {
     return fullList.filter((c) => c.status === 'left' || c.status === 'cancelled').length;
   }, [fullList]);
@@ -29,19 +38,22 @@ export const RecentCustomersTable: React.FC<RecentCustomersTableProps> = ({
 
   const displayedCustomers = useMemo(() => {
     if (filterTab === 'cancelled') {
-      return fullList.filter((c) => c.status === 'left' || c.status === 'cancelled').slice(0, 10);
+      return sortedNewest.filter((c) => c.status === 'left' || c.status === 'cancelled').slice(0, 10);
     }
     if (filterTab === 'active') {
-      return fullList.filter((c) => c.status === 'active' || c.status === 'trial').slice(0, 8);
+      return sortedNewest.filter((c) => c.status === 'active' || c.status === 'trial').slice(0, 8);
     }
-    return customers.slice(0, 8);
-  }, [filterTab, fullList, customers]);
+    return sortedNewest.slice(0, 8);
+  }, [filterTab, sortedNewest]);
 
   return (
     <div className="bg-[#151c2c] border border-[#222f47]/60 rounded-2xl p-6 shadow-lg shadow-black/20 flex flex-col h-full">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
         <div className="flex items-center gap-3">
-          <h3 className="text-base font-bold text-white tracking-tight">Recent Customer Accounts</h3>
+          <div className="flex items-center gap-2">
+            <UserPlus className="w-4 h-4 text-amber-400" />
+            <h3 className="text-base font-bold text-white tracking-tight">Recent New Customers</h3>
+          </div>
           {/* Filter Tabs */}
           <div className="flex items-center gap-1 bg-slate-900/80 p-1 rounded-xl border border-slate-700/60">
             <button
@@ -109,7 +121,7 @@ export const RecentCustomersTable: React.FC<RecentCustomersTableProps> = ({
                 </td>
               </tr>
             ) : (
-              displayedCustomers.map((c) => (
+              displayedCustomers.map((c, idx) => (
                 <tr
                   key={c.id}
                   onClick={() => onSelectCustomer && onSelectCustomer(c)}
@@ -117,7 +129,21 @@ export const RecentCustomersTable: React.FC<RecentCustomersTableProps> = ({
                   title="Click to view full customer details"
                 >
                   <td className="py-3.5 px-4 font-extrabold text-white text-base tracking-tight group-hover:text-amber-300 transition-colors">
-                    {c.full_name}
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span>{c.full_name}</span>
+                      {idx < 2 && (
+                        <span className="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[9px] font-black uppercase tracking-wider">
+                          <Sparkles className="w-2.5 h-2.5" />
+                          <span>NEW</span>
+                        </span>
+                      )}
+                    </div>
+                    {c.company_name && (
+                      <div className="text-[11px] text-sky-300 font-semibold mt-0.5 flex items-center gap-1">
+                        <Building2 className="w-3 h-3 text-sky-400 shrink-0" />
+                        <span className="truncate max-w-[180px]">{c.company_name}</span>
+                      </div>
+                    )}
                   </td>
                   <td className="py-3.5 px-4 text-slate-200">
                     <div className="font-bold text-sm">

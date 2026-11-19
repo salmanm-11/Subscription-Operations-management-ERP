@@ -4,6 +4,7 @@ import { roundVendorCurrency, formatVendorAED } from './currency';
 
 export interface ParsedImportRow {
   full_name: string;
+  company_name?: string;
   area: string;
   building_name_cache: string;
   apartment_cache: string;
@@ -77,6 +78,7 @@ export function exportCustomersToExcel(
   const exportRows = list.map(c => ({
     'Customer Code': c.customer_code,
     'Customer Name': c.full_name,
+    'Company / Workplace': c.company_name || '-',
     'Building': c.building_name_cache || '-',
     'Flat / Room': c.apartment_cache || '-',
     'Phone Number': c.phone || '-',
@@ -469,8 +471,19 @@ export async function parseCustomerExcel(file: File): Promise<ImportResult> {
               'admin'
             ).trim();
 
+            const company = String(
+              normalized['customercompanyname'] ||
+              normalized['companyname'] ||
+              normalized['company'] ||
+              normalized['companyworkplace'] ||
+              normalized['employer'] ||
+              normalized['workplace'] ||
+              ''
+            ).trim();
+
             sheetValidRows.push({
               full_name: String(name).trim(),
+              company_name: company || undefined,
               area: String(area).trim(),
               building_name_cache: String(building).trim(),
               apartment_cache: apartment.trim(),

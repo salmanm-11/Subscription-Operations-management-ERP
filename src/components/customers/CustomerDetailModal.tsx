@@ -30,7 +30,10 @@ import {
   CalendarX,
   UserMinus,
   RotateCcw,
-  Trash2
+  Trash2,
+  Briefcase,
+  Percent,
+  Hash
 } from 'lucide-react';
 import { Customer, Building, MealPlan, Invoice, Payment, PaymentMethod } from '../../types';
 import { formatAED } from '../../utils/currency';
@@ -405,18 +408,30 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
     const amountStr = formatAED(p.amount);
     const recNo = p.payment_number || 'N/A';
     const dateStr = p.payment_date;
+    const expiryDateStr = p.covered_until_date || activeCustomer.payment_made_up_to_date || activeCustomer.billed_up_to_date || 'Active Cycle';
     const isZeroDue = (activeCustomer.total_overdue || 0) === 0;
     const dueStatus = isZeroDue
       ? 'All mess dues cleared in full (AED 0.00)'
       : `Remaining Due Balance: ${formatAED(activeCustomer.total_overdue)}`;
+
+    let discountDetails = '';
+    if (p.discount_amount && p.discount_amount > 0) {
+      const origAmt = p.original_amount || (p.amount + p.discount_amount);
+      const discPercent = p.discount_type === 'percentage' ? ` (${p.discount_value}%)` : '';
+      discountDetails = 
+        `• *Original Fee:* ${formatAED(origAmt)}\n` +
+        `• *Discount Applied:* -${formatAED(p.discount_amount)}${discPercent}\n`;
+    }
 
     const text =
       `*Karama Homely Mess - Payment Receipt*\n\n` +
       `Dear *${name}*,\n` +
       `We have received your payment with thanks!\n\n` +
       `• *Receipt No:* ${recNo}\n` +
-      `• *Amount Paid:* ${amountStr}\n` +
+      discountDetails +
+      `• *Amount Paid:* *${amountStr}*\n` +
       `• *Payment Date:* ${dateStr}\n` +
+      `• *Subscription Valid Until (Expiry Date):* *${expiryDateStr}*\n` +
       `• *Method:* ${(p.payment_method || 'Cash').toUpperCase().replace('_', ' ')}\n` +
       `• *Status:* ${dueStatus}\n\n` +
       `Thank you for dining with Karama Homely Mess!\n*Karama Homely Mess, Dubai*`;
@@ -644,6 +659,15 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                 <span className="text-slate-400">
                   Joined: {activeCustomer.joining_date || activeCustomer.billing_start_date || 'Oct 2026'}
                 </span>
+                {activeCustomer.company_name && (
+                  <>
+                    <span>•</span>
+                    <span className="flex items-center gap-1 text-sky-300 font-semibold" title="Company / Workplace">
+                      <Briefcase className="w-3.5 h-3.5 text-sky-400" />
+                      <span>{activeCustomer.company_name}</span>
+                    </span>
+                  </>
+                )}
               </div>
             </div>
           </div>

@@ -400,18 +400,30 @@ export const OverdueList: React.FC<OverdueListProps> = ({
     const amountStr = formatAED(item.amount);
     const recNo = item.payment_number || 'N/A';
     const dateStr = item.payment_date || new Date().toISOString().split('T')[0];
+    const expiryDateStr = item.covered_until_date || cust?.payment_made_up_to_date || cust?.billed_up_to_date || 'Active Cycle';
     const isZeroDue = (cust?.total_overdue || 0) === 0;
     const dueStatus = isZeroDue
       ? 'All mess dues cleared in full (AED 0.00)'
       : `Remaining Due Balance: ${formatAED(cust?.total_overdue)}`;
+
+    let discountDetails = '';
+    if (item.discount_amount && item.discount_amount > 0) {
+      const origAmt = item.original_amount || (item.amount + item.discount_amount);
+      const discPercent = item.discount_type === 'percentage' ? ` (${item.discount_value}%)` : '';
+      discountDetails = 
+        `• *Original Fee:* ${formatAED(origAmt)}\n` +
+        `• *Discount Applied:* -${formatAED(item.discount_amount)}${discPercent}\n`;
+    }
 
     const text =
       `*Karama Homely Mess - Payment Receipt*\n\n` +
       `Dear *${name}*,\n` +
       `Your payment of *${amountStr}* has been received with thanks!\n\n` +
       `• *Receipt No:* ${recNo}\n` +
-      `• *Amount Paid:* ${amountStr}\n` +
+      discountDetails +
+      `• *Amount Paid:* *${amountStr}*\n` +
       `• *Payment Date:* ${dateStr}\n` +
+      `• *Subscription Valid Until (Expiry Date):* *${expiryDateStr}*\n` +
       `• *Method:* ${(item.payment_method || 'Cash').toUpperCase().replace('_', ' ')}\n` +
       `• *Status:* ${dueStatus}\n\n` +
       `Thank you for choosing Karama Homely Mess!\n*Karama Homely Mess, Dubai*`;

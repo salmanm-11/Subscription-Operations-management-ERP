@@ -100,6 +100,7 @@ export interface Customer {
   business_id: string;
   customer_code: string;
   full_name: string;
+  company_name?: string; // Workplace / Company / Employer
   phone?: string;
   emergency_contact?: string;
   email?: string;
@@ -189,7 +190,12 @@ export interface Payment {
   payment_number: string;
   customer_id: string;
   invoice_id?: string;
-  amount: number; // AED
+  amount: number; // AED (Final amount paid)
+  original_amount?: number; // Base amount before discount
+  discount_amount?: number; // Discount in AED
+  discount_type?: 'fixed' | 'percentage'; // 'fixed' (AED number) or 'percentage' (%)
+  discount_value?: number; // Raw entered number or percent (e.g. 50 or 10)
+  covered_until_date?: string; // Valid / Expiry date covered by this payment (YYYY-MM-DD)
   payment_date: string;
   payment_method: PaymentMethod;
   reference_number?: string;

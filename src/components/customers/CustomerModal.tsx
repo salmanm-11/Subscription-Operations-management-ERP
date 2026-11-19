@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { X, Check, UserCheck, PhoneCall, AlertCircle, Building2, Plus, Search, MapPin, Calendar } from 'lucide-react';
+import { X, Check, UserCheck, PhoneCall, AlertCircle, Building2, Plus, Search, MapPin, Calendar, Briefcase } from 'lucide-react';
 import { Customer, Building, MealPlan, CustomerStatus } from '../../types';
 import { AuthService } from '../../api/authService';
 import { OfflineStorage } from '../../api/offlineStorage';
@@ -25,6 +25,7 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
   mealPlans,
 }) => {
   const [fullName, setFullName] = useState('');
+  const [companyName, setCompanyName] = useState('');
   const [phone, setPhone] = useState('');
   const [emergencyContact, setEmergencyContact] = useState('');
   const [email, setEmail] = useState('');
@@ -106,6 +107,7 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
 
     if (customer) {
       setFullName(customer.full_name || '');
+      setCompanyName(customer.company_name || '');
       setPhone(customer.phone || '');
       setEmergencyContact(customer.emergency_contact || '');
       setEmail(customer.email || '');
@@ -179,6 +181,7 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
       setNotes(customer.notes || '');
     } else {
       setFullName('');
+      setCompanyName('');
       setPhone('');
       setEmergencyContact('');
       setEmail('');
@@ -267,6 +270,7 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
     onSave({
       id: customer?.id,
       full_name: fullName.trim(),
+      company_name: companyName.trim() || undefined,
       phone: phone.trim(),
       emergency_contact: emergencyContact.trim(),
       email: email.trim(),
@@ -362,15 +366,30 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
               />
             </div>
             <div>
-              <label className="block text-slate-300 font-semibold mb-1.5">Email Address (Optional)</label>
+              <label className="block text-slate-300 font-semibold mb-1.5 flex items-center gap-1.5">
+                <Briefcase className="w-3.5 h-3.5 text-amber-400" />
+                <span>Customer Company Name</span>
+                <span className="text-[10px] text-slate-500 font-normal">(Optional)</span>
+              </label>
               <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="e.g. customer@example.ae"
+                type="text"
+                value={companyName}
+                onChange={(e) => setCompanyName(e.target.value)}
+                placeholder="e.g. Al Futtaim, Emirates, Freelance, etc."
                 className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-amber-500"
               />
             </div>
+          </div>
+
+          <div>
+            <label className="block text-slate-300 font-semibold mb-1.5">Email Address (Optional)</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="e.g. customer@example.ae"
+              className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-amber-500"
+            />
           </div>
 
           {/* 2-Step Accommodation Selector: 1. Area Cluster -> 2. Building */}

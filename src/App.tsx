@@ -861,7 +861,7 @@ export const App: React.FC = () => {
               ...c,
               total_overdue: newOverdue,
               payment_rating: newOverdue > 0 ? 'Late payer' : 'Good',
-              payment_made_up_to_date: pay.payment_date || c.payment_made_up_to_date,
+              payment_made_up_to_date: pay.covered_until_date || pay.payment_date || c.payment_made_up_to_date,
             };
           }
           return c;

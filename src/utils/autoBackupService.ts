@@ -49,6 +49,7 @@ export class AutoBackupService {
     const customersData = dataset.customers.map((c) => ({
       'Customer Code': c.customer_code,
       'Full Name': c.full_name,
+      'Company Name': c.company_name || '',
       'Phone Number': c.phone || '',
       'Status': (c.status || 'active').toUpperCase(),
       'Building / Area': c.building?.name || c.building_name_cache || '',

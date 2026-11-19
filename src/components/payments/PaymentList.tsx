@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { CreditCard, Plus, Search, Printer, X, FileSpreadsheet, Building2, Phone, CheckCircle2, RotateCcw, Receipt, Trash2, AlertTriangle, MessageSquare } from 'lucide-react';
+import { CreditCard, Plus, Search, Printer, X, FileSpreadsheet, Building2, Phone, CheckCircle2, RotateCcw, Receipt, Trash2, AlertTriangle, MessageSquare, Percent, Hash, Calendar, CalendarCheck } from 'lucide-react';
 import { Payment, Customer, Invoice, PaymentMethod } from '../../types';
 import { formatAED } from '../../utils/currency';
 import { getMonthlySubscriptionRate } from '../../utils/billingCycleService';
@@ -30,11 +30,39 @@ export const PaymentList: React.FC<PaymentListProps> = ({
 
   // Form states
   const [customerId, setCustomerId] = useState('');
-  const [amount, setAmount] = useState(380);
+  const [baseAmount, setBaseAmount] = useState<number>(380);
+  const [discountType, setDiscountType] = useState<'fixed' | 'percentage'>('fixed');
+  const [discountValue, setDiscountValue] = useState<number>(0);
+  const [amount, setAmount] = useState<number>(380);
+  const [coveredUntilDate, setCoveredUntilDate] = useState<string>('');
   const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split('T')[0]);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash');
   const [referenceNumber, setReferenceNumber] = useState('');
   const [notes, setNotes] = useState('');
+
+  // Calculate discount and net payable dynamically
+  const calculatedDiscountAmount = useMemo(() => {
+    if (!discountValue || discountValue <= 0) return 0;
+    if (discountType === 'percentage') {
+      return Number(((baseAmount * discountValue) / 100).toFixed(2));
+    }
+    return Math.min(Number(discountValue), baseAmount);
+  }, [baseAmount, discountType, discountValue]);
+
+  // Recalculate amount whenever baseAmount or discount changes
+  const updateDiscount = (newType: 'fixed' | 'percentage', newVal: number, newBase: number = baseAmount) => {
+    setDiscountType(newType);
+    setDiscountValue(newVal);
+    let disc = 0;
+    if (newVal > 0) {
+      if (newType === 'percentage') {
+        disc = Number(((newBase * newVal) / 100).toFixed(2));
+      } else {
+        disc = Math.min(newVal, newBase);
+      }
+    }
+    setAmount(Math.max(0, Number((newBase - disc).toFixed(2))));
+  };
 
   // Map of customers by ID for fast and accurate lookups
   const customerMap = useMemo(() => {
@@ -142,6 +170,7 @@ export const PaymentList: React.FC<PaymentListProps> = ({
     const amountStr = formatAED(p.amount);
     const recNo = p.payment_number || 'N/A';
     const dateStr = p.payment_date || new Date().toISOString().split('T')[0];
+    const expiryDateStr = p.covered_until_date || cust?.payment_made_up_to_date || cust?.billed_up_to_date || 'Active Cycle';
     const isZeroDue = cust ? (cust.total_overdue || 0) === 0 : false;
     const dueStatus = cust
       ? isZeroDue
@@ -149,13 +178,24 @@ export const PaymentList: React.FC<PaymentListProps> = ({
         : `Remaining Due Balance: ${formatAED(cust.total_overdue)}`
       : 'Payment Received & Recorded';
 
+    let discountDetails = '';
+    if (p.discount_amount && p.discount_amount > 0) {
+      const origAmt = p.original_amount || (p.amount + p.discount_amount);
+      const discPercent = p.discount_type === 'percentage' ? ` (${p.discount_value}%)` : '';
+      discountDetails = 
+        `• *Original Fee:* ${formatAED(origAmt)}\n` +
+        `• *Discount Applied:* -${formatAED(p.discount_amount)}${discPercent}\n`;
+    }
+
     const text =
       `*Karama Homely Mess - Payment Receipt*\n\n` +
       `Dear *${name}*,\n` +
       `We have received your payment with thanks!\n\n` +
       `• *Receipt No:* ${recNo}\n` +
-      `• *Amount Paid:* ${amountStr}\n` +
+      discountDetails +
+      `• *Amount Paid:* *${amountStr}*\n` +
       `• *Payment Date:* ${dateStr}\n` +
+      `• *Subscription Valid Until (Expiry Date):* *${expiryDateStr}*\n` +
       `• *Method:* ${(p.payment_method || 'Cash').toUpperCase().replace('_', ' ')}\n` +
       (p.reference_number ? `• *Reference:* ${p.reference_number}\n` : '') +
       `• *Status:* ${dueStatus}\n\n` +
@@ -171,6 +211,20 @@ export const PaymentList: React.FC<PaymentListProps> = ({
     window.open(url, '_blank');
   };
 
+  const handleSelectCustomer = (cId: string) => {
+    setCustomerId(cId);
+    const selected = customers.find((c) => c.id === cId);
+    if (selected) {
+      const defaultAmt = selected.total_overdue || getMonthlySubscriptionRate(selected).effectiveRate || 380;
+      setBaseAmount(defaultAmt);
+      setDiscountType('fixed');
+      setDiscountValue(0);
+      setAmount(defaultAmt);
+      const targetExp = selected.billed_up_to_date || selected.payment_made_up_to_date || '2026-11-30';
+      setCoveredUntilDate(targetExp);
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!customerId || amount <= 0) return;
@@ -180,6 +234,11 @@ export const PaymentList: React.FC<PaymentListProps> = ({
       customer_id: customerId,
       customer: cust,
       amount: Number(amount),
+      original_amount: Number(baseAmount),
+      discount_amount: calculatedDiscountAmount > 0 ? calculatedDiscountAmount : undefined,
+      discount_type: calculatedDiscountAmount > 0 ? discountType : undefined,
+      discount_value: calculatedDiscountAmount > 0 ? discountValue : undefined,
+      covered_until_date: coveredUntilDate || undefined,
       payment_date: paymentDate,
       payment_method: paymentMethod,
       reference_number: referenceNumber.trim(),
@@ -196,6 +255,11 @@ export const PaymentList: React.FC<PaymentListProps> = ({
       customer_id: customerId,
       customer: cust,
       amount: Number(amount),
+      original_amount: Number(baseAmount),
+      discount_amount: calculatedDiscountAmount > 0 ? calculatedDiscountAmount : undefined,
+      discount_type: calculatedDiscountAmount > 0 ? discountType : undefined,
+      discount_value: calculatedDiscountAmount > 0 ? discountValue : undefined,
+      covered_until_date: coveredUntilDate || undefined,
       payment_date: paymentDate,
       payment_method: paymentMethod,
       reference_number: referenceNumber.trim(),
@@ -225,9 +289,7 @@ export const PaymentList: React.FC<PaymentListProps> = ({
           <button
             onClick={() => {
               if (customers.length > 0) {
-                setCustomerId(customers[0].id);
-                const defaultAmt = customers[0].total_overdue || getMonthlySubscriptionRate(customers[0]).effectiveRate;
-                setAmount(defaultAmt);
+                handleSelectCustomer(customers[0].id);
               }
               setIsModalOpen(true);
             }}
@@ -307,7 +369,7 @@ export const PaymentList: React.FC<PaymentListProps> = ({
       {/* Payments Table */}
       <div className="bg-[#151c2c] border border-[#222f47]/60 rounded-2xl overflow-hidden shadow-xl shadow-black/30">
         <div className="overflow-x-auto w-full custom-scrollbar">
-          <table className="w-full text-left min-w-[1100px]">
+          <table className="w-full text-left min-w-[1280px]">
             <thead>
               <tr className="bg-[#0f1422] text-slate-300 border-b border-slate-700/80 text-xs uppercase tracking-wider font-bold">
                 <th className="py-3 px-3.5 whitespace-nowrap">Receipt #</th>
@@ -315,9 +377,11 @@ export const PaymentList: React.FC<PaymentListProps> = ({
                 <th className="py-3 px-3.5 min-w-[220px]">Customer Name &amp; Details</th>
                 <th className="py-3 px-2.5 text-center whitespace-nowrap">Method</th>
                 <th className="py-3 px-2.5 whitespace-nowrap">Ref / Cheque #</th>
-                <th className="py-3 px-3.5 min-w-[220px]">Notes</th>
+                <th className="py-3 px-3.5 min-w-[200px]">Notes</th>
+                <th className="py-3 px-3 text-right whitespace-nowrap min-w-[120px]">Discount</th>
                 <th className="py-3 px-3 text-right whitespace-nowrap">Amount (AED)</th>
-                <th className="py-3 px-3.5 text-center min-w-[120px] whitespace-nowrap">Status</th>
+                <th className="py-3 px-3 text-center whitespace-nowrap min-w-[130px]">Covered Until</th>
+                <th className="py-3 px-3.5 text-center min-w-[110px] whitespace-nowrap">Status</th>
                 <th className="py-3 px-4 text-right whitespace-nowrap min-w-[190px]">
                   Action
                 </th>
@@ -326,13 +390,14 @@ export const PaymentList: React.FC<PaymentListProps> = ({
             <tbody className="divide-y divide-slate-800/80 text-xs sm:text-sm">
               {filteredPayments.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="py-12 text-center text-slate-400 text-xs sm:text-sm">
+                  <td colSpan={11} className="py-12 text-center text-slate-400 text-xs sm:text-sm">
                     No payment receipts matched your search or filters.
                   </td>
                 </tr>
               ) : (
                 filteredPayments.map((p) => {
                   const info = getCustomerInfo(p);
+                  const cust = p.customer || (p.customer_id ? customerMap.get(p.customer_id) : undefined);
                   return (
                     <tr key={p.id} className="hover:bg-slate-800/40 transition-colors group">
                       {/* Receipt Number */}
@@ -378,13 +443,43 @@ export const PaymentList: React.FC<PaymentListProps> = ({
                       </td>
 
                       {/* Notes (Fully visible, wrapping cleanly without truncation) */}
-                      <td className="py-3 px-3.5 text-slate-200 text-xs font-medium leading-relaxed min-w-[220px] max-w-[340px] whitespace-pre-line break-words">
+                      <td className="py-3 px-3.5 text-slate-200 text-xs font-medium leading-relaxed min-w-[200px] max-w-[340px] whitespace-pre-line break-words">
                         {p.notes || '-'}
+                      </td>
+
+                      {/* Discount column */}
+                      <td className="py-3 px-3 text-right whitespace-nowrap min-w-[120px]">
+                        {p.discount_amount && p.discount_amount > 0 ? (
+                          <div className="flex flex-col items-end">
+                            <span className="inline-flex items-center gap-1 font-mono text-xs font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
+                              -{formatAED(p.discount_amount)}
+                            </span>
+                            {p.discount_type === 'percentage' && p.discount_value && (
+                              <span className="text-[10px] text-amber-300/80 font-mono mt-0.5 font-semibold">
+                                ({p.discount_value}%)
+                              </span>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-slate-600 font-mono text-xs">-</span>
+                        )}
                       </td>
 
                       {/* Amount in AED */}
                       <td className="py-3 px-3 text-right font-black text-emerald-400 whitespace-nowrap text-sm sm:text-base font-mono drop-shadow-sm">
                         {formatAED(p.amount)}
+                      </td>
+
+                      {/* Covered Until (Expiry Date) */}
+                      <td className="py-3 px-3 text-center whitespace-nowrap min-w-[130px]">
+                        {p.covered_until_date || cust?.payment_made_up_to_date ? (
+                          <span className="inline-flex items-center gap-1 font-mono text-xs font-bold text-sky-300 bg-sky-500/15 px-2.5 py-0.5 rounded border border-sky-500/30">
+                            <CalendarCheck className="w-3 h-3 text-sky-400" />
+                            <span>{p.covered_until_date || cust?.payment_made_up_to_date}</span>
+                          </span>
+                        ) : (
+                          <span className="text-slate-600 text-xs">-</span>
+                        )}
                       </td>
 
                       {/* Status */}
@@ -497,6 +592,25 @@ export const PaymentList: React.FC<PaymentListProps> = ({
                     </div>
                   )}
 
+                  {selectedReceipt.discount_amount && selectedReceipt.discount_amount > 0 && (
+                    <div className="flex justify-between items-center pb-3 border-b border-slate-800">
+                      <span className="text-xs text-slate-400 font-bold uppercase">Discount Applied</span>
+                      <span className="font-mono text-xs font-bold text-amber-400">
+                        -{formatAED(selectedReceipt.discount_amount)}
+                        {selectedReceipt.discount_type === 'percentage' && selectedReceipt.discount_value ? ` (${selectedReceipt.discount_value}%)` : ''}
+                      </span>
+                    </div>
+                  )}
+
+                  {selectedReceipt.covered_until_date && (
+                    <div className="flex justify-between items-center pb-3 border-b border-slate-800">
+                      <span className="text-xs text-slate-400 font-bold uppercase">Valid Until (Expiry)</span>
+                      <span className="font-mono text-xs font-bold text-sky-400">
+                        {selectedReceipt.covered_until_date}
+                      </span>
+                    </div>
+                  )}
+
                   <div className="flex justify-between items-center pt-2">
                     <span className="text-sm text-slate-300 font-black uppercase">Amount Received</span>
                     <span className="font-mono text-2xl font-black text-emerald-400">
@@ -558,10 +672,25 @@ export const PaymentList: React.FC<PaymentListProps> = ({
                 <span>Receipt Number:</span>
                 <span className="font-mono text-amber-400 font-bold">{justRecordedPayment.payment_number}</span>
               </div>
+              {justRecordedPayment.discount_amount && justRecordedPayment.discount_amount > 0 && (
+                <div className="flex justify-between items-center text-slate-400">
+                  <span>Discount Applied:</span>
+                  <span className="font-mono text-amber-400 font-bold">
+                    -{formatAED(justRecordedPayment.discount_amount)}
+                    {justRecordedPayment.discount_type === 'percentage' && justRecordedPayment.discount_value ? ` (${justRecordedPayment.discount_value}%)` : ''}
+                  </span>
+                </div>
+              )}
               <div className="flex justify-between items-center text-slate-400">
                 <span>Amount Paid:</span>
                 <span className="font-mono text-emerald-400 font-black text-base">{formatAED(justRecordedPayment.amount)}</span>
               </div>
+              {justRecordedPayment.covered_until_date && (
+                <div className="flex justify-between items-center text-slate-400">
+                  <span>Valid Until (Expiry):</span>
+                  <span className="font-mono text-sky-400 font-bold">{justRecordedPayment.covered_until_date}</span>
+                </div>
+              )}
               <div className="flex justify-between items-center text-slate-400">
                 <span>Payment Method:</span>
                 <span className="font-bold text-white uppercase">{justRecordedPayment.payment_method.replace('_', ' ')}</span>
@@ -626,29 +755,120 @@ export const PaymentList: React.FC<PaymentListProps> = ({
                 <select
                   required
                   value={customerId}
-                  onChange={(e) => {
-                    setCustomerId(e.target.value);
-                    const selected = customers.find((c) => c.id === e.target.value);
-                    if (selected && selected.total_overdue) {
-                      setAmount(selected.total_overdue);
-                    } else if (selected) {
-                      setAmount(getMonthlySubscriptionRate(selected).effectiveRate);
-                    }
-                  }}
+                  onChange={(e) => handleSelectCustomer(e.target.value)}
                   className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white font-medium focus:outline-none focus:border-amber-500"
                 >
                   <option value="">Select customer...</option>
                   {customers.map((c) => (
                     <option key={c.id} value={c.id}>
                       {c.full_name} ({c.building_name_cache || 'Building'} Apt {c.apartment_cache || 'N/A'})
+                      {c.company_name ? ` [${c.company_name}]` : ''}
                       {c.total_overdue ? ` - Overdue: ${formatAED(c.total_overdue)}` : ''}
                     </option>
                   ))}
                 </select>
               </div>
 
+              {/* Standard Due / Fee */}
               <div>
-                <label className="block text-slate-200 font-bold mb-1.5">Amount Paid (AED) *</label>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-slate-200 font-bold">Standard Fee / Original Due (AED)</label>
+                  <span className="text-[11px] text-slate-400 font-mono">Original Billing Amount</span>
+                </div>
+                <input
+                  type="number"
+                  step="0.5"
+                  required
+                  value={baseAmount}
+                  onChange={(e) => {
+                    const newBase = parseFloat(e.target.value) || 0;
+                    setBaseAmount(newBase);
+                    updateDiscount(discountType, discountValue, newBase);
+                  }}
+                  className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono font-bold text-sm focus:outline-none focus:border-amber-500"
+                />
+              </div>
+
+              {/* Discount Section with Toggle (Number only on open, click for %) */}
+              <div className="bg-slate-900/80 border border-slate-700/80 rounded-xl p-3.5 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
+                    <Percent className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Apply Discount</span>
+                  </label>
+
+                  {/* Toggle: Number (AED) vs Percentage (%) */}
+                  <div className="inline-flex items-center p-0.5 rounded-lg bg-slate-950 border border-slate-800">
+                    <button
+                      type="button"
+                      onClick={() => updateDiscount('fixed', discountValue)}
+                      className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-bold transition-all ${
+                        discountType === 'fixed'
+                          ? 'bg-amber-500 text-slate-950 shadow-sm'
+                          : 'text-slate-400 hover:text-white'
+                      }`}
+                      title="Flat AED amount discount"
+                    >
+                      <Hash className="w-3 h-3" />
+                      <span>Number (AED)</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => updateDiscount('percentage', discountValue)}
+                      className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-bold transition-all ${
+                        discountType === 'percentage'
+                          ? 'bg-amber-500 text-slate-950 shadow-sm'
+                          : 'text-slate-400 hover:text-white'
+                      }`}
+                      title="Percentage (%) discount"
+                    >
+                      <Percent className="w-3 h-3" />
+                      <span>Percentage (%)</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-center">
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400 font-mono">
+                      {discountType === 'fixed' ? 'AED' : '%'}
+                    </span>
+                    <input
+                      type="number"
+                      step={discountType === 'percentage' ? '1' : '0.5'}
+                      min="0"
+                      max={discountType === 'percentage' ? '100' : baseAmount}
+                      value={discountValue || ''}
+                      onChange={(e) => updateDiscount(discountType, parseFloat(e.target.value) || 0)}
+                      placeholder={discountType === 'fixed' ? '0.00' : '0'}
+                      className="w-full pl-12 pr-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-white font-mono font-bold text-sm focus:outline-none focus:border-amber-400"
+                    />
+                  </div>
+                  <div className="text-right">
+                    {calculatedDiscountAmount > 0 ? (
+                      <div className="text-xs">
+                        <span className="text-slate-400">Discount: </span>
+                        <span className="font-mono font-black text-amber-400">
+                          -AED {calculatedDiscountAmount.toFixed(2)}
+                        </span>
+                      </div>
+                    ) : (
+                      <span className="text-[11px] text-slate-500 italic">No discount applied</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Net Amount Paid */}
+              <div>
+                <label className="block text-slate-200 font-bold mb-1.5 flex items-center justify-between">
+                  <span>Net Amount Paid (AED) *</span>
+                  {calculatedDiscountAmount > 0 && (
+                    <span className="text-[11px] text-emerald-400 font-mono font-bold">
+                      After Discount
+                    </span>
+                  )}
+                </label>
                 <input
                   type="number"
                   step="0.5"
@@ -656,6 +876,21 @@ export const PaymentList: React.FC<PaymentListProps> = ({
                   value={amount}
                   onChange={(e) => setAmount(parseFloat(e.target.value) || 0)}
                   className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono font-black text-base focus:outline-none focus:border-emerald-500"
+                />
+              </div>
+
+              {/* Covered Until / Subscription Expiry Date */}
+              <div>
+                <label className="block text-slate-200 font-bold mb-1.5 flex items-center gap-1.5">
+                  <CalendarCheck className="w-3.5 h-3.5 text-sky-400" />
+                  <span>Subscription Valid Until (Expiry Date)</span>
+                  <span className="text-[10px] text-slate-400 font-normal">(Sent in WhatsApp receipt)</span>
+                </label>
+                <input
+                  type="date"
+                  value={coveredUntilDate}
+                  onChange={(e) => setCoveredUntilDate(e.target.value)}
+                  className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono text-sm focus:outline-none focus:border-sky-500"
                 />
               </div>
 

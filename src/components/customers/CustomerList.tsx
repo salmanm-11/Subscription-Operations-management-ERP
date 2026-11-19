@@ -315,6 +315,7 @@ export const CustomerList: React.FC<CustomerListProps> = ({
         const deliveryTime = (c.delivery_time || '').toLowerCase();
         const passcode = (c.door_passcode || '').toLowerCase();
         const area = getCustomerArea(c).toLowerCase();
+        const company = (c.company_name || '').toLowerCase();
         const notes = (c.notes || '').toLowerCase();
 
         // Every token must match at least one attribute of the customer
@@ -323,6 +324,7 @@ export const CustomerList: React.FC<CustomerListProps> = ({
           const normTokenDigits = normalizeDigits(token);
           return (
             fullName.includes(token) ||
+            company.includes(token) ||
             code.includes(token) ||
             (cleanTokenDigits && codeDigits.includes(cleanTokenDigits)) ||
             phone.includes(token) ||
@@ -819,18 +821,18 @@ export const CustomerList: React.FC<CustomerListProps> = ({
       {/* Customers Table */}
       <div className="bg-[#151c2c] border border-[#222f47]/60 rounded-2xl overflow-hidden shadow-xl shadow-black/30">
         <div className="overflow-x-auto w-full custom-scrollbar">
-          <table className="w-full text-left min-w-[1360px]">
+          <table className="w-full text-left min-w-[1520px]">
             <thead>
               <tr className="bg-[#0f1422] text-slate-300 border-b border-slate-700/80 text-xs uppercase tracking-wider font-bold">
                 <th className="py-3 px-3 whitespace-nowrap min-w-[95px]">Code</th>
-                <th className="py-3 px-3 whitespace-nowrap min-w-[150px]">Customer</th>
+                <th className="py-3 px-3 whitespace-nowrap min-w-[160px]">Customer</th>
                 <th className="py-3 px-3 whitespace-nowrap min-w-[160px]">Building &amp; Room</th>
                 <th className="py-3 px-2 text-center whitespace-nowrap min-w-[95px]">Meals</th>
                 <th className="py-3 px-3.5 min-w-[220px]">Dietary &amp; Delivery Notes</th>
                 <th className="py-3 px-2.5 text-right whitespace-nowrap min-w-[115px]">Monthly Fee</th>
                 <th className="py-3 px-2 text-center whitespace-nowrap min-w-[150px]">Payment Made Up To</th>
                 <th className="py-3 px-2 text-center whitespace-nowrap min-w-[130px]">Billed Up To</th>
-                <th className="py-3 px-3 text-right whitespace-nowrap min-w-[125px]">Overdue</th>
+                <th className="py-3 px-3.5 text-right whitespace-nowrap min-w-[130px]">Overdue</th>
                 <th className="py-3 px-2 text-center whitespace-nowrap min-w-[110px]">Status</th>
                 <th className="py-3 px-3 text-right whitespace-nowrap min-w-[135px]">
                   Actions
@@ -868,6 +870,12 @@ export const CustomerList: React.FC<CustomerListProps> = ({
                             </span>
                           )}
                         </div>
+                        {c.company_name && (
+                          <div className="flex items-center gap-1 text-[11px] text-sky-300 font-semibold mt-0.5" title="Company / Workplace">
+                            <Building2 className="w-3 h-3 text-sky-400 shrink-0" />
+                            <span>{c.company_name}</span>
+                          </div>
+                        )}
                         {c.phone && (
                           <div className="flex items-center gap-1 text-[11px] text-slate-400 font-medium mt-0.5">
                             <Phone className="w-3 h-3 text-amber-400/80 shrink-0" />
@@ -959,7 +967,7 @@ export const CustomerList: React.FC<CustomerListProps> = ({
                           {c.billed_up_to_date || c.billing_end_date || '31 Oct 2026'}
                         </span>
                       </td>
-                      <td className="py-3 px-3 text-right font-black whitespace-nowrap font-mono text-xs sm:text-sm min-w-[125px]">
+                      <td className="py-3 px-3.5 text-right font-black whitespace-nowrap font-mono text-xs sm:text-sm min-w-[130px]">
                         <span className={overdue > 0 ? 'text-rose-400 drop-shadow-sm' : 'text-emerald-400'}>
                           {formatAED(overdue)}
                         </span>
