@@ -33,7 +33,8 @@ import {
   Trash2,
   Briefcase,
   Percent,
-  Hash
+  Hash,
+  CalendarCheck
 } from 'lucide-react';
 import { Customer, Building, MealPlan, Invoice, Payment, PaymentMethod } from '../../types';
 import { formatAED } from '../../utils/currency';
@@ -90,7 +91,11 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
 
   // In-modal Payment Form State
   const [isPayModalOpen, setIsPayModalOpen] = useState(false);
+  const [payBaseAmount, setPayBaseAmount] = useState<number>(0);
+  const [payDiscountType, setPayDiscountType] = useState<'fixed' | 'percentage'>('fixed');
+  const [payDiscountValue, setPayDiscountValue] = useState<number>(0);
   const [payAmount, setPayAmount] = useState<number>(0);
+  const [payCoveredUntilDate, setPayCoveredUntilDate] = useState<string>('');
   const [payInvoiceId, setPayInvoiceId] = useState<string>('');
   const [payDate, setPayDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [payMethod, setPayMethod] = useState<PaymentMethod>('cash');
@@ -99,6 +104,29 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
   const [isSubmittingPay, setIsSubmittingPay] = useState(false);
   const [paySuccessMsg, setPaySuccessMsg] = useState<string | null>(null);
   const [selectedReceipt, setSelectedReceipt] = useState<Payment | null>(null);
+
+  // Dynamic discount calculation for in-modal settlement
+  const calculatedPayDiscountAmount = useMemo(() => {
+    if (!payDiscountValue || payDiscountValue <= 0) return 0;
+    if (payDiscountType === 'percentage') {
+      return Number(((payBaseAmount * payDiscountValue) / 100).toFixed(2));
+    }
+    return Math.min(Number(payDiscountValue), payBaseAmount);
+  }, [payBaseAmount, payDiscountType, payDiscountValue]);
+
+  const updatePayDiscount = (newType: 'fixed' | 'percentage', newVal: number, newBase: number = payBaseAmount) => {
+    setPayDiscountType(newType);
+    setPayDiscountValue(newVal);
+    let disc = 0;
+    if (newVal > 0) {
+      if (newType === 'percentage') {
+        disc = Number(((newBase * newVal) / 100).toFixed(2));
+      } else {
+        disc = Math.min(newVal, newBase);
+      }
+    }
+    setPayAmount(Math.max(0, Number((newBase - disc).toFixed(2))));
+  };
 
   // Instantaneous optimistic customer update state
   const [optimisticCustomer, setOptimisticCustomer] = useState<Partial<Customer> | null>(null);
@@ -238,7 +266,13 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
         ? overdue
         : cycleRate.effectiveRate;
 
+    setPayBaseAmount(defaultAmount);
+    setPayDiscountType('fixed');
+    setPayDiscountValue(0);
     setPayAmount(defaultAmount);
+    setPayCoveredUntilDate(
+      activeCustomer.billed_up_to_date || activeCustomer.payment_made_up_to_date || '2026-11-30'
+    );
     setPayInvoiceId(
       invoiceId ||
         customerInvoices.find((i) => i.balance_amount !== undefined && i.balance_amount > 0)?.id ||
@@ -276,7 +310,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
     setOptimisticCustomer({
       total_overdue: newDue,
       payment_rating: newDue === 0 ? 'Good' : 'Late payer',
-      payment_made_up_to_date: payDate,
+      payment_made_up_to_date: payCoveredUntilDate || payDate,
     });
 
     try {
@@ -285,6 +319,11 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
         customer_id: activeCustomer.id,
         invoice_id: payInvoiceId || undefined,
         amount: paidAmt,
+        original_amount: payBaseAmount,
+        discount_amount: calculatedPayDiscountAmount > 0 ? calculatedPayDiscountAmount : undefined,
+        discount_type: calculatedPayDiscountAmount > 0 ? payDiscountType : undefined,
+        discount_value: calculatedPayDiscountAmount > 0 ? payDiscountValue : undefined,
+        covered_until_date: payCoveredUntilDate || undefined,
         payment_date: payDate,
         payment_method: payMethod,
         reference_number: payReference,
@@ -1698,7 +1737,10 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                     {overdue > 0 && (
                       <button
                         type="button"
-                        onClick={() => setPayAmount(overdue)}
+                        onClick={() => {
+                          setPayBaseAmount(overdue);
+                          updatePayDiscount(payDiscountType, payDiscountValue, overdue);
+                        }}
                         className="px-2 py-1 rounded bg-rose-600 hover:bg-rose-500 text-white text-[11px] font-bold shadow-sm transition-all"
                       >
                         Fill Overdue ({formatAED(overdue)})
@@ -1706,17 +1748,20 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                     )}
                   </div>
 
-                  {/* Amount and Quick Presets */}
-                  <div className="space-y-1.5">
+                  {/* Standard Fee / Original Amount with Quick Presets */}
+                  <div className="space-y-1">
                     <div className="flex items-center justify-between">
                       <label className="text-xs font-bold text-slate-300">
-                        Payment Amount (AED) <span className="text-rose-400">*</span>
+                        Standard Fee / Original Due (AED)
                       </label>
                       <div className="flex items-center gap-1.5">
                         {overdue > 0 && (
                           <button
                             type="button"
-                            onClick={() => setPayAmount(overdue)}
+                            onClick={() => {
+                              setPayBaseAmount(overdue);
+                              updatePayDiscount(payDiscountType, payDiscountValue, overdue);
+                            }}
                             className="text-[10px] text-rose-300 hover:text-rose-200 underline font-semibold"
                           >
                             Overdue ({formatAED(overdue)})
@@ -1725,7 +1770,11 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                         <span className="text-slate-600">•</span>
                         <button
                           type="button"
-                          onClick={() => setPayAmount(getMonthlySubscriptionRate(activeCustomer).effectiveRate)}
+                          onClick={() => {
+                            const planRate = getMonthlySubscriptionRate(activeCustomer).effectiveRate;
+                            setPayBaseAmount(planRate);
+                            updatePayDiscount(payDiscountType, payDiscountValue, planRate);
+                          }}
                           className="text-[10px] text-amber-400 hover:text-amber-300 underline font-semibold"
                         >
                           Plan ({formatAED(getMonthlySubscriptionRate(activeCustomer).effectiveRate)})
@@ -1733,7 +1782,110 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                       </div>
                     </div>
                     <div className="relative">
-                      <span className="absolute left-3 top-2.5 text-xs font-mono font-bold text-slate-400">
+                      <span className="absolute left-3 top-2 text-xs font-mono font-bold text-slate-400">
+                        AED
+                      </span>
+                      <input
+                        type="number"
+                        step="0.5"
+                        min="0"
+                        value={payBaseAmount || ''}
+                        onChange={(e) => {
+                          const newBase = parseFloat(e.target.value) || 0;
+                          setPayBaseAmount(newBase);
+                          updatePayDiscount(payDiscountType, payDiscountValue, newBase);
+                        }}
+                        required
+                        placeholder="0.00"
+                        className="w-full pl-12 pr-4 py-1.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono font-bold text-sm focus:outline-none focus:border-amber-500"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Discount Section with Toggle (Number only on open, click for %) */}
+                  <div className="bg-slate-900/80 border border-slate-700/80 rounded-xl p-3 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
+                        <Percent className="w-3.5 h-3.5 text-amber-400" />
+                        <span>Apply Discount</span>
+                      </label>
+
+                      {/* Toggle: Number (AED) vs Percentage (%) */}
+                      <div className="inline-flex items-center p-0.5 rounded-lg bg-slate-950 border border-slate-800">
+                        <button
+                          type="button"
+                          onClick={() => updatePayDiscount('fixed', payDiscountValue)}
+                          className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-bold transition-all ${
+                            payDiscountType === 'fixed'
+                              ? 'bg-amber-500 text-slate-950 shadow-sm'
+                              : 'text-slate-400 hover:text-white'
+                          }`}
+                          title="Flat AED amount discount"
+                        >
+                          <Hash className="w-3 h-3" />
+                          <span>Number (AED)</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => updatePayDiscount('percentage', payDiscountValue)}
+                          className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-bold transition-all ${
+                            payDiscountType === 'percentage'
+                              ? 'bg-amber-500 text-slate-950 shadow-sm'
+                              : 'text-slate-400 hover:text-white'
+                          }`}
+                          title="Percentage (%) discount"
+                        >
+                          <Percent className="w-3 h-3" />
+                          <span>Percentage (%)</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 items-center">
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400 font-mono">
+                          {payDiscountType === 'fixed' ? 'AED' : '%'}
+                        </span>
+                        <input
+                          type="number"
+                          step={payDiscountType === 'percentage' ? '1' : '0.5'}
+                          min="0"
+                          max={payDiscountType === 'percentage' ? '100' : payBaseAmount}
+                          value={payDiscountValue || ''}
+                          onChange={(e) => updatePayDiscount(payDiscountType, parseFloat(e.target.value) || 0)}
+                          placeholder={payDiscountType === 'fixed' ? '0.00' : '0'}
+                          className="w-full pl-12 pr-3 py-1.5 bg-slate-950 border border-slate-700 rounded-xl text-white font-mono font-bold text-xs sm:text-sm focus:outline-none focus:border-amber-400"
+                        />
+                      </div>
+                      <div className="text-right">
+                        {calculatedPayDiscountAmount > 0 ? (
+                          <div className="text-xs">
+                            <span className="text-slate-400">Discount: </span>
+                            <span className="font-mono font-black text-amber-400">
+                              -AED {calculatedPayDiscountAmount.toFixed(2)}
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="text-[11px] text-slate-500 italic">No discount applied</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Net Payment Amount */}
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-bold text-slate-300">
+                        Net Payment Amount (AED) <span className="text-rose-400">*</span>
+                      </label>
+                      {calculatedPayDiscountAmount > 0 && (
+                        <span className="text-[11px] text-emerald-400 font-mono font-bold">
+                          After Discount
+                        </span>
+                      )}
+                    </div>
+                    <div className="relative">
+                      <span className="absolute left-3 top-2 text-xs font-mono font-bold text-slate-400">
                         AED
                       </span>
                       <input
@@ -1747,6 +1899,21 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                         className="w-full pl-12 pr-4 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono font-bold text-base focus:outline-none focus:border-emerald-500"
                       />
                     </div>
+                  </div>
+
+                  {/* Covered Until / Subscription Expiry Date */}
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-slate-300 flex items-center gap-1.5">
+                      <CalendarCheck className="w-3.5 h-3.5 text-sky-400" />
+                      <span>Subscription Valid Until (Expiry Date)</span>
+                      <span className="text-[10px] text-slate-400 font-normal">(Sent in WhatsApp receipt)</span>
+                    </label>
+                    <input
+                      type="date"
+                      value={payCoveredUntilDate}
+                      onChange={(e) => setPayCoveredUntilDate(e.target.value)}
+                      className="w-full px-3.5 py-1.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono text-xs sm:text-sm focus:outline-none focus:border-sky-500"
+                    />
                   </div>
 
                   {/* Payment Date & Method Grid */}
