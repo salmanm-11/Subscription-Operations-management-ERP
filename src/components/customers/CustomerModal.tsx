@@ -6,6 +6,7 @@ import { OfflineStorage } from '../../api/offlineStorage';
 import { saveBuilding } from '../../api/supabase';
 import { calculateDailyMealRate } from '../../utils/cancellationService';
 import { resolveExpectedMonthlyRate } from '../../utils/mealPlanPricingService';
+import { formatDateDDMMMYYYY } from '../../utils/dateFormatter';
 
 interface CustomerModalProps {
   isOpen: boolean;
@@ -52,6 +53,7 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
   const [dietaryPreferences, setDietaryPreferences] = useState('');
   const [deliveryTime, setDeliveryTime] = useState('');
   const [doorPasscode, setDoorPasscode] = useState('');
+  const [joiningDate, setJoiningDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [paymentMadeUpTo, setPaymentMadeUpTo] = useState('2026-10-06');
   const [billedUpTo, setBilledUpTo] = useState('2026-10-31');
   const [totalOverdue, setTotalOverdue] = useState<number>(0);
@@ -148,6 +150,7 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
       setDietaryPreferences(customer.dietary_preferences || '');
       setDeliveryTime(customer.delivery_time || '');
       setDoorPasscode(customer.door_passcode || '');
+      setJoiningDate(customer.joining_date || customer.billing_start_date || new Date().toISOString().split('T')[0]);
       setPaymentMadeUpTo(customer.payment_made_up_to_date || customer.billing_start_date || '2026-10-06');
       setBilledUpTo(customer.billed_up_to_date || customer.billing_end_date || '2026-10-31');
       setTotalOverdue(customer.total_overdue || 0);
@@ -199,8 +202,11 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
       setDietaryPreferences('');
       setDeliveryTime('6:00 AM');
       setDoorPasscode('');
-      setPaymentMadeUpTo(new Date().toISOString().split('T')[0]);
-      setBilledUpTo(new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0]);
+      const todayStr = new Date().toISOString().split('T')[0];
+      const thirtyDays = new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0];
+      setJoiningDate(todayStr);
+      setPaymentMadeUpTo(todayStr);
+      setBilledUpTo(thirtyDays);
       setTotalOverdue(0);
       setStatus('active');
       setManagedBy('admin');
@@ -285,14 +291,15 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
       dietary_preferences: dietaryPreferences.trim(),
       delivery_time: deliveryTime.trim(),
       door_passcode: doorPasscode.trim(),
-      billing_start_date: paymentMadeUpTo || undefined,
+      joining_date: joiningDate,
+      billing_start_date: !customer ? joiningDate : (paymentMadeUpTo || undefined),
       billing_end_date: isNotice && finalCancelDate ? finalCancelDate : (billedUpTo || undefined),
       cancellation_date: finalCancelDate,
       cancellation_reason: isNotice && cancellationReason ? cancellationReason.trim() : undefined,
       cancellation_notice_date: isNotice ? (customer?.cancellation_notice_date || new Date().toISOString().split('T')[0]) : undefined,
-      payment_made_up_to_date: paymentMadeUpTo || undefined,
+      payment_made_up_to_date: !customer ? joiningDate : (paymentMadeUpTo || undefined),
       billed_up_to_date: billedUpTo || undefined,
-      total_overdue: Math.max(0, Number(totalOverdue) || 0),
+      total_overdue: !customer ? 0 : Math.max(0, Number(totalOverdue) || 0),
       status: finalStatus,
       managed_by: managedBy,
       notes: finalNotes,
@@ -931,62 +938,125 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
             </select>
           </div>
 
-          {/* Outstanding Due Balance Field */}
-          <div className="bg-slate-900/90 p-4 rounded-xl border border-slate-700/80">
-            <div className="flex items-center justify-between mb-1.5">
-              <label className="text-slate-200 font-bold text-xs sm:text-sm flex items-center gap-1.5">
-                <AlertCircle className="w-4 h-4 text-amber-400" />
-                <span>Outstanding Dues / Opening Balance (AED)</span>
-              </label>
-              {Number(totalOverdue) > 0 ? (
-                <span className="text-[11px] font-bold text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/20">
-                  Overdue Active
+          {!customer ? (
+            /* Dedicated New Customer Joining & 30-Day Billing Schedule */
+            <div className="p-4 rounded-xl bg-slate-900/90 border border-amber-500/30 space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-white flex items-center gap-1.5">
+                  <Calendar className="w-4 h-4 text-amber-400" />
+                  <span>Joining Date (Food Service Start) *</span>
+                </label>
+                <span className="font-mono text-xs font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
+                  {formatDateDDMMMYYYY(joiningDate)}
                 </span>
-              ) : (
-                <span className="text-[11px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
-                  No Due (Good Standing)
-                </span>
-              )}
-            </div>
-            <div className="relative">
-              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-bold font-mono">
-                AED
-              </span>
+              </div>
               <input
-                type="number"
-                min="0"
-                step="0.01"
-                value={totalOverdue}
-                onChange={(e) => setTotalOverdue(parseFloat(e.target.value) || 0)}
-                placeholder="0.00"
-                className="w-full pl-12 pr-4 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white font-mono font-bold focus:outline-none focus:border-amber-400"
+                type="date"
+                required
+                value={joiningDate}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setJoiningDate(val);
+                  if (val) {
+                    const d = new Date(val);
+                    d.setDate(d.getDate() + 30);
+                    const due = d.toISOString().split('T')[0];
+                    setBilledUpTo(due);
+                    setPaymentMadeUpTo(val);
+                  }
+                }}
+                className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white font-mono focus:outline-none focus:border-amber-500 text-xs sm:text-sm"
               />
-            </div>
-            <p className="text-[11px] text-slate-400 mt-1.5">
-              Set or adjust customer's pending due balance. Setting to 0 marks the account in good standing.
-            </p>
-          </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-slate-300 font-semibold mb-1.5">Payment Made Up To The Date</label>
-              <input
-                type="date"
-                value={paymentMadeUpTo}
-                onChange={(e) => setPaymentMadeUpTo(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono focus:outline-none focus:border-emerald-500"
-              />
+              <div className="flex items-center justify-between p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/25">
+                <div>
+                  <div className="text-[11px] font-bold text-emerald-300">
+                    First Monthly Billing Due Date (After 30 Days)
+                  </div>
+                  <div className="text-[10px] text-slate-400 mt-0.5">
+                    Postpaid service: Customer starts with AED 0.00 dues; bill becomes due on the 30th day.
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="font-mono text-xs sm:text-sm font-black text-emerald-400">
+                    {formatDateDDMMMYYYY(billedUpTo)}
+                  </div>
+                  <div className="text-[10px] text-emerald-500 font-semibold font-mono">
+                    30-Day Cycle
+                  </div>
+                </div>
+              </div>
             </div>
-            <div>
-              <label className="block text-slate-300 font-semibold mb-1.5">Billed Up To The Date</label>
-              <input
-                type="date"
-                value={billedUpTo}
-                onChange={(e) => setBilledUpTo(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono focus:outline-none focus:border-amber-500"
-              />
-            </div>
-          </div>
+          ) : (
+            <>
+              {/* Existing Customer: Outstanding Due Balance Field */}
+              <div className="bg-slate-900/90 p-4 rounded-xl border border-slate-700/80">
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-slate-200 font-bold text-xs sm:text-sm flex items-center gap-1.5">
+                    <AlertCircle className="w-4 h-4 text-amber-400" />
+                    <span>Outstanding Dues / Opening Balance (AED)</span>
+                  </label>
+                  {Number(totalOverdue) > 0 ? (
+                    <span className="text-[11px] font-bold text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/20">
+                      Overdue Active
+                    </span>
+                  ) : (
+                    <span className="text-[11px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
+                      No Due (Good Standing)
+                    </span>
+                  )}
+                </div>
+                <div className="relative">
+                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-bold font-mono">
+                    AED
+                  </span>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={totalOverdue}
+                    onChange={(e) => setTotalOverdue(parseFloat(e.target.value) || 0)}
+                    placeholder="0.00"
+                    className="w-full pl-12 pr-4 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white font-mono font-bold focus:outline-none focus:border-amber-400"
+                  />
+                </div>
+                <p className="text-[11px] text-slate-400 mt-1.5">
+                  Set or adjust customer's pending due balance. Setting to 0 marks the account in good standing.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-slate-300 font-semibold text-xs sm:text-sm">Payment Made Up To The Date</label>
+                    <span className="font-mono text-[11px] font-bold text-emerald-400">
+                      {formatDateDDMMMYYYY(paymentMadeUpTo)}
+                    </span>
+                  </div>
+                  <input
+                    type="date"
+                    value={paymentMadeUpTo}
+                    onChange={(e) => setPaymentMadeUpTo(e.target.value)}
+                    className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono focus:outline-none focus:border-emerald-500"
+                  />
+                </div>
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-slate-300 font-semibold text-xs sm:text-sm">Billed Up To The Date</label>
+                    <span className="font-mono text-[11px] font-bold text-amber-400">
+                      {formatDateDDMMMYYYY(billedUpTo)}
+                    </span>
+                  </div>
+                  <input
+                    type="date"
+                    value={billedUpTo}
+                    onChange={(e) => setBilledUpTo(e.target.value)}
+                    className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono focus:outline-none focus:border-amber-500"
+                  />
+                </div>
+              </div>
+            </>
+          )}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>

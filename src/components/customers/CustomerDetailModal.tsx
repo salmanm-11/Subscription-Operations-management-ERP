@@ -694,7 +694,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                 </span>
                 <span>•</span>
                 <span className="text-slate-400">
-                  Joined: {activeCustomer.joining_date || activeCustomer.billing_start_date || 'Oct 2026'}
+                  Joined: <strong className="text-slate-200">{activeCustomer.joining_date || activeCustomer.billing_start_date ? formatDateDDMMMYYYY(activeCustomer.joining_date || activeCustomer.billing_start_date) : '01-Oct-2026'}</strong>
                 </span>
                 {activeCustomer.company_name && (
                   <>
@@ -1065,7 +1065,9 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
             <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-end">
               <button
                 type="button"
+                disabled={!activeCustomer.phone}
                 onClick={() =>
+                  activeCustomer.phone &&
                   sendWhatsAppReminder(
                     activeCustomer,
                     dueDateInfo.targetDueDateDisplay,
@@ -1073,11 +1075,15 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                     dueDateInfo.amountDue
                   )
                 }
-                className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 text-xs font-bold border border-emerald-500/40 transition-colors shadow-sm"
-                title="Send friendly due reminder on WhatsApp"
+                className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold border transition-colors shadow-sm ${
+                  activeCustomer.phone
+                    ? 'bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border-emerald-500/40 cursor-pointer'
+                    : 'bg-slate-800 text-slate-500 border-slate-700 cursor-not-allowed opacity-60'
+                }`}
+                title={activeCustomer.phone ? 'Send friendly due reminder on WhatsApp' : 'No phone number registered for customer'}
               >
                 <MessageSquare className="w-3.5 h-3.5 text-emerald-400" />
-                <span>WhatsApp Reminder</span>
+                <span>{activeCustomer.phone ? 'WhatsApp Reminder' : 'No Phone'}</span>
               </button>
               <button
                 type="button"
@@ -1237,7 +1243,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                           ? 'Manager'
                           : (activeCustomer.managed_by === 'online_self_service' || (activeCustomer.managed_by && activeCustomer.managed_by.includes('online')))
                           ? 'Online'
-                          : 'Admin'}
+                          : 'Direct (Office Managed)'}
                       </span>
                     </div>
 
@@ -1248,7 +1254,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                         Customer Since / Joined
                       </span>
                       <span className="text-slate-200 font-mono font-medium">
-                        {activeCustomer.joining_date || activeCustomer.billing_start_date || 'Oct 2026'}
+                        {activeCustomer.joining_date || activeCustomer.billing_start_date ? formatDateDDMMMYYYY(activeCustomer.joining_date || activeCustomer.billing_start_date) : '01-Oct-2026'}
                       </span>
                     </div>
                   </div>
