@@ -115,6 +115,10 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
   const [paySuccessMsg, setPaySuccessMsg] = useState<string | null>(null);
   const [selectedReceipt, setSelectedReceipt] = useState<Payment | null>(null);
 
+  // Undo state for immediate reversal of pause, resume, or date adjustments
+  const [previousCustomerState, setPreviousCustomerState] = useState<Customer | null>(null);
+  const [undoActionDescription, setUndoActionDescription] = useState<string | null>(null);
+
   // Dynamic discount calculation for in-modal settlement
   const calculatedPayDiscountAmount = useMemo(() => {
     if (!payDiscountValue || payDiscountValue <= 0) return 0;
@@ -425,6 +429,10 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
     const newAdv = Math.max(0, Number(advanceBalanceInput) || 0);
     const nextStatus = activeCustomer.status === 'paused' ? 'active' : activeCustomer.status;
 
+    // Save previous state for 1-click Undo
+    setPreviousCustomerState({ ...activeCustomer });
+    setUndoActionDescription('Due & Date Adjustment');
+
     // Instant optimistic update on profile card
     setOptimisticCustomer({
       total_overdue: newDue,
@@ -684,6 +692,85 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
     }
   };
 
+  // Revert the last performed action (pause, resume, or date change)
+  const handleUndoLastAction = async () => {
+    if (!previousCustomerState) return;
+    try {
+      const restored: Customer = {
+        ...previousCustomerState,
+        updated_at: new Date().toISOString(),
+      };
+
+      setOptimisticCustomer(restored);
+
+      if (onSaveCustomer) {
+        await onSaveCustomer(restored);
+      } else {
+        await saveCustomer(restored);
+      }
+
+      ActivityLogService.logAction(
+        'Customers',
+        'UPDATE',
+        'Action Undone',
+        `Undid "${undoActionDescription || 'previous action'}" for ${restored.full_name} (#${restored.customer_code})`
+      );
+
+      const actionName = undoActionDescription || 'Action';
+      setPreviousCustomerState(null);
+      setUndoActionDescription(null);
+      setPaySuccessMsg(`✓ Undone: Reverted ${actionName} for ${restored.full_name}.`);
+      setTimeout(() => setPaySuccessMsg(null), 5000);
+    } catch (err: any) {
+      console.error('Failed to undo last action:', err);
+      alert('Failed to undo: ' + (err.message || 'Unknown error'));
+    }
+  };
+
+  // Dedicated undo pause: restores customer back to active status
+  const handleUndoPause = async () => {
+    if (!activeCustomer) return;
+    if (!window.confirm(`Undo vacation pause for "${activeCustomer.full_name}" and restore to Active status?`)) return;
+
+    try {
+      const cleanedNotes = (activeCustomer.notes || '')
+        .replace(/\[\d{4}-\d{2}-\d{2}\]\s*Meal service paused[^\n]*\n?/g, '')
+        .trim();
+
+      const updatedCust: Partial<Customer> = {
+        ...activeCustomer,
+        id: activeCustomer.id,
+        status: 'active',
+        notes: cleanedNotes,
+        updated_at: new Date().toISOString(),
+      };
+
+      // Store previous state in case they want to undo this undo
+      setPreviousCustomerState({ ...activeCustomer });
+      setUndoActionDescription('Undo Pause');
+      setOptimisticCustomer(updatedCust);
+
+      if (onSaveCustomer) {
+        await onSaveCustomer(updatedCust);
+      } else {
+        await saveCustomer(updatedCust);
+      }
+
+      ActivityLogService.logAction(
+        'Customers',
+        'UPDATE',
+        'Customer Pause Undone',
+        `Pause undone for "${activeCustomer.full_name}" (#${activeCustomer.customer_code}). Status restored to Active.`
+      );
+
+      setPaySuccessMsg(`✓ Pause undone. ${activeCustomer.full_name} is now Active.`);
+      setTimeout(() => setPaySuccessMsg(null), 5000);
+    } catch (err: any) {
+      console.error('Failed to undo pause:', err);
+      alert('Failed to undo pause: ' + (err.message || 'Unknown error'));
+    }
+  };
+
   // Pause customer subscription for vacation or traveling abroad
   const handlePauseCustomer = async () => {
     if (!activeCustomer) return;
@@ -692,6 +779,10 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
 
     try {
       const today = getTodayISO();
+      // Save previous state for 1-click Undo
+      setPreviousCustomerState({ ...activeCustomer });
+      setUndoActionDescription('Pause for Vacation');
+
       const updatedCust: Partial<Customer> = {
         ...activeCustomer,
         id: activeCustomer.id,
@@ -718,7 +809,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
       );
 
       setPaySuccessMsg(`✓ Meal service paused for ${activeCustomer.full_name}. Deliveries placed on hold.`);
-      setTimeout(() => setPaySuccessMsg(null), 5000);
+      setTimeout(() => setPaySuccessMsg(null), 6000);
     } catch (err: any) {
       console.error('Failed to pause customer:', err);
       alert('Failed to pause customer: ' + (err.message || 'Unknown error'));
@@ -731,6 +822,11 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
     try {
       const targetDate = addDaysISO(new Date(), daysToGrant);
       const today = getTodayISO();
+
+      // Save previous state for 1-click Undo
+      setPreviousCustomerState({ ...activeCustomer });
+      setUndoActionDescription(`Resume with ${daysToGrant} Days`);
+
       const updatedCust: Partial<Customer> = {
         ...activeCustomer,
         id: activeCustomer.id,
@@ -762,7 +858,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
       );
 
       setPaySuccessMsg(`✓ Successfully resumed! Granted ${daysToGrant} days paid meals up to ${formatDateDDMMMYYYY(targetDate)}.`);
-      setTimeout(() => setPaySuccessMsg(null), 5000);
+      setTimeout(() => setPaySuccessMsg(null), 6000);
     } catch (err: any) {
       console.error('Failed to resume customer:', err);
       alert('Failed to resume customer: ' + (err.message || 'Unknown error'));
@@ -866,15 +962,26 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
             {!isReadOnly && (
               <>
                 {activeCustomer.status === 'paused' ? (
-                  <button
-                    type="button"
-                    onClick={() => handleResumeFromVacation(15)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-md shadow-emerald-600/30 transition-all cursor-pointer"
-                    title="Customer returned: resume service and credit 15 remaining days from today"
-                  >
-                    <Play className="w-3.5 h-3.5 fill-current" />
-                    <span>Resume (+15 Days)</span>
-                  </button>
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => handleResumeFromVacation(15)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-md shadow-emerald-600/30 transition-all cursor-pointer"
+                      title="Customer returned: resume service and credit 15 remaining days from today"
+                    >
+                      <Play className="w-3.5 h-3.5 fill-current" />
+                      <span>Resume (+15 Days)</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleUndoPause}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-750 text-rose-300 text-xs font-bold border border-rose-500/30 transition-colors shadow-sm cursor-pointer"
+                      title="Undo pause: restore status back to Active"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5 text-rose-400" />
+                      <span>Undo Pause</span>
+                    </button>
+                  </>
                 ) : activeCustomer.status === 'active' ? (
                   <button
                     type="button"
@@ -924,19 +1031,32 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
 
         {/* Scrollable Modal Body Container (Prevents any banner or card clipping) */}
         <div className="flex-1 overflow-y-auto min-h-0 custom-scrollbar flex flex-col">
-          {/* Real-time Payment Success Notification Banner */}
+          {/* Real-time Payment & Action Notification Banner with 1-Click Undo */}
           {paySuccessMsg && (
             <div className="mx-4 mt-3 p-3 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-bold flex items-center justify-between gap-2 shrink-0 animate-fadeIn shadow-lg">
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
                 <span>{paySuccessMsg}</span>
               </div>
-              <button
-                onClick={() => setPaySuccessMsg(null)}
-                className="text-emerald-400 hover:text-white"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
+              <div className="flex items-center gap-2 shrink-0">
+                {previousCustomerState && (
+                  <button
+                    type="button"
+                    onClick={handleUndoLastAction}
+                    className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition-all shadow-md active:scale-95 cursor-pointer"
+                    title={`Undo ${undoActionDescription || 'action'} and restore previous state`}
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    <span>Undo</span>
+                  </button>
+                )}
+                <button
+                  onClick={() => setPaySuccessMsg(null)}
+                  className="text-emerald-400 hover:text-white cursor-pointer"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
             </div>
           )}
 
@@ -1096,6 +1216,15 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                       className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition-colors cursor-pointer"
                     >
                       <span>Custom Dates...</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleUndoPause}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/30 text-xs font-bold transition-colors cursor-pointer"
+                      title="Undo pause: restore customer back to Active status"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5 text-rose-400" />
+                      <span>Undo Pause</span>
                     </button>
                   </>
                 )}
@@ -1898,15 +2027,26 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
               <>
                 {/* Vacation Pause & Resume Quick Toggles */}
                 {activeCustomer.status === 'paused' ? (
-                  <button
-                    type="button"
-                    onClick={() => handleResumeFromVacation(15)}
-                    className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-lg shadow-emerald-600/20 transition-all active:scale-[0.98] cursor-pointer"
-                    title="Customer returned: resume service and credit 15 remaining days from today"
-                  >
-                    <Play className="w-3.5 h-3.5 fill-current" />
-                    <span>Resume (+15 Days)</span>
-                  </button>
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => handleResumeFromVacation(15)}
+                      className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-lg shadow-emerald-600/20 transition-all active:scale-[0.98] cursor-pointer"
+                      title="Customer returned: resume service and credit 15 remaining days from today"
+                    >
+                      <Play className="w-3.5 h-3.5 fill-current" />
+                      <span>Resume (+15 Days)</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleUndoPause}
+                      className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-750 text-rose-300 text-xs font-bold border border-rose-500/30 transition-all active:scale-[0.98] cursor-pointer"
+                      title="Undo pause: restore status back to Active"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5 text-rose-400" />
+                      <span>Undo Pause</span>
+                    </button>
+                  </>
                 ) : activeCustomer.status === 'active' ? (
                   <button
                     type="button"
