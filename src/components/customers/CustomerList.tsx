@@ -822,28 +822,25 @@ export const CustomerList: React.FC<CustomerListProps> = ({
       {/* Customers Table */}
       <div className="bg-[#151c2c] border border-[#222f47]/60 rounded-2xl overflow-hidden shadow-xl shadow-black/30">
         <div className="overflow-x-auto w-full custom-scrollbar">
-          <table className="w-full text-left min-w-[1520px]">
+          <table className="w-full text-left min-w-[980px]">
             <thead>
               <tr className="bg-[#0f1422] text-slate-300 border-b border-slate-700/80 text-xs uppercase tracking-wider font-bold">
-                <th className="py-3 px-3 whitespace-nowrap min-w-[95px]">Code</th>
-                <th className="py-3 px-3 whitespace-nowrap min-w-[160px]">Customer</th>
-                <th className="py-3 px-3 whitespace-nowrap min-w-[160px]">Building &amp; Room</th>
-                <th className="py-3 px-2 text-center whitespace-nowrap min-w-[95px]">Meals</th>
-                <th className="py-3 px-3.5 min-w-[220px]">Dietary &amp; Delivery Notes</th>
-                <th className="py-3 px-2.5 text-right whitespace-nowrap min-w-[115px]">Monthly Fee</th>
-                <th className="py-3 px-2 text-center whitespace-nowrap min-w-[150px]">Payment Made Up To</th>
-                <th className="py-3 px-2 text-center whitespace-nowrap min-w-[130px]">Billed Up To</th>
-                <th className="py-3 px-3.5 text-right whitespace-nowrap min-w-[130px]">Overdue</th>
-                <th className="py-3 px-2 text-center whitespace-nowrap min-w-[110px]">Status</th>
-                <th className="py-3 px-3 text-right whitespace-nowrap min-w-[135px]">
-                  Actions
-                </th>
+                <th className="py-3 px-2 text-center whitespace-nowrap min-w-[95px]">Status</th>
+                <th className="py-3 px-2.5 whitespace-nowrap min-w-[85px]">Code</th>
+                <th className="py-3 px-3 whitespace-nowrap min-w-[145px]">Customer</th>
+                <th className="py-3 px-3 whitespace-nowrap min-w-[140px]">Building &amp; Room</th>
+                <th className="py-3 px-1.5 text-center whitespace-nowrap min-w-[85px]">Meals</th>
+                <th className="py-3 px-3 min-w-[180px]">Dietary &amp; Delivery Notes</th>
+                <th className="py-3 px-2 text-right whitespace-nowrap min-w-[95px]">Monthly Fee</th>
+                <th className="py-3 px-2 text-center whitespace-nowrap min-w-[125px]">Payment Made Up To</th>
+                <th className="py-3 px-2 text-center whitespace-nowrap min-w-[115px]">Billed Up To</th>
+                <th className="py-3 px-3 text-right whitespace-nowrap min-w-[95px]">Overdue</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/80 text-xs sm:text-sm">
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={11} className="py-12 text-center text-slate-400 text-xs sm:text-sm">
+                  <td colSpan={10} className="py-12 text-center text-slate-400 text-xs sm:text-sm">
                     No customers match the current filter.
                   </td>
                 </tr>
@@ -855,15 +852,57 @@ export const CustomerList: React.FC<CustomerListProps> = ({
                       key={c.id}
                       onClick={() => setViewingCustomer(c)}
                       className="hover:bg-slate-800/60 cursor-pointer transition-colors group"
-                      title="Click anywhere to view full customer details"
+                      title="Click anywhere on this row to view profile, edit details, or record payments"
                     >
-                      <td className="py-3 px-3 font-mono text-amber-400 font-bold whitespace-nowrap min-w-[95px]">
-                        <span className="hover:underline flex items-center gap-1 text-amber-300">
+                      {/* 1. Status Column (First) */}
+                      <td className="py-3 px-2 text-center whitespace-nowrap min-w-[95px]">
+                        <span
+                          className={`px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase border shadow-sm ${
+                            c.status === 'active'
+                              ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
+                              : c.status === 'cancelling_soon'
+                              ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 font-black'
+                              : c.status === 'trial'
+                              ? 'bg-sky-500/15 text-sky-300 border-sky-500/30'
+                              : c.status === 'paused'
+                              ? 'bg-amber-500/15 text-amber-300 border-amber-500/30'
+                              : (c.status === 'left' || c.status === 'cancelled')
+                              ? 'bg-rose-500/15 text-rose-300 border-rose-500/30'
+                              : 'bg-slate-800 text-slate-400 border-slate-700'
+                          }`}
+                        >
+                          {c.status === 'cancelling_soon'
+                            ? 'Cancelling'
+                            : (c.status === 'left' || c.status === 'cancelled')
+                            ? 'Cancelled'
+                            : c.status}
+                        </span>
+                        {(() => {
+                          const notice = getCustomerCancellationNotice(c);
+                          if (!notice) return null;
+                          return (
+                            <div className="mt-1">
+                              <span
+                                className={`inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-tight border ${notice.badge.bg} ${notice.badge.textColor} ${notice.badge.border} animate-pulse`}
+                                title={`Planned Exit: ${notice.targetDateDisplay}`}
+                              >
+                                On Notice
+                              </span>
+                            </div>
+                          );
+                        })()}
+                      </td>
+
+                      {/* 2. Customer Code */}
+                      <td className="py-3 px-2.5 font-mono text-amber-400 font-bold whitespace-nowrap min-w-[85px]">
+                        <span className="flex items-center gap-1 text-amber-300 group-hover:underline">
                           {c.customer_code}
                         </span>
                       </td>
-                      <td className="py-3 px-3 min-w-[150px]">
-                        <div className="font-bold text-white text-sm sm:text-base tracking-tight hover:text-amber-300 transition-colors flex items-center gap-1.5 flex-wrap">
+
+                      {/* 3. Customer Name & Info */}
+                      <td className="py-3 px-3 min-w-[145px]">
+                        <div className="font-bold text-white text-sm sm:text-base tracking-tight group-hover:text-amber-300 transition-colors flex items-center gap-1.5 flex-wrap">
                           <span>{c.full_name}</span>
                           {c.managed_by === 'online_self_service' && (
                             <span className="inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40" title="Registered via online link">
@@ -904,7 +943,9 @@ export const CustomerList: React.FC<CustomerListProps> = ({
                           );
                         })()}
                       </td>
-                      <td className="py-3 px-3 text-slate-200 min-w-[160px]">
+
+                      {/* 4. Building & Room */}
+                      <td className="py-3 px-3 text-slate-200 min-w-[140px]">
                         <div className="font-bold text-xs sm:text-sm flex items-center gap-1.5">
                           <Building2 className="w-3.5 h-3.5 text-sky-400 shrink-0" />
                           <span>{c.building_name_cache || c.building?.name || 'Unassigned'}</span>
@@ -918,15 +959,18 @@ export const CustomerList: React.FC<CustomerListProps> = ({
                           )}
                         </div>
                       </td>
-                      <td className="py-3 px-2 whitespace-nowrap text-center min-w-[95px]">
+
+                      {/* 5. Meals */}
+                      <td className="py-3 px-1.5 whitespace-nowrap text-center min-w-[85px]">
                         <div className="inline-flex items-center gap-1">
                           <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${c.has_breakfast ? 'bg-amber-500/25 text-amber-300 border border-amber-500/40' : 'bg-slate-800/60 text-slate-600'}`}>BF</span>
                           <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${c.has_lunch ? 'bg-emerald-500/25 text-emerald-300 border border-emerald-500/40' : 'bg-slate-800/60 text-slate-600'}`}>LN</span>
                           <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${c.has_dinner ? 'bg-blue-500/25 text-blue-300 border border-blue-500/40' : 'bg-slate-800/60 text-slate-600'}`}>DN</span>
                         </div>
                       </td>
-                      {/* Dietary & Delivery Notes (Showing fully without truncation) */}
-                      <td className="py-3 px-3.5 min-w-[220px] max-w-[340px]">
+
+                      {/* 6. Dietary & Delivery Notes */}
+                      <td className="py-3 px-3 min-w-[180px] max-w-[280px]">
                         <div className="space-y-1">
                           {c.dietary_preferences ? (
                             <div className="text-xs text-amber-200/95 font-medium leading-relaxed whitespace-pre-line break-words">
@@ -953,106 +997,31 @@ export const CustomerList: React.FC<CustomerListProps> = ({
                           )}
                         </div>
                       </td>
-                      <td className="py-3 px-2.5 text-right font-bold text-white whitespace-nowrap font-mono text-xs sm:text-sm min-w-[115px]">
+
+                      {/* 7. Monthly Fee */}
+                      <td className="py-3 px-2 text-right font-bold text-white whitespace-nowrap font-mono text-xs sm:text-sm min-w-[95px]">
                         {formatAED(c.monthly_rate)}
                       </td>
-                      {/* Payment Made Up To The Date */}
-                      <td className="py-3 px-2 text-center whitespace-nowrap min-w-[150px]">
+
+                      {/* 8. Payment Made Up To Date */}
+                      <td className="py-3 px-2 text-center whitespace-nowrap min-w-[125px]">
                         <span className="inline-flex items-center font-mono text-xs font-bold text-emerald-300 bg-emerald-500/15 px-2 py-0.5 rounded border border-emerald-500/30">
                           {formatDateDDMMMYYYY(c.payment_made_up_to_date || c.billing_start_date || '2026-10-31')}
                         </span>
                       </td>
-                      {/* Billed Up To The Date */}
-                      <td className="py-3 px-2 text-center whitespace-nowrap min-w-[130px]">
+
+                      {/* 9. Billed Up To Date */}
+                      <td className="py-3 px-2 text-center whitespace-nowrap min-w-[115px]">
                         <span className="inline-flex items-center font-mono text-xs font-bold text-slate-200 bg-slate-800/90 px-2 py-0.5 rounded border border-slate-700/70">
                           {formatDateDDMMMYYYY(c.billed_up_to_date || c.billing_end_date || '2026-10-31')}
                         </span>
                       </td>
-                      <td className="py-3 px-3.5 text-right font-black whitespace-nowrap font-mono text-xs sm:text-sm min-w-[130px]">
+
+                      {/* 10. Overdue */}
+                      <td className="py-3 px-3 text-right font-black whitespace-nowrap font-mono text-xs sm:text-sm min-w-[95px]">
                         <span className={overdue > 0 ? 'text-rose-400 drop-shadow-sm' : 'text-emerald-400'}>
                           {formatAED(overdue)}
                         </span>
-                      </td>
-                      <td className="py-3 px-2 text-center whitespace-nowrap min-w-[110px]">
-                        <span
-                          className={`px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase border shadow-sm ${
-                            c.status === 'active'
-                              ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
-                              : c.status === 'cancelling_soon'
-                              ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 font-black'
-                              : c.status === 'trial'
-                              ? 'bg-sky-500/15 text-sky-300 border-sky-500/30'
-                              : c.status === 'paused'
-                              ? 'bg-amber-500/15 text-amber-300 border-amber-500/30'
-                              : (c.status === 'left' || c.status === 'cancelled')
-                              ? 'bg-rose-500/15 text-rose-300 border-rose-500/30'
-                              : 'bg-slate-800 text-slate-400 border-slate-700'
-                          }`}
-                        >
-                          {c.status === 'cancelling_soon'
-                            ? 'Cancelling Soon'
-                            : (c.status === 'left' || c.status === 'cancelled')
-                            ? 'cancelled'
-                            : c.status}
-                        </span>
-                        {(() => {
-                          const notice = getCustomerCancellationNotice(c);
-                          if (!notice) return null;
-                          return (
-                            <div className="mt-1">
-                              <span
-                                className={`inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-tight border ${notice.badge.bg} ${notice.badge.textColor} ${notice.badge.border} animate-pulse`}
-                                title={`Planned Exit: ${notice.targetDateDisplay}`}
-                              >
-                                On Notice
-                              </span>
-                            </div>
-                          );
-                        })()}
-                      </td>
-                      {/* Action Options */}
-                      <td className="py-3 px-3 text-right whitespace-nowrap min-w-[135px]">
-                        <div className="flex items-center justify-end gap-1.5">
-                          {/* 1-Click View Button */}
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setViewingCustomer(c);
-                            }}
-                            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-sky-500/15 hover:bg-sky-500/25 text-sky-300 hover:text-white transition-colors border border-sky-500/30 shadow-sm text-xs font-semibold"
-                            title="View Full Profile Details"
-                          >
-                            <Eye className="w-3.5 h-3.5 text-sky-400" />
-                            <span>View</span>
-                          </button>
-                          {!isReadOnly && (
-                            <>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  onEditCustomer(c);
-                                }}
-                                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-750 text-slate-200 hover:text-white transition-colors border border-slate-700/60 shadow-sm text-xs font-semibold"
-                                title="Edit Customer"
-                              >
-                                <Edit className="w-3.5 h-3.5 text-amber-400" />
-                                <span>Edit</span>
-                              </button>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  if (confirm(`Are you sure you want to remove customer ${c.full_name}? Historical financial records will be preserved.`)) {
-                                    onDeleteCustomer(c.id);
-                                  }
-                                }}
-                                className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 transition-colors border border-rose-500/20 shadow-sm"
-                                title="Delete Customer"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
-                            </>
-                          )}
-                        </div>
                       </td>
                     </tr>
                   );
