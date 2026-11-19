@@ -134,7 +134,14 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
 
   useEffect(() => {
     setOptimisticCustomer(null);
-  }, [customer?.id, customer?.total_overdue, customer?.payment_rating]);
+  }, [
+    customer?.id,
+    customer?.total_overdue,
+    customer?.payment_rating,
+    customer?.payment_made_up_to_date,
+    customer?.billed_up_to_date,
+    customer?.status,
+  ]);
 
   // Keep customer data synchronized in real-time if live customers array updates
   const activeCustomer = useMemo(() => {

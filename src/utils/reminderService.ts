@@ -98,6 +98,20 @@ export interface CustomerDueDateInfo {
 }
 
 /**
+ * Compares two flexible date strings by calendar day (ignoring hours/timezone)
+ * Returns true if dateA is on or after dateB
+ */
+export function isDateOnOrAfter(dateAStr?: string, dateBStr?: string): boolean {
+  if (!dateAStr || !dateBStr) return false;
+  const da = parseFlexibleDate(dateAStr);
+  const db = parseFlexibleDate(dateBStr);
+  if (!da || !db) return false;
+  const aTime = new Date(da.getFullYear(), da.getMonth(), da.getDate()).getTime();
+  const bTime = new Date(db.getFullYear(), db.getMonth(), db.getDate()).getTime();
+  return aTime >= bTime;
+}
+
+/**
  * Determines exact due date, days remaining, and reminder urgency for a customer
  */
 export function getCustomerDueDateInfo(
@@ -135,18 +149,59 @@ export function getCustomerDueDateInfo(
     rawDueDateStr = `${endOfMonth.getFullYear()}-${(endOfMonth.getMonth() + 1).toString().padStart(2, '0')}-${endOfMonth.getDate()}`;
   }
 
-  const parsedDueDate = parseFlexibleDate(rawDueDateStr) || new Date(baseDate.getFullYear(), baseDate.getMonth() + 1, 0);
-  const daysRemaining = getDaysDifference(parsedDueDate, baseDate);
+  let parsedDueDate = parseFlexibleDate(rawDueDateStr) || new Date(baseDate.getFullYear(), baseDate.getMonth() + 1, 0);
+  let daysRemaining = getDaysDifference(parsedDueDate, baseDate);
 
   const overdueBalance = customer.total_overdue || 0;
-  const isOverdue = overdueBalance > 0 || daysRemaining < 0;
-  const isDueToday = daysRemaining === 0;
-  const isDueTomorrow = daysRemaining === 1;
-  const isApproaching = daysRemaining >= 0 && daysRemaining <= thresholdDays;
+  const isLeavingOrCancelled = Boolean(
+    customer.status === 'cancelling_soon' ||
+    customer.status === 'cancelled' ||
+    customer.status === 'left' ||
+    customer.cancellation_date
+  );
+
+  const baseDateStr = `${baseDate.getFullYear()}-${(baseDate.getMonth() + 1).toString().padStart(2, '0')}-${baseDate.getDate().toString().padStart(2, '0')}`;
+
+  // Check if customer is fully paid up to or beyond the current target date or today
+  const isPaidUpToTarget = Boolean(
+    overdueBalance === 0 &&
+    !openInvoice &&
+    customer.payment_made_up_to_date &&
+    (isDateOnOrAfter(customer.payment_made_up_to_date, rawDueDateStr) ||
+     (customer.billed_up_to_date && isDateOnOrAfter(customer.payment_made_up_to_date, customer.billed_up_to_date)) ||
+     isDateOnOrAfter(customer.payment_made_up_to_date, baseDateStr))
+  );
+
+  let isOverdue = overdueBalance > 0 || daysRemaining < 0;
+  let isDueToday = daysRemaining === 0;
+  let isDueTomorrow = daysRemaining === 1;
+  let isApproaching = daysRemaining >= 0 && daysRemaining <= thresholdDays;
 
   const cycleRateInfo = getMonthlySubscriptionRate(customer, parsedDueDate);
   const standardDueAmount = cycleRateInfo.effectiveRate;
-  const amountDue = overdueBalance > 0 ? overdueBalance : standardDueAmount;
+  let amountDue = overdueBalance > 0 ? overdueBalance : standardDueAmount;
+
+  if (isLeavingOrCancelled && overdueBalance === 0 && !openInvoice) {
+    // Customer is leaving or cancelled and has zero outstanding debt.
+    // They are fully settled for exit: no upcoming cycle and no alert banner.
+    isApproaching = false;
+    isDueToday = false;
+    isDueTomorrow = false;
+    isOverdue = false;
+    amountDue = 0;
+  } else if (isPaidUpToTarget) {
+    // Active continuing customer has paid for the current cycle.
+    // Next payment is due for the subsequent cycle in 30 days.
+    const nextDueDate = new Date(parsedDueDate.getFullYear(), parsedDueDate.getMonth(), parsedDueDate.getDate() + 30);
+    const nextDaysRemaining = getDaysDifference(nextDueDate, baseDate);
+    daysRemaining = nextDaysRemaining;
+    parsedDueDate = nextDueDate;
+    rawDueDateStr = nextDueDate.toISOString().split('T')[0];
+    isApproaching = nextDaysRemaining >= 0 && nextDaysRemaining <= thresholdDays;
+    isDueToday = nextDaysRemaining === 0;
+    isDueTomorrow = nextDaysRemaining === 1;
+    isOverdue = nextDaysRemaining < 0;
+  }
 
   // Status and styling badge
   let statusLabel = '';
@@ -157,7 +212,23 @@ export function getCustomerDueDateInfo(
     iconColor: 'text-slate-400',
   };
 
-  if (daysRemaining < 0) {
+  if (isLeavingOrCancelled && overdueBalance === 0 && !openInvoice) {
+    statusLabel = '✓ Settled for Exit (0 Due)';
+    badgeStyle = {
+      bg: 'bg-emerald-500/15',
+      text: 'text-emerald-300 font-bold',
+      border: 'border-emerald-500/30',
+      iconColor: 'text-emerald-400',
+    };
+  } else if (isPaidUpToTarget && !isApproaching) {
+    statusLabel = `✓ Paid & Covered (Next cycle in ${daysRemaining} days)`;
+    badgeStyle = {
+      bg: 'bg-emerald-500/15',
+      text: 'text-emerald-300 font-bold',
+      border: 'border-emerald-500/30',
+      iconColor: 'text-emerald-400',
+    };
+  } else if (daysRemaining < 0) {
     statusLabel = `Overdue by ${Math.abs(daysRemaining)} day${Math.abs(daysRemaining) > 1 ? 's' : ''}`;
     badgeStyle = {
       bg: 'bg-rose-500/15',

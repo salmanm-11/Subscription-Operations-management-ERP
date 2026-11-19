@@ -179,4 +179,66 @@ describe('Payment Due Date Approaching Reminders System', () => {
     expect(message).toContain('Era Building');
     expect(message).toContain('#101');
   });
+
+  it('does NOT flag approaching reminder if customer is already paid up to date and leaving', () => {
+    const customer: Customer = {
+      id: 'cust-nithin',
+      business_id: 'biz-01',
+      customer_code: '025',
+      full_name: 'Nithin(Loshna)',
+      monthly_rate: 180,
+      has_breakfast: false,
+      has_lunch: true,
+      has_dinner: false,
+      joining_date: '2026-10-01',
+      billing_start_date: '2026-10-01',
+      status: 'cancelling_soon',
+      cancellation_date: '2026-11-19',
+      payment_made_up_to_date: '2026-11-19',
+      billed_up_to_date: '2026-11-19',
+      billing_end_date: '2026-11-19',
+      total_overdue: 0,
+      created_at: '2026-10-01T00:00:00Z',
+      updated_at: '2026-11-19T00:00:00Z',
+    };
+
+    const todayDate = new Date(2026, 10, 19); // 19 Nov 2026
+    const info = getCustomerDueDateInfo(customer, [], todayDate, 5);
+
+    expect(info.isApproaching).toBe(false);
+    expect(info.isDueToday).toBe(false);
+    expect(info.isOverdue).toBe(false);
+    expect(info.amountDue).toBe(0);
+    expect(info.statusLabel).toContain('Settled for Exit');
+  });
+
+  it('does NOT flag approaching reminder if active customer is already paid up to date', () => {
+    const customer: Customer = {
+      id: 'cust-active-paid',
+      business_id: 'biz-01',
+      customer_code: '026',
+      full_name: 'Rahul',
+      monthly_rate: 380,
+      has_breakfast: true,
+      has_lunch: true,
+      has_dinner: true,
+      joining_date: '2026-10-01',
+      billing_start_date: '2026-10-01',
+      status: 'active',
+      payment_made_up_to_date: '2026-11-19',
+      billed_up_to_date: '2026-11-19',
+      billing_end_date: '2026-11-19',
+      total_overdue: 0,
+      created_at: '2026-10-01T00:00:00Z',
+      updated_at: '2026-11-19T00:00:00Z',
+    };
+
+    const todayDate = new Date(2026, 10, 19); // 19 Nov 2026
+    const info = getCustomerDueDateInfo(customer, [], todayDate, 5);
+
+    expect(info.isApproaching).toBe(false);
+    expect(info.isDueToday).toBe(false);
+    expect(info.isOverdue).toBe(false);
+    expect(info.daysRemaining).toBe(30);
+  });
 });

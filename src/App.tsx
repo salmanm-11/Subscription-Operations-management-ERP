@@ -552,6 +552,8 @@ export const App: React.FC = () => {
       return [localSaved, ...prev];
     });
 
+    setViewingProfileCustomer((prev) => (prev && prev.id === localSaved.id ? localSaved : prev));
+
     // Instant modal close so user never waits
     setIsCustomerModalOpen(false);
     setEditingCustomer(null);
@@ -867,6 +869,16 @@ export const App: React.FC = () => {
           return c;
         })
       );
+      setViewingProfileCustomer((prev) => {
+        if (!prev || (prev.id !== pay.customer_id && prev.customer_code !== pay.customer_id)) return prev;
+        const newOverdue = Math.max(0, (prev.total_overdue || 0) - (pay.amount || 0));
+        return {
+          ...prev,
+          total_overdue: newOverdue,
+          payment_rating: newOverdue > 0 ? 'Late payer' : 'Good',
+          payment_made_up_to_date: pay.covered_until_date || pay.payment_date || prev.payment_made_up_to_date,
+        };
+      });
     }
 
     const targetCust = customers.find((c) => c.id === pay.customer_id || c.customer_code === pay.customer_id);
