@@ -865,6 +865,28 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
           <div className="flex items-center gap-2 shrink-0">
             {!isReadOnly && (
               <>
+                {activeCustomer.status === 'paused' ? (
+                  <button
+                    type="button"
+                    onClick={() => handleResumeFromVacation(15)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-md shadow-emerald-600/30 transition-all cursor-pointer"
+                    title="Customer returned: resume service and credit 15 remaining days from today"
+                  >
+                    <Play className="w-3.5 h-3.5 fill-current" />
+                    <span>Resume (+15 Days)</span>
+                  </button>
+                ) : activeCustomer.status === 'active' ? (
+                  <button
+                    type="button"
+                    onClick={handlePauseCustomer}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 text-xs font-bold border border-amber-500/40 transition-colors shadow-sm cursor-pointer"
+                    title="Pause meal service while customer is away or abroad"
+                  >
+                    <Plane className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Pause (Vacation)</span>
+                  </button>
+                ) : null}
+
                 <button
                   onClick={() => {
                     onClose();
@@ -1893,7 +1915,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                     title="Customer traveling abroad / on vacation: pause meal deliveries"
                   >
                     <Plane className="w-3.5 h-3.5 text-amber-400" />
-                    <span className="hidden sm:inline">Pause (Vacation)</span>
+                    <span>Pause (Vacation)</span>
                   </button>
                 ) : null}
 
