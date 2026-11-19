@@ -71,3 +71,43 @@ export function formatDateDDMMMYYYY(dateInput?: string | Date | null): string {
 }
 
 export const formatDisplayDate = formatDateDDMMMYYYY;
+
+/**
+ * Returns today's date formatted as ISO YYYY-MM-DD
+ */
+export function getTodayISO(): string {
+  const d = new Date();
+  const year = d.getFullYear();
+  const month = (d.getMonth() + 1).toString().padStart(2, '0');
+  const day = d.getDate().toString().padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+/**
+ * Adds or subtracts days from a Date object or ISO string, returning ISO YYYY-MM-DD
+ */
+export function addDaysISO(dateInput: string | Date = new Date(), days: number): string {
+  let d: Date;
+  if (typeof dateInput === 'string') {
+    const trimmed = dateInput.trim();
+    const parts = trimmed.split('-');
+    if (parts.length === 3) {
+      d = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+    } else {
+      d = new Date(trimmed);
+    }
+  } else {
+    d = new Date(dateInput.getTime());
+  }
+
+  if (isNaN(d.getTime())) {
+    d = new Date();
+  }
+
+  d.setDate(d.getDate() + days);
+  const year = d.getFullYear();
+  const month = (d.getMonth() + 1).toString().padStart(2, '0');
+  const day = d.getDate().toString().padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+

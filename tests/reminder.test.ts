@@ -281,4 +281,63 @@ describe('Payment Due Date Approaching Reminders System', () => {
     expect(message).toContain('*Advance Credit Debited:* -AED 30.00');
     expect(message).toContain('*Net Payable:* *AED 2,970.00*');
   });
+
+  it('suppresses due alerts when customer status is paused (on vacation abroad)', () => {
+    const pausedCustomer: Customer = {
+      id: 'cust-paused',
+      business_id: 'biz-01',
+      customer_code: '055',
+      full_name: 'Rahul Abroad',
+      monthly_rate: 300,
+      total_overdue: 0,
+      has_breakfast: false,
+      has_lunch: true,
+      has_dinner: false,
+      joining_date: '2026-10-01',
+      billing_start_date: '2026-10-01',
+      status: 'paused',
+      billed_up_to_date: '2026-11-19',
+      payment_made_up_to_date: '2026-11-15',
+      created_at: '2026-10-01T00:00:00Z',
+      updated_at: '2026-11-19T00:00:00Z',
+    };
+
+    const todayDate = new Date(2026, 10, 19);
+    const info = getCustomerDueDateInfo(pausedCustomer, [], todayDate, 5);
+
+    expect(info.isApproaching).toBe(false);
+    expect(info.isDueToday).toBe(false);
+    expect(info.amountDue).toBe(0);
+    expect(info.statusLabel).toBe('🌴 Paused (Meals on Hold)');
+  });
+
+  it('correctly handles returned customer with 15 days remaining balance', () => {
+    // When customer returns on 19 Nov and is granted 15 days up to 04 Dec with 0 overdue
+    const resumedCustomer: Customer = {
+      id: 'cust-resumed',
+      business_id: 'biz-01',
+      customer_code: '055',
+      full_name: 'Rahul Returned',
+      monthly_rate: 300,
+      total_overdue: 0,
+      has_breakfast: false,
+      has_lunch: true,
+      has_dinner: false,
+      joining_date: '2026-10-01',
+      billing_start_date: '2026-10-01',
+      status: 'active',
+      billed_up_to_date: '2026-12-04',
+      payment_made_up_to_date: '2026-12-04',
+      created_at: '2026-10-01T00:00:00Z',
+      updated_at: '2026-11-19T00:00:00Z',
+    };
+
+    const todayDate = new Date(2026, 10, 19);
+    const info = getCustomerDueDateInfo(resumedCustomer, [], todayDate, 5);
+
+    // 15 days remaining is > 5-day threshold, so no due alert is triggered today!
+    expect(info.isApproaching).toBe(false);
+    expect(info.isDueToday).toBe(false);
+    expect(info.isOverdue).toBe(false);
+  });
 });

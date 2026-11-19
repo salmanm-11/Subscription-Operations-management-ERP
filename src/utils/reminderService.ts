@@ -155,6 +155,7 @@ export function getCustomerDueDateInfo(
   let daysRemaining = getDaysDifference(parsedDueDate, baseDate);
 
   const overdueBalance = customer.total_overdue || 0;
+  const isPaused = customer.status === 'paused';
   const isLeavingOrCancelled = Boolean(
     customer.status === 'cancelling_soon' ||
     customer.status === 'cancelled' ||
@@ -186,7 +187,14 @@ export function getCustomerDueDateInfo(
   let advanceDeducted = 0;
   let amountDue = originalAmountDue;
 
-  if (isLeavingOrCancelled && overdueBalance === 0 && !openInvoice) {
+  if (isPaused) {
+    // Customer is paused on vacation or abroad. Meals and billing alerts on hold.
+    isApproaching = false;
+    isDueToday = false;
+    isDueTomorrow = false;
+    isOverdue = false;
+    amountDue = 0;
+  } else if (isLeavingOrCancelled && overdueBalance === 0 && !openInvoice) {
     // Customer is leaving or cancelled and has zero outstanding debt.
     // They are fully settled for exit: no upcoming cycle and no alert banner.
     isApproaching = false;
@@ -227,7 +235,15 @@ export function getCustomerDueDateInfo(
     iconColor: 'text-slate-400',
   };
 
-  if (isLeavingOrCancelled && overdueBalance === 0 && !openInvoice) {
+  if (isPaused) {
+    statusLabel = '🌴 Paused (Meals on Hold)';
+    badgeStyle = {
+      bg: 'bg-amber-500/15',
+      text: 'text-amber-300 font-bold',
+      border: 'border-amber-500/30',
+      iconColor: 'text-amber-400',
+    };
+  } else if (isLeavingOrCancelled && overdueBalance === 0 && !openInvoice) {
     statusLabel = '✓ Settled for Exit (0 Due)';
     badgeStyle = {
       bg: 'bg-emerald-500/15',

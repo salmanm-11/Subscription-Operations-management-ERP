@@ -36,11 +36,14 @@ import {
   Hash,
   Wallet,
   Sparkles,
-  CalendarCheck
+  CalendarCheck,
+  Plane,
+  Play,
+  Pause
 } from 'lucide-react';
 import { Customer, Building, MealPlan, Invoice, Payment, PaymentMethod } from '../../types';
 import { formatAED } from '../../utils/currency';
-import { formatDateDDMMMYYYY } from '../../utils/dateFormatter';
+import { formatDateDDMMMYYYY, addDaysISO, getTodayISO } from '../../utils/dateFormatter';
 import { getCustomerDueDateInfo, sendWhatsAppReminder } from '../../utils/reminderService';
 import { getMonthlySubscriptionRate } from '../../utils/billingCycleService';
 import { getCustomerCancellationNotice, sendCancellationWhatsApp, ApproachingCancellation } from '../../utils/cancellationService';
@@ -420,12 +423,14 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
 
     const newDue = Math.max(0, Number(dueAmountInput) || 0);
     const newAdv = Math.max(0, Number(advanceBalanceInput) || 0);
+    const nextStatus = activeCustomer.status === 'paused' ? 'active' : activeCustomer.status;
 
     // Instant optimistic update on profile card
     setOptimisticCustomer({
       total_overdue: newDue,
       advance_balance: newAdv,
       payment_rating: dueRatingInput,
+      status: nextStatus,
       joining_date: joiningDateInput || activeCustomer.joining_date,
       billed_up_to_date: billedUpToInput || activeCustomer.billed_up_to_date,
       payment_made_up_to_date: paymentMadeUpToInput || activeCustomer.payment_made_up_to_date,
@@ -435,6 +440,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
       setIsSavingDue(true);
       const updatedCust: Partial<Customer> = {
         ...activeCustomer,
+        status: nextStatus,
         total_overdue: newDue,
         advance_balance: newAdv,
         payment_rating: dueRatingInput,
@@ -675,6 +681,91 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
     } catch (err: any) {
       console.error('Failed to revoke cancellation notice:', err);
       alert('Failed to revoke notice: ' + (err.message || 'Unknown error'));
+    }
+  };
+
+  // Pause customer subscription for vacation or traveling abroad
+  const handlePauseCustomer = async () => {
+    if (!activeCustomer) return;
+    const confirmMsg = `Pause meal service for "${activeCustomer.full_name}"?\n\nThis marks them as On Vacation / Abroad and pauses meal deliveries. When they return, you can resume and credit their remaining days with 1 click.`;
+    if (!window.confirm(confirmMsg)) return;
+
+    try {
+      const today = getTodayISO();
+      const updatedCust: Partial<Customer> = {
+        ...activeCustomer,
+        id: activeCustomer.id,
+        status: 'paused',
+        notes: activeCustomer.notes
+          ? `${activeCustomer.notes}\n[${today}] Meal service paused (Customer traveling abroad / on vacation)`
+          : `Meal service paused (Customer traveling abroad / on vacation)`,
+        updated_at: new Date().toISOString(),
+      };
+
+      setOptimisticCustomer(updatedCust);
+
+      if (onSaveCustomer) {
+        await onSaveCustomer(updatedCust);
+      } else {
+        await saveCustomer(updatedCust);
+      }
+
+      ActivityLogService.logAction(
+        'Customers',
+        'UPDATE',
+        'Customer Subscription Paused',
+        `Paused meal deliveries for "${activeCustomer.full_name}" (#${activeCustomer.customer_code}) while away abroad`
+      );
+
+      setPaySuccessMsg(`✓ Meal service paused for ${activeCustomer.full_name}. Deliveries placed on hold.`);
+      setTimeout(() => setPaySuccessMsg(null), 5000);
+    } catch (err: any) {
+      console.error('Failed to pause customer:', err);
+      alert('Failed to pause customer: ' + (err.message || 'Unknown error'));
+    }
+  };
+
+  // Resume customer from vacation and credit remaining days from today
+  const handleResumeFromVacation = async (daysToGrant = 15) => {
+    if (!activeCustomer) return;
+    try {
+      const targetDate = addDaysISO(new Date(), daysToGrant);
+      const today = getTodayISO();
+      const updatedCust: Partial<Customer> = {
+        ...activeCustomer,
+        id: activeCustomer.id,
+        status: 'active',
+        billed_up_to_date: targetDate,
+        billing_end_date: targetDate,
+        payment_made_up_to_date: targetDate,
+        total_overdue: 0,
+        payment_rating: 'Good',
+        notes: activeCustomer.notes
+          ? `${activeCustomer.notes}\n[${today}] Resumed from vacation: granted ${daysToGrant} remaining days balance up to ${formatDateDDMMMYYYY(targetDate)}`
+          : `Resumed from vacation: granted ${daysToGrant} remaining days balance up to ${formatDateDDMMMYYYY(targetDate)}`,
+        updated_at: new Date().toISOString(),
+      };
+
+      setOptimisticCustomer(updatedCust);
+
+      if (onSaveCustomer) {
+        await onSaveCustomer(updatedCust);
+      } else {
+        await saveCustomer(updatedCust);
+      }
+
+      ActivityLogService.logAction(
+        'Customers',
+        'UPDATE',
+        'Customer Resumed from Vacation',
+        `Resumed service for "${activeCustomer.full_name}" (#${activeCustomer.customer_code}) with ${daysToGrant} days balance up to ${formatDateDDMMMYYYY(targetDate)}`
+      );
+
+      setPaySuccessMsg(`✓ Successfully resumed! Granted ${daysToGrant} days paid meals up to ${formatDateDDMMMYYYY(targetDate)}.`);
+      setTimeout(() => setPaySuccessMsg(null), 5000);
+    } catch (err: any) {
+      console.error('Failed to resume customer:', err);
+      alert('Failed to resume customer: ' + (err.message || 'Unknown error'));
     }
   };
 
@@ -931,6 +1022,61 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                   {formatAED(cancellationNotice.proRata.proRataAmount)}
                 </div>
                 <div className="text-[10px] text-amber-400/80 font-medium">Partial cycle settlement</div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Vacation / Abroad Paused Service Banner */}
+        {activeCustomer.status === 'paused' && (
+          <div className="mx-4 mt-3 p-4 rounded-2xl bg-gradient-to-r from-amber-950/40 via-slate-900 to-amber-950/30 border border-amber-500/40 shadow-xl relative shrink-0 animate-fadeIn">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-xl bg-amber-500/20 text-amber-300 border border-amber-500/30 shrink-0">
+                  <Plane className="w-5 h-5 text-amber-400" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-sm font-black text-white">Customer is on Vacation / Abroad</span>
+                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/25 text-amber-300 border border-amber-500/40 font-mono">
+                      🌴 Meals Paused
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-300 mt-0.5">
+                    Service and daily deliveries are paused. Grant remaining balance and resume when they return.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 flex-wrap">
+                {!isReadOnly && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => handleResumeFromVacation(15)}
+                      className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-lg shadow-emerald-900/30 transition-all cursor-pointer active:scale-95"
+                      title="Customer returned: resume service and credit 15 remaining days starting from today"
+                    >
+                      <Play className="w-3.5 h-3.5 fill-current" />
+                      <span>Resume with 15 Days</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleResumeFromVacation(30)}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold shadow-lg shadow-sky-900/30 transition-all cursor-pointer active:scale-95"
+                      title="Customer returned: resume service and grant full month (30 days) from today"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5" />
+                      <span>Resume (30 Days)</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleOpenDueModal('billed')}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition-colors cursor-pointer"
+                    >
+                      <span>Custom Dates...</span>
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -1726,9 +1872,32 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
 
           {/* Right Action Buttons */}
           <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-            {/* Record Payment Button (Opens In-Place Pay Modal on Profile) */}
             {!isReadOnly && (
               <>
+                {/* Vacation Pause & Resume Quick Toggles */}
+                {activeCustomer.status === 'paused' ? (
+                  <button
+                    type="button"
+                    onClick={() => handleResumeFromVacation(15)}
+                    className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-lg shadow-emerald-600/20 transition-all active:scale-[0.98] cursor-pointer"
+                    title="Customer returned: resume service and credit 15 remaining days from today"
+                  >
+                    <Play className="w-3.5 h-3.5 fill-current" />
+                    <span>Resume (+15 Days)</span>
+                  </button>
+                ) : activeCustomer.status === 'active' ? (
+                  <button
+                    type="button"
+                    onClick={handlePauseCustomer}
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-750 text-amber-300 text-xs font-bold border border-amber-500/30 transition-all active:scale-[0.98] cursor-pointer"
+                    title="Customer traveling abroad / on vacation: pause meal deliveries"
+                  >
+                    <Plane className="w-3.5 h-3.5 text-amber-400" />
+                    <span className="hidden sm:inline">Pause (Vacation)</span>
+                  </button>
+                ) : null}
+
+                {/* Record Payment Button (Opens In-Place Pay Modal on Profile) */}
                 <button
                   onClick={() => handleOpenPayModal(overdue > 0 ? overdue : activeCustomer.monthly_rate)}
                   className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-lg shadow-emerald-600/20 transition-all active:scale-[0.98]"
@@ -2329,6 +2498,74 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                       onChange={(e) => setPaymentMadeUpToInput(e.target.value)}
                       className="w-full px-2.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono text-xs focus:outline-none focus:border-emerald-400"
                     />
+                  </div>
+                </div>
+
+                {/* Quick Vacation Return & Date Extension Presets */}
+                <div className="p-3 rounded-xl bg-slate-900/90 border border-slate-800 space-y-2">
+                  <div className="text-[11px] font-semibold text-slate-300 flex items-center justify-between">
+                    <span className="flex items-center gap-1.5 text-amber-300">
+                      <Plane className="w-3.5 h-3.5" />
+                      <span>Vacation Return & Balance Extension Presets:</span>
+                    </span>
+                    <span className="text-[10px] text-slate-500">Sets Paid Up To & Billed Up To</span>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const d15 = addDaysISO(new Date(), 15);
+                        setBilledUpToInput(d15);
+                        setPaymentMadeUpToInput(d15);
+                        setDueAmountInput(0);
+                        setDueRatingInput('Good');
+                        setDueReasonInput('Returned from vacation abroad: 15 days remaining balance granted from today');
+                      }}
+                      className="px-2.5 py-1 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 text-[11px] font-bold border border-emerald-500/30 transition-colors cursor-pointer"
+                      title="Returned today: sets Paid Up To & Billed Up To to 15 days from today with AED 0 due"
+                    >
+                      🌴 Return Today + 15 Days (AED 0 Due)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const d30 = addDaysISO(new Date(), 30);
+                        setBilledUpToInput(d30);
+                        setPaymentMadeUpToInput(d30);
+                        setDueAmountInput(0);
+                        setDueRatingInput('Good');
+                        setDueReasonInput('Returned from vacation abroad: 30 days full month granted from today');
+                      }}
+                      className="px-2.5 py-1 rounded-lg bg-sky-500/15 hover:bg-sky-500/25 text-sky-300 text-[11px] font-bold border border-sky-500/30 transition-colors cursor-pointer"
+                    >
+                      🌴 Return Today + 30 Days
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const base = billedUpToInput || getTodayISO();
+                        const extended = addDaysISO(base, 15);
+                        setBilledUpToInput(extended);
+                        setPaymentMadeUpToInput(extended);
+                        setDueReasonInput('Extended subscription by +15 days');
+                      }}
+                      className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-[11px] font-semibold border border-slate-700 transition-colors cursor-pointer"
+                    >
+                      +15 Days to Existing
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const base = billedUpToInput || getTodayISO();
+                        const extended = addDaysISO(base, 30);
+                        setBilledUpToInput(extended);
+                        setPaymentMadeUpToInput(extended);
+                        setDueReasonInput('Extended subscription by +30 days');
+                      }}
+                      className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-[11px] font-semibold border border-slate-700 transition-colors cursor-pointer"
+                    >
+                      +30 Days to Existing
+                    </button>
                   </div>
                 </div>
 
