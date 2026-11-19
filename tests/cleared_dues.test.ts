@@ -127,4 +127,68 @@ describe('Cleared Dues & Settlement History System', () => {
     const cust = OfflineStorage.getCustomers().find((c) => c.id === 'cust-3');
     expect(cust?.total_overdue).toBe(0);
   });
+
+  it('credits excess advance payment to customer wallet when payment exceeds overdue (e.g. 3000 due, 3030 paid)', () => {
+    OfflineStorage.setCustomers([
+      {
+        id: 'cust-advance',
+        customer_code: 'CUST-3030',
+        full_name: 'Salman Test',
+        total_overdue: 3000,
+        advance_balance: 0,
+        status: 'active',
+        business_id: 'biz-1',
+        monthly_rate: 3000,
+      } as Customer,
+    ]);
+
+    const payment = OfflineStorage.recordPayment({
+      customer_id: 'cust-advance',
+      amount: 3030,
+      payment_method: 'cash',
+      payment_date: '2026-11-19',
+      notes: 'Paid 3000 due + 30 advance',
+    });
+
+    expect(payment.amount).toBe(3030);
+    expect(payment.advance_credited).toBe(30);
+
+    const customers = OfflineStorage.getCustomers();
+    const cust = customers.find((c) => c.id === 'cust-advance');
+    expect(cust?.total_overdue).toBe(0);
+    expect(cust?.advance_balance).toBe(30);
+  });
+
+  it('automatically debits advance balance on the next billing amount (e.g. 3000 due debits 30 advance, pays 2970)', () => {
+    OfflineStorage.setCustomers([
+      {
+        id: 'cust-advance-debit',
+        customer_code: 'CUST-3031',
+        full_name: 'Salman Next Month',
+        total_overdue: 3000,
+        advance_balance: 30,
+        status: 'active',
+        business_id: 'biz-1',
+        monthly_rate: 3000,
+      } as Customer,
+    ]);
+
+    // Customer pays 2970 and debits 30 advance
+    const payment = OfflineStorage.recordPayment({
+      customer_id: 'cust-advance-debit',
+      amount: 2970,
+      advance_applied: 30,
+      payment_method: 'cash',
+      payment_date: '2026-12-19',
+      notes: 'Settled with 30 advance debited',
+    });
+
+    expect(payment.amount).toBe(2970);
+    expect(payment.advance_applied).toBe(30);
+
+    const customers = OfflineStorage.getCustomers();
+    const cust = customers.find((c) => c.id === 'cust-advance-debit');
+    expect(cust?.total_overdue).toBe(0);
+    expect(cust?.advance_balance).toBe(0);
+  });
 });

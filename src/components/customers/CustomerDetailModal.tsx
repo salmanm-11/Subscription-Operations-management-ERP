@@ -34,6 +34,8 @@ import {
   Briefcase,
   Percent,
   Hash,
+  Wallet,
+  Sparkles,
   CalendarCheck
 } from 'lucide-react';
 import { Customer, Building, MealPlan, Invoice, Payment, PaymentMethod } from '../../types';
@@ -84,6 +86,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
   // In-modal Due Add / Edit State
   const [isDueModalOpen, setIsDueModalOpen] = useState(false);
   const [dueAmountInput, setDueAmountInput] = useState<number>(0);
+  const [advanceBalanceInput, setAdvanceBalanceInput] = useState<number>(0);
   const [dueRatingInput, setDueRatingInput] = useState<'Good' | 'Late payer' | 'Bad'>('Good');
   const [joiningDateInput, setJoiningDateInput] = useState<string>('');
   const [billedUpToInput, setBilledUpToInput] = useState<string>('');
@@ -96,6 +99,8 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
   const [payBaseAmount, setPayBaseAmount] = useState<number>(0);
   const [payDiscountType, setPayDiscountType] = useState<'fixed' | 'percentage'>('fixed');
   const [payDiscountValue, setPayDiscountValue] = useState<number>(0);
+  const [payAdvanceApplied, setPayAdvanceApplied] = useState<number>(0);
+  const [payUseAdvance, setPayUseAdvance] = useState<boolean>(true);
   const [payAmount, setPayAmount] = useState<number>(0);
   const [payCoveredUntilDate, setPayCoveredUntilDate] = useState<string>('');
   const [payInvoiceId, setPayInvoiceId] = useState<string>('');
@@ -143,6 +148,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
     customer?.billed_up_to_date,
     customer?.status,
     customer?.joining_date,
+    customer?.advance_balance,
   ]);
 
   // Keep customer data synchronized in real-time if live customers array updates
@@ -276,10 +282,22 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
         ? overdue
         : cycleRate.effectiveRate;
 
+    const advCredit = Math.max(0, activeCustomer.advance_balance || 0);
     setPayBaseAmount(defaultAmount);
     setPayDiscountType('fixed');
     setPayDiscountValue(0);
-    setPayAmount(defaultAmount);
+
+    if (advCredit > 0) {
+      const toDeduct = Math.min(advCredit, defaultAmount);
+      setPayAdvanceApplied(toDeduct);
+      setPayUseAdvance(true);
+      setPayAmount(Math.max(0, Number((defaultAmount - toDeduct).toFixed(2))));
+    } else {
+      setPayAdvanceApplied(0);
+      setPayUseAdvance(false);
+      setPayAmount(defaultAmount);
+    }
+
     setPayCoveredUntilDate(
       activeCustomer.billed_up_to_date || activeCustomer.payment_made_up_to_date || '2026-11-30'
     );
@@ -307,18 +325,31 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
   // Submit payment from within the profile page
   const handleConfirmPayment = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!activeCustomer || payAmount <= 0) {
-      alert('Please enter a valid payment amount greater than 0.');
+    if (!activeCustomer || payAmount < 0) {
+      alert('Please enter a valid payment amount.');
       return;
     }
 
     const paidAmt = Number(payAmount);
+    const advanceApplied = payUseAdvance ? payAdvanceApplied : 0;
+    const totalSettled = paidAmt + advanceApplied;
     const currentDue = activeCustomer.total_overdue || 0;
-    const newDue = Math.max(0, currentDue - paidAmt);
+    let newDue = 0;
+    let newAdvance = Math.max(0, (activeCustomer.advance_balance || 0) - advanceApplied);
+    let excessPaid = 0;
+
+    if (totalSettled > currentDue) {
+      excessPaid = totalSettled - currentDue;
+      newDue = 0;
+      newAdvance += excessPaid;
+    } else {
+      newDue = Math.max(0, currentDue - totalSettled);
+    }
 
     // Instant optimistic update on profile card
     setOptimisticCustomer({
       total_overdue: newDue,
+      advance_balance: newAdvance,
       payment_rating: newDue === 0 ? 'Good' : 'Late payer',
       payment_made_up_to_date: payCoveredUntilDate || payDate,
     });
@@ -333,6 +364,8 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
         discount_amount: calculatedPayDiscountAmount > 0 ? calculatedPayDiscountAmount : undefined,
         discount_type: calculatedPayDiscountAmount > 0 ? payDiscountType : undefined,
         discount_value: calculatedPayDiscountAmount > 0 ? payDiscountValue : undefined,
+        advance_applied: advanceApplied > 0 ? advanceApplied : undefined,
+        advance_credited: excessPaid > 0 ? excessPaid : undefined,
         covered_until_date: payCoveredUntilDate || undefined,
         payment_date: payDate,
         payment_method: payMethod,
@@ -362,6 +395,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
   const handleOpenDueModal = (initialField?: 'due' | 'billed' | 'paid' | 'joining') => {
     if (!activeCustomer) return;
     setDueAmountInput(activeCustomer.total_overdue || 0);
+    setAdvanceBalanceInput(activeCustomer.advance_balance || 0);
     setDueRatingInput(
       activeCustomer.payment_rating ||
         (activeCustomer.total_overdue && activeCustomer.total_overdue > 0 ? 'Late payer' : 'Good')
@@ -385,10 +419,12 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
     if (!activeCustomer) return;
 
     const newDue = Math.max(0, Number(dueAmountInput) || 0);
+    const newAdv = Math.max(0, Number(advanceBalanceInput) || 0);
 
     // Instant optimistic update on profile card
     setOptimisticCustomer({
       total_overdue: newDue,
+      advance_balance: newAdv,
       payment_rating: dueRatingInput,
       joining_date: joiningDateInput || activeCustomer.joining_date,
       billed_up_to_date: billedUpToInput || activeCustomer.billed_up_to_date,
@@ -400,6 +436,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
       const updatedCust: Partial<Customer> = {
         ...activeCustomer,
         total_overdue: newDue,
+        advance_balance: newAdv,
         payment_rating: dueRatingInput,
         joining_date: joiningDateInput || activeCustomer.joining_date,
         billed_up_to_date: billedUpToInput || activeCustomer.billed_up_to_date,
@@ -954,6 +991,12 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
               <div className="text-[10px] mt-0.5 text-slate-400">
                 {isOverdue ? 'Payment overdue' : 'Account in good standing'}
               </div>
+              {(activeCustomer.advance_balance || 0) > 0 && (
+                <div className="mt-1.5 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/35 text-emerald-300 text-[10px] font-bold">
+                  <Wallet className="w-3 h-3 text-emerald-400" />
+                  <span>Advance Credit: {formatAED(activeCustomer.advance_balance || 0)}</span>
+                </div>
+              )}
             </div>
 
             {/* Quick Actions: Add Due / Edit Due + View Bill + Pay Overdue */}
@@ -1791,6 +1834,39 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                     )}
                   </div>
 
+                  {/* Available Advance Credit Banner */}
+                  {(activeCustomer.advance_balance || 0) > 0 && (
+                    <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-between text-emerald-300">
+                      <div className="flex items-center gap-2">
+                        <Wallet className="w-4 h-4 text-emerald-400 shrink-0" />
+                        <div className="text-xs">
+                          <span className="font-bold">Available Advance Credit:</span>{' '}
+                          <span className="font-mono text-sm font-black ml-1 text-emerald-400">
+                            {formatAED(activeCustomer.advance_balance || 0)}
+                          </span>
+                        </div>
+                      </div>
+                      <label className="flex items-center gap-1.5 cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          checked={payUseAdvance}
+                          onChange={(e) => {
+                            const checked = e.target.checked;
+                            setPayUseAdvance(checked);
+                            const afterDisc = Math.max(0, payBaseAmount - calculatedPayDiscountAmount);
+                            const adv = checked ? Math.min(activeCustomer.advance_balance || 0, afterDisc) : 0;
+                            setPayAdvanceApplied(adv);
+                            setPayAmount(Math.max(0, Number((afterDisc - adv).toFixed(2))));
+                          }}
+                          className="rounded border-slate-700 bg-slate-900 text-amber-500 focus:ring-0 w-4 h-4"
+                        />
+                        <span className="text-xs font-bold text-emerald-300">
+                          Debit Advance ({formatAED(payAdvanceApplied)})
+                        </span>
+                      </label>
+                    </div>
+                  )}
+
                   {/* Standard Fee / Original Amount with Quick Presets */}
                   <div className="space-y-1">
                     <div className="flex items-center justify-between">
@@ -1934,7 +2010,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                       <input
                         type="number"
                         step="0.01"
-                        min="1"
+                        min="0"
                         value={payAmount || ''}
                         onChange={(e) => setPayAmount(parseFloat(e.target.value) || 0)}
                         required
@@ -1942,6 +2018,21 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                         className="w-full pl-12 pr-4 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono font-bold text-base focus:outline-none focus:border-emerald-500"
                       />
                     </div>
+                    {(() => {
+                      const afterDisc = Math.max(0, payBaseAmount - calculatedPayDiscountAmount);
+                      const adv = payUseAdvance ? payAdvanceApplied : 0;
+                      const targetPayable = Math.max(0, afterDisc - adv);
+                      const excess = Math.max(0, payAmount - targetPayable);
+                      if (excess > 0) {
+                        return (
+                          <div className="mt-1.5 p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/25 flex items-center gap-1.5 text-[11px] font-bold text-emerald-300">
+                            <Sparkles className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                            <span>+AED {excess.toFixed(2)} extra will be credited to Advance Balance for next bill!</span>
+                          </div>
+                        );
+                      }
+                      return null;
+                    })()}
                   </div>
 
                   {/* Covered Until / Subscription Expiry Date */}
@@ -2101,37 +2192,64 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
               </div>
 
               <form onSubmit={handleSaveDue} className="space-y-3.5">
-                {/* Due Amount Input */}
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-200 flex items-center justify-between">
-                    <span>Outstanding Due Amount (AED) *</span>
-                    <span className="text-[10px] text-slate-400">Current: {formatAED(activeCustomer.total_overdue || 0)}</span>
-                  </label>
-                  <div className="relative">
-                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-bold font-mono">
-                      AED
-                    </span>
-                    <input
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      required
-                      value={dueAmountInput}
-                      onChange={(e) => {
-                        const val = parseFloat(e.target.value) || 0;
-                        setDueAmountInput(val);
-                        const standardMonthRate = getMonthlySubscriptionRate(activeCustomer).effectiveRate;
-                        if (val === 0) {
-                          setDueRatingInput('Good');
-                        } else if (val > standardMonthRate) {
-                          setDueRatingInput('Bad');
-                        } else {
-                          setDueRatingInput('Late payer');
-                        }
-                      }}
-                      className="w-full pl-12 pr-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono text-base font-bold focus:outline-none focus:border-amber-400"
-                    />
+                {/* Due Amount & Advance Balance Inputs */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-200 flex items-center justify-between">
+                      <span>Outstanding Due (AED) *</span>
+                      <span className="text-[10px] text-slate-400">Current: {formatAED(activeCustomer.total_overdue || 0)}</span>
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-bold font-mono">
+                        AED
+                      </span>
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        required
+                        value={dueAmountInput}
+                        onChange={(e) => {
+                          const val = parseFloat(e.target.value) || 0;
+                          setDueAmountInput(val);
+                          const standardMonthRate = getMonthlySubscriptionRate(activeCustomer).effectiveRate;
+                          if (val === 0) {
+                            setDueRatingInput('Good');
+                          } else if (val > standardMonthRate) {
+                            setDueRatingInput('Bad');
+                          } else {
+                            setDueRatingInput('Late payer');
+                          }
+                        }}
+                        className="w-full pl-12 pr-4 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono text-sm font-bold focus:outline-none focus:border-amber-400"
+                      />
+                    </div>
                   </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-200 flex items-center justify-between">
+                      <span className="flex items-center gap-1">
+                        <Wallet className="w-3.5 h-3.5 text-emerald-400" />
+                        <span>Advance Balance (AED)</span>
+                      </span>
+                      <span className="text-[10px] text-emerald-400">Current: {formatAED(activeCustomer.advance_balance || 0)}</span>
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-bold font-mono">
+                        AED
+                      </span>
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={advanceBalanceInput}
+                        onChange={(e) => setAdvanceBalanceInput(parseFloat(e.target.value) || 0)}
+                        placeholder="0.00"
+                        className="w-full pl-12 pr-4 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono text-sm font-bold focus:outline-none focus:border-emerald-400"
+                      />
+                    </div>
+                  </div>
+                </div>
 
                   {/* Quick Preset Buttons */}
                   <div className="flex items-center gap-1.5 flex-wrap pt-1">
@@ -2167,7 +2285,6 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                       Full Month ({formatAED(getMonthlySubscriptionRate(activeCustomer).effectiveRate)})
                     </button>
                   </div>
-                </div>
 
                 {/* Joining Date, Due Date & Paid Up To Dates */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">

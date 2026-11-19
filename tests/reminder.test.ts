@@ -241,4 +241,44 @@ describe('Payment Due Date Approaching Reminders System', () => {
     expect(info.isOverdue).toBe(false);
     expect(info.daysRemaining).toBe(30);
   });
+
+  it('automatically debits advance credit from due amount in reminder info and WhatsApp breakdown', () => {
+    const customer: Customer = {
+      id: 'cust-advance-reminder',
+      business_id: 'biz-01',
+      customer_code: '099',
+      full_name: 'Anand Kumar',
+      monthly_rate: 3000,
+      total_overdue: 3000,
+      advance_balance: 30,
+      has_breakfast: true,
+      has_lunch: true,
+      has_dinner: true,
+      joining_date: '2026-10-01',
+      billing_start_date: '2026-10-01',
+      status: 'active',
+      billed_up_to_date: '2026-11-20',
+      created_at: '2026-10-01T00:00:00Z',
+      updated_at: '2026-11-19T00:00:00Z',
+    };
+
+    const todayDate = new Date(2026, 10, 19);
+    const info = getCustomerDueDateInfo(customer, [], todayDate, 5);
+
+    expect(info.originalAmountDue).toBe(3000);
+    expect(info.advanceDeducted).toBe(30);
+    expect(info.amountDue).toBe(2970);
+
+    const message = generateWhatsAppReminderMessage(
+      customer,
+      info.targetDueDateDisplay,
+      info.daysRemaining,
+      info.amountDue,
+      info.originalAmountDue,
+      info.advanceDeducted
+    );
+
+    expect(message).toContain('*Advance Credit Debited:* -AED 30.00');
+    expect(message).toContain('*Net Payable:* *AED 2,970.00*');
+  });
 });

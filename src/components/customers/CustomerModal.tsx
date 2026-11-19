@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { X, Check, UserCheck, PhoneCall, AlertCircle, Building2, Plus, Search, MapPin, Calendar, Briefcase } from 'lucide-react';
+import { X, Check, UserCheck, PhoneCall, AlertCircle, Building2, Plus, Search, MapPin, Calendar, Briefcase, Wallet, Sparkles } from 'lucide-react';
 import { Customer, Building, MealPlan, CustomerStatus } from '../../types';
 import { AuthService } from '../../api/authService';
 import { OfflineStorage } from '../../api/offlineStorage';
@@ -57,6 +57,7 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
   const [paymentMadeUpTo, setPaymentMadeUpTo] = useState('2026-10-06');
   const [billedUpTo, setBilledUpTo] = useState('2026-10-31');
   const [totalOverdue, setTotalOverdue] = useState<number>(0);
+  const [advanceBalance, setAdvanceBalance] = useState<number>(0);
   const [status, setStatus] = useState<CustomerStatus>('active');
   const [managedBy, setManagedBy] = useState<string>('admin');
   const [notes, setNotes] = useState('');
@@ -154,6 +155,7 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
       setPaymentMadeUpTo(customer.payment_made_up_to_date || customer.billing_start_date || '2026-10-06');
       setBilledUpTo(customer.billed_up_to_date || customer.billing_end_date || '2026-10-31');
       setTotalOverdue(customer.total_overdue || 0);
+      setAdvanceBalance(customer.advance_balance || 0);
       let initialNoticeDate = customer.cancellation_date || '';
       let initialNoticeReason = customer.cancellation_reason || '';
       if (!initialNoticeDate && customer.notes && customer.notes.includes('[NOTICE: Cancelling on ')) {
@@ -300,6 +302,7 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
       payment_made_up_to_date: !customer ? joiningDate : (paymentMadeUpTo || undefined),
       billed_up_to_date: billedUpTo || undefined,
       total_overdue: !customer ? 0 : Math.max(0, Number(totalOverdue) || 0),
+      advance_balance: Math.max(0, Number(advanceBalance) || 0),
       status: finalStatus,
       managed_by: managedBy,
       notes: finalNotes,
@@ -989,40 +992,69 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
             </div>
           ) : (
             <>
-              {/* Existing Customer: Outstanding Due Balance Field */}
-              <div className="bg-slate-900/90 p-4 rounded-xl border border-slate-700/80">
-                <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-slate-200 font-bold text-xs sm:text-sm flex items-center gap-1.5">
-                    <AlertCircle className="w-4 h-4 text-amber-400" />
-                    <span>Outstanding Dues / Opening Balance (AED)</span>
-                  </label>
-                  {Number(totalOverdue) > 0 ? (
-                    <span className="text-[11px] font-bold text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/20">
-                      Overdue Active
+              {/* Existing Customer: Outstanding Due Balance & Advance Balance */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                <div className="bg-slate-900/90 p-3.5 rounded-xl border border-slate-700/80">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="text-slate-200 font-bold text-xs flex items-center gap-1.5">
+                      <AlertCircle className="w-3.5 h-3.5 text-rose-400" />
+                      <span>Outstanding Dues (AED)</span>
+                    </label>
+                    {Number(totalOverdue) > 0 ? (
+                      <span className="text-[10px] font-bold text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/20">
+                        Overdue Active
+                      </span>
+                    ) : (
+                      <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
+                        Zero Due
+                      </span>
+                    )}
+                  </div>
+                  <div className="relative">
+                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-bold font-mono">
+                      AED
                     </span>
-                  ) : (
-                    <span className="text-[11px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
-                      No Due (Good Standing)
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={totalOverdue}
+                      onChange={(e) => setTotalOverdue(parseFloat(e.target.value) || 0)}
+                      placeholder="0.00"
+                      className="w-full pl-12 pr-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-white font-mono font-bold text-xs sm:text-sm focus:outline-none focus:border-rose-400"
+                    />
+                  </div>
+                  <p className="text-[10px] text-slate-400 mt-1">Pending mess dues</p>
+                </div>
+
+                <div className="bg-slate-900/90 p-3.5 rounded-xl border border-slate-700/80">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="text-slate-200 font-bold text-xs flex items-center gap-1.5">
+                      <Wallet className="w-3.5 h-3.5 text-emerald-400" />
+                      <span>Advance Credit Balance (AED)</span>
+                    </label>
+                    {Number(advanceBalance) > 0 && (
+                      <span className="text-[10px] font-bold text-emerald-300 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
+                        Active Credit
+                      </span>
+                    )}
+                  </div>
+                  <div className="relative">
+                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-bold font-mono">
+                      AED
                     </span>
-                  )}
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={advanceBalance}
+                      onChange={(e) => setAdvanceBalance(parseFloat(e.target.value) || 0)}
+                      placeholder="0.00"
+                      className="w-full pl-12 pr-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-white font-mono font-bold text-xs sm:text-sm focus:outline-none focus:border-emerald-400"
+                    />
+                  </div>
+                  <p className="text-[10px] text-slate-400 mt-1">Auto-debited on next bill</p>
                 </div>
-                <div className="relative">
-                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-bold font-mono">
-                    AED
-                  </span>
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={totalOverdue}
-                    onChange={(e) => setTotalOverdue(parseFloat(e.target.value) || 0)}
-                    placeholder="0.00"
-                    className="w-full pl-12 pr-4 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white font-mono font-bold focus:outline-none focus:border-amber-400"
-                  />
-                </div>
-                <p className="text-[11px] text-slate-400 mt-1.5">
-                  Set or adjust customer's pending due balance. Setting to 0 marks the account in good standing.
-                </p>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">

@@ -127,6 +127,7 @@ export interface Customer {
   status: CustomerStatus;
   payment_rating?: 'Good' | 'Late payer' | 'Bad';
   total_overdue?: number; // Calculated or cached AED
+  advance_balance?: number; // Advance credit balance (AED) carried forward to next bill
   managed_by?: string; // 'admin' | 'manager' | handler username
   notes?: string;
   building?: Building;
@@ -195,6 +196,8 @@ export interface Payment {
   discount_amount?: number; // Discount in AED
   discount_type?: 'fixed' | 'percentage'; // 'fixed' (AED number) or 'percentage' (%)
   discount_value?: number; // Raw entered number or percent (e.g. 50 or 10)
+  advance_applied?: number; // Advance credit debited / deducted from customer balance
+  advance_credited?: number; // Extra amount credited to customer advance balance
   covered_until_date?: string; // Valid / Expiry date covered by this payment (YYYY-MM-DD)
   payment_date: string;
   payment_method: PaymentMethod;

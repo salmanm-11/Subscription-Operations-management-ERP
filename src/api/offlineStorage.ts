@@ -302,9 +302,16 @@ export class OfflineStorage {
           cancelDate = undefined;
           cancelReason = undefined;
         }
+        let advBal = cust.advance_balance !== undefined ? Math.max(0, Number(cust.advance_balance) || 0) : customers[idx].advance_balance;
+        if (advBal === undefined && (cust.notes || customers[idx].notes)) {
+          const match = (cust.notes || customers[idx].notes || '').match(/\[ADVANCE: ([\d.]+)\]/);
+          if (match) advBal = parseFloat(match[1]) || 0;
+        }
+
         customers[idx] = {
           ...customers[idx],
           ...cust,
+          advance_balance: advBal !== undefined ? advBal : 0,
           cancellation_date: cancelDate,
           cancellation_reason: cancelReason,
           updated_at: now,
@@ -352,6 +359,7 @@ export class OfflineStorage {
       status: cust.status || 'active',
       payment_rating: cust.payment_rating || 'Good',
       total_overdue: cust.total_overdue || 0,
+      advance_balance: cust.advance_balance !== undefined ? Math.max(0, Number(cust.advance_balance) || 0) : 0,
       managed_by: cust.managed_by || 'admin',
       notes: cust.notes || '',
       created_at: now,
@@ -815,6 +823,9 @@ export class OfflineStorage {
   static recordPayment(pay: Partial<Payment>): Payment {
     const payments = this.getPayments();
     const amount = pay.amount || 0;
+    const advanceApplied = pay.advance_applied ? roundCurrency(Math.max(0, pay.advance_applied)) : 0;
+    const paidAmount = roundCurrency(amount);
+    const totalSettled = addCurrency(paidAmount, advanceApplied);
 
     const newPayment: Payment = {
       id: `pay-${Date.now()}`,
@@ -822,11 +833,13 @@ export class OfflineStorage {
       payment_number: `REC-${Date.now().toString().slice(-6)}`,
       customer_id: pay.customer_id || '',
       invoice_id: pay.invoice_id,
-      amount: roundCurrency(amount),
+      amount: paidAmount,
       original_amount: pay.original_amount !== undefined ? roundCurrency(pay.original_amount) : undefined,
       discount_amount: pay.discount_amount !== undefined ? roundCurrency(pay.discount_amount) : undefined,
       discount_type: pay.discount_type,
       discount_value: pay.discount_value,
+      advance_applied: advanceApplied > 0 ? advanceApplied : undefined,
+      advance_credited: pay.advance_credited !== undefined ? roundCurrency(pay.advance_credited) : undefined,
       covered_until_date: pay.covered_until_date,
       payment_date: pay.payment_date || new Date().toISOString().split('T')[0],
       payment_method: pay.payment_method || 'cash',
@@ -836,20 +849,32 @@ export class OfflineStorage {
       created_at: new Date().toISOString()
     };
 
-    payments.unshift(newPayment);
-    this.setItem(STORAGE_KEYS.PAYMENTS, payments);
-
     // Update customer overdue and payment dates
     let targetCustomer: Customer | undefined;
     if (pay.customer_id) {
       const customers = this.getCustomers();
       targetCustomer = customers.find(item => item.id === pay.customer_id || item.customer_code === pay.customer_id);
       if (targetCustomer) {
-        targetCustomer.total_overdue = Math.max(0, subtractCurrency(targetCustomer.total_overdue || 0, amount));
+        const currentOverdue = targetCustomer.total_overdue || 0;
+        let newOverdue = 0;
+        let newAdvance = Math.max(0, subtractCurrency(targetCustomer.advance_balance || 0, advanceApplied));
+
+        if (totalSettled > currentOverdue) {
+          const excess = subtractCurrency(totalSettled, currentOverdue);
+          newOverdue = 0;
+          newAdvance = roundCurrency(addCurrency(newAdvance, excess));
+          newPayment.advance_credited = excess;
+        } else {
+          newOverdue = Math.max(0, subtractCurrency(currentOverdue, totalSettled));
+        }
+
+        targetCustomer.total_overdue = newOverdue;
+        targetCustomer.advance_balance = newAdvance;
+        targetCustomer.payment_rating = newOverdue > 0 ? 'Late payer' : 'Good';
+
         if (pay.covered_until_date) {
           targetCustomer.payment_made_up_to_date = pay.covered_until_date;
         } else if (targetCustomer.total_overdue === 0) {
-          targetCustomer.payment_rating = 'Good';
           if (targetCustomer.billed_up_to_date) {
             targetCustomer.payment_made_up_to_date = targetCustomer.billed_up_to_date;
           } else {
@@ -861,6 +886,9 @@ export class OfflineStorage {
         this.setItem(STORAGE_KEYS.CUSTOMERS, customers);
       }
     }
+
+    payments.unshift(newPayment);
+    this.setItem(STORAGE_KEYS.PAYMENTS, payments);
 
     // Update associated invoices
     if (pay.customer_id) {

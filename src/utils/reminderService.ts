@@ -88,6 +88,8 @@ export interface CustomerDueDateInfo {
   isDueTomorrow: boolean;
   isApproaching: boolean;
   amountDue: number;
+  originalAmountDue?: number;
+  advanceDeducted?: number;
   statusLabel: string;
   badgeStyle: {
     bg: string;
@@ -179,7 +181,10 @@ export function getCustomerDueDateInfo(
 
   const cycleRateInfo = getMonthlySubscriptionRate(customer, parsedDueDate);
   const standardDueAmount = cycleRateInfo.effectiveRate;
-  let amountDue = overdueBalance > 0 ? overdueBalance : standardDueAmount;
+  const originalAmountDue = overdueBalance > 0 ? overdueBalance : standardDueAmount;
+  const advanceCredit = Math.max(0, customer.advance_balance || 0);
+  let advanceDeducted = 0;
+  let amountDue = originalAmountDue;
 
   if (isLeavingOrCancelled && overdueBalance === 0 && !openInvoice) {
     // Customer is leaving or cancelled and has zero outstanding debt.
@@ -201,6 +206,16 @@ export function getCustomerDueDateInfo(
     isDueToday = nextDaysRemaining === 0;
     isDueTomorrow = nextDaysRemaining === 1;
     isOverdue = nextDaysRemaining < 0;
+  } else if (advanceCredit > 0) {
+    // Debits advance credit against due amount
+    advanceDeducted = Math.min(advanceCredit, originalAmountDue);
+    amountDue = Math.max(0, originalAmountDue - advanceCredit);
+    if (amountDue === 0) {
+      isApproaching = false;
+      isDueToday = false;
+      isDueTomorrow = false;
+      isOverdue = false;
+    }
   }
 
   // Status and styling badge
@@ -222,6 +237,14 @@ export function getCustomerDueDateInfo(
     };
   } else if (isPaidUpToTarget && !isApproaching) {
     statusLabel = `✓ Paid & Covered (Next cycle in ${daysRemaining} days)`;
+    badgeStyle = {
+      bg: 'bg-emerald-500/15',
+      text: 'text-emerald-300 font-bold',
+      border: 'border-emerald-500/30',
+      iconColor: 'text-emerald-400',
+    };
+  } else if (advanceCredit >= originalAmountDue && originalAmountDue > 0) {
+    statusLabel = `✓ Covered by Advance (AED ${advanceCredit.toFixed(2)} credit)`;
     badgeStyle = {
       bg: 'bg-emerald-500/15',
       text: 'text-emerald-300 font-bold',
@@ -281,6 +304,8 @@ export function getCustomerDueDateInfo(
     isDueTomorrow,
     isApproaching,
     amountDue,
+    originalAmountDue,
+    advanceDeducted: advanceDeducted > 0 ? advanceDeducted : undefined,
     statusLabel,
     badgeStyle,
   };
@@ -313,7 +338,9 @@ export function generateWhatsAppReminderMessage(
   customer: Customer,
   dueDateDisplay: string,
   daysRemaining: number,
-  amount: number
+  amount: number,
+  originalAmount?: number,
+  advanceDeducted?: number
 ): string {
   let timePhrase = '';
   if (daysRemaining === 0) {
@@ -326,10 +353,18 @@ export function generateWhatsAppReminderMessage(
     timePhrase = `on *${dueDateDisplay}* and is now overdue`;
   }
 
+  const advanceBreakdown =
+    advanceDeducted && advanceDeducted > 0 && originalAmount
+      ? `• *Standard Fee:* ${formatAED(originalAmount)}\n` +
+        `• *Advance Credit Debited:* -${formatAED(advanceDeducted)}\n` +
+        `• *Net Payable:* *${formatAED(amount)}*\n\n`
+      : `• *Amount Due:* *${formatAED(amount)}*\n\n`;
+
   return (
     `*KARAMA HOMELY MESS - PAYMENT REMINDER*\n\n` +
     `Dear ${customer.full_name},\n\n` +
-    `This is a friendly reminder that your mess subscription payment of *${formatAED(amount)}* is due ${timePhrase}.\n\n` +
+    `This is a friendly reminder that your mess subscription payment is due ${timePhrase}.\n\n` +
+    advanceBreakdown +
     `🏢 *Accommodation:* ${customer.building_name_cache || 'Belrasheed Building'}${customer.apartment_cache ? ` (Apt ${customer.apartment_cache})` : ''}\n` +
     `📋 *Customer ID:* #${customer.customer_code}\n\n` +
     `Kindly arrange settlement at your earliest convenience to maintain uninterrupted daily meal delivery.\n\n` +
@@ -344,9 +379,11 @@ export function sendWhatsAppReminder(
   customer: Customer,
   dueDateDisplay: string,
   daysRemaining: number,
-  amount: number
+  amount: number,
+  originalAmount?: number,
+  advanceDeducted?: number
 ): void {
-  const text = generateWhatsAppReminderMessage(customer, dueDateDisplay, daysRemaining, amount);
+  const text = generateWhatsAppReminderMessage(customer, dueDateDisplay, daysRemaining, amount, originalAmount, advanceDeducted);
   let phone = (customer.phone || '').replace(/[^0-9]/g, '');
   if (phone.startsWith('05')) phone = '971' + phone.substring(1);
   else if (phone.length === 9) phone = '971' + phone;

@@ -855,13 +855,29 @@ export const App: React.FC = () => {
     setPayments((prev) => [localPay, ...prev]);
 
     if (pay.customer_id) {
+      const advanceApplied = pay.advance_applied ? Math.max(0, pay.advance_applied) : 0;
+      const paidAmount = pay.amount || 0;
+      const totalSettled = paidAmount + advanceApplied;
+
       setCustomers((prev) =>
         prev.map((c) => {
           if (c.id === pay.customer_id || c.customer_code === pay.customer_id) {
-            const newOverdue = Math.max(0, (c.total_overdue || 0) - (pay.amount || 0));
+            const currentOverdue = c.total_overdue || 0;
+            let newOverdue = 0;
+            let newAdvance = Math.max(0, (c.advance_balance || 0) - advanceApplied);
+
+            if (totalSettled > currentOverdue) {
+              const excess = totalSettled - currentOverdue;
+              newOverdue = 0;
+              newAdvance += excess;
+            } else {
+              newOverdue = Math.max(0, currentOverdue - totalSettled);
+            }
+
             return {
               ...c,
               total_overdue: newOverdue,
+              advance_balance: newAdvance,
               payment_rating: newOverdue > 0 ? 'Late payer' : 'Good',
               payment_made_up_to_date: pay.covered_until_date || pay.payment_date || c.payment_made_up_to_date,
             };
@@ -871,10 +887,22 @@ export const App: React.FC = () => {
       );
       setViewingProfileCustomer((prev) => {
         if (!prev || (prev.id !== pay.customer_id && prev.customer_code !== pay.customer_id)) return prev;
-        const newOverdue = Math.max(0, (prev.total_overdue || 0) - (pay.amount || 0));
+        const currentOverdue = prev.total_overdue || 0;
+        let newOverdue = 0;
+        let newAdvance = Math.max(0, (prev.advance_balance || 0) - advanceApplied);
+
+        if (totalSettled > currentOverdue) {
+          const excess = totalSettled - currentOverdue;
+          newOverdue = 0;
+          newAdvance += excess;
+        } else {
+          newOverdue = Math.max(0, currentOverdue - totalSettled);
+        }
+
         return {
           ...prev,
           total_overdue: newOverdue,
+          advance_balance: newAdvance,
           payment_rating: newOverdue > 0 ? 'Late payer' : 'Good',
           payment_made_up_to_date: pay.covered_until_date || pay.payment_date || prev.payment_made_up_to_date,
         };

@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { CreditCard, Plus, Search, Printer, X, FileSpreadsheet, Building2, Phone, CheckCircle2, RotateCcw, Receipt, Trash2, AlertTriangle, MessageSquare, Percent, Hash, Calendar, CalendarCheck } from 'lucide-react';
+import { CreditCard, Plus, Search, Printer, X, FileSpreadsheet, Building2, Phone, CheckCircle2, RotateCcw, Receipt, Trash2, AlertTriangle, MessageSquare, Percent, Hash, Calendar, CalendarCheck, Wallet, Sparkles } from 'lucide-react';
 import { Payment, Customer, Invoice, PaymentMethod } from '../../types';
 import { formatAED } from '../../utils/currency';
 import { getMonthlySubscriptionRate } from '../../utils/billingCycleService';
@@ -34,12 +34,18 @@ export const PaymentList: React.FC<PaymentListProps> = ({
   const [baseAmount, setBaseAmount] = useState<number>(380);
   const [discountType, setDiscountType] = useState<'fixed' | 'percentage'>('fixed');
   const [discountValue, setDiscountValue] = useState<number>(0);
+  const [advanceApplied, setAdvanceApplied] = useState<number>(0);
+  const [useAdvanceCredit, setUseAdvanceCredit] = useState<boolean>(true);
   const [amount, setAmount] = useState<number>(380);
   const [coveredUntilDate, setCoveredUntilDate] = useState<string>('');
   const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split('T')[0]);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash');
   const [referenceNumber, setReferenceNumber] = useState('');
   const [notes, setNotes] = useState('');
+
+  const selectedCustomer = useMemo(() => {
+    return customers.find((c) => c.id === customerId);
+  }, [customers, customerId]);
 
   // Calculate discount and net payable dynamically
   const calculatedDiscountAmount = useMemo(() => {
@@ -62,7 +68,10 @@ export const PaymentList: React.FC<PaymentListProps> = ({
         disc = Math.min(newVal, newBase);
       }
     }
-    setAmount(Math.max(0, Number((newBase - disc).toFixed(2))));
+    const afterDisc = Math.max(0, newBase - disc);
+    const adv = useAdvanceCredit ? Math.min(selectedCustomer?.advance_balance || 0, afterDisc) : 0;
+    setAdvanceApplied(adv);
+    setAmount(Math.max(0, Number((afterDisc - adv).toFixed(2))));
   };
 
   // Map of customers by ID for fast and accurate lookups
@@ -189,12 +198,21 @@ export const PaymentList: React.FC<PaymentListProps> = ({
         `• *Discount Applied:* -${formatAED(p.discount_amount)}${discPercent}\n`;
     }
 
+    let advanceDetails = '';
+    if (p.advance_applied && p.advance_applied > 0) {
+      advanceDetails += `• *Advance Credit Debited:* -${formatAED(p.advance_applied)}\n`;
+    }
+    if (p.advance_credited && p.advance_credited > 0) {
+      advanceDetails += `• *Advance Credit Added:* +${formatAED(p.advance_credited)} (Carried to next bill)\n`;
+    }
+
     const text =
       `*Karama Homely Mess - Payment Receipt*\n\n` +
       `Dear *${name}*,\n` +
       `We have received your payment with thanks!\n\n` +
       `• *Receipt No:* ${recNo}\n` +
       discountDetails +
+      advanceDetails +
       `• *Amount Paid:* *${amountStr}*\n` +
       `• *Payment Date:* ${dateStr}\n` +
       `• *Subscription Valid Until (Expiry Date):* *${expiryDateStr}*\n` +
@@ -218,10 +236,20 @@ export const PaymentList: React.FC<PaymentListProps> = ({
     const selected = customers.find((c) => c.id === cId);
     if (selected) {
       const defaultAmt = selected.total_overdue || getMonthlySubscriptionRate(selected).effectiveRate || 380;
+      const advCredit = Math.max(0, selected.advance_balance || 0);
       setBaseAmount(defaultAmt);
       setDiscountType('fixed');
       setDiscountValue(0);
-      setAmount(defaultAmt);
+      if (advCredit > 0) {
+        const toDeduct = Math.min(advCredit, defaultAmt);
+        setAdvanceApplied(toDeduct);
+        setUseAdvanceCredit(true);
+        setAmount(Math.max(0, Number((defaultAmt - toDeduct).toFixed(2))));
+      } else {
+        setAdvanceApplied(0);
+        setUseAdvanceCredit(false);
+        setAmount(defaultAmt);
+      }
       const targetExp = selected.billed_up_to_date || selected.payment_made_up_to_date || '2026-11-30';
       setCoveredUntilDate(targetExp);
     }
@@ -229,17 +257,25 @@ export const PaymentList: React.FC<PaymentListProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!customerId || amount <= 0) return;
+    if (!customerId || amount < 0) return;
     const cust = customers.find((c) => c.id === customerId);
+
+    const paidAmt = Number(amount);
+    const appliedAdv = useAdvanceCredit ? advanceApplied : 0;
+    const afterDisc = Math.max(0, Number(baseAmount) - calculatedDiscountAmount);
+    const targetPayable = Math.max(0, afterDisc - appliedAdv);
+    const excessCredit = Math.max(0, paidAmt - targetPayable);
 
     const paymentPayload: Partial<Payment> = {
       customer_id: customerId,
       customer: cust,
-      amount: Number(amount),
+      amount: paidAmt,
       original_amount: Number(baseAmount),
       discount_amount: calculatedDiscountAmount > 0 ? calculatedDiscountAmount : undefined,
       discount_type: calculatedDiscountAmount > 0 ? discountType : undefined,
       discount_value: calculatedDiscountAmount > 0 ? discountValue : undefined,
+      advance_applied: appliedAdv > 0 ? appliedAdv : undefined,
+      advance_credited: excessCredit > 0 ? excessCredit : undefined,
       covered_until_date: coveredUntilDate || undefined,
       payment_date: paymentDate,
       payment_method: paymentMethod,
@@ -782,6 +818,39 @@ export const PaymentList: React.FC<PaymentListProps> = ({
                   </select>
                 </div>
 
+                {/* Available Advance Credit Alert Banner */}
+                {selectedCustomer && (selectedCustomer.advance_balance || 0) > 0 && (
+                  <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-between text-emerald-300">
+                    <div className="flex items-center gap-2">
+                      <Wallet className="w-4 h-4 text-emerald-400 shrink-0" />
+                      <div className="text-xs">
+                        <span className="font-bold">Available Advance Credit:</span>{' '}
+                        <span className="font-mono text-sm font-black ml-1 text-emerald-400">
+                          {formatAED(selectedCustomer.advance_balance || 0)}
+                        </span>
+                      </div>
+                    </div>
+                    <label className="flex items-center gap-1.5 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={useAdvanceCredit}
+                        onChange={(e) => {
+                          const checked = e.target.checked;
+                          setUseAdvanceCredit(checked);
+                          const afterDisc = Math.max(0, baseAmount - calculatedDiscountAmount);
+                          const adv = checked ? Math.min(selectedCustomer.advance_balance || 0, afterDisc) : 0;
+                          setAdvanceApplied(adv);
+                          setAmount(Math.max(0, Number((afterDisc - adv).toFixed(2))));
+                        }}
+                        className="rounded border-slate-700 bg-slate-900 text-amber-500 focus:ring-0 w-4 h-4"
+                      />
+                      <span className="text-xs font-bold text-emerald-300">
+                        Debit Advance ({formatAED(advanceApplied)})
+                      </span>
+                    </label>
+                  </div>
+                )}
+
                 {/* Standard Due / Fee */}
                 <div>
                   <div className="flex items-center justify-between mb-1">
@@ -884,12 +953,28 @@ export const PaymentList: React.FC<PaymentListProps> = ({
                   </label>
                   <input
                     type="number"
-                    step="0.5"
+                    step="0.01"
+                    min="0"
                     required
                     value={amount}
                     onChange={(e) => setAmount(parseFloat(e.target.value) || 0)}
                     className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono font-black text-base focus:outline-none focus:border-emerald-500"
                   />
+                  {(() => {
+                    const afterDisc = Math.max(0, baseAmount - calculatedDiscountAmount);
+                    const adv = useAdvanceCredit ? advanceApplied : 0;
+                    const targetPayable = Math.max(0, afterDisc - adv);
+                    const excess = Math.max(0, amount - targetPayable);
+                    if (excess > 0) {
+                      return (
+                        <div className="mt-1.5 p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/25 flex items-center gap-1.5 text-[11px] font-bold text-emerald-300">
+                          <Sparkles className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                          <span>+AED {excess.toFixed(2)} extra will be saved as Advance Credit for next month!</span>
+                        </div>
+                      );
+                    }
+                    return null;
+                  })()}
                 </div>
 
                 {/* Covered Until / Subscription Expiry Date */}
