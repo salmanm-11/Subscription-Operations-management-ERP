@@ -3,6 +3,7 @@ import { Calendar, CheckCircle2, XCircle, MinusCircle, Search, Download, FileSpr
 import { Customer, AttendanceStatus } from '../../types';
 import { exportDeliverySheetToExcel } from '../../utils/excelService';
 import { getCustomerCancellationNotice } from '../../utils/cancellationService';
+import { formatDateDDMMMYYYY } from '../../utils/dateFormatter';
 
 interface AttendanceSheetProps {
   customers: Customer[];
@@ -73,12 +74,17 @@ export const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ customers }) =
             <span>Export Delivery Run Sheet (.xlsx)</span>
           </button>
 
-          <input
-            type="date"
-            value={selectedDate}
-            onChange={(e) => setSelectedDate(e.target.value)}
-            className="px-3.5 py-2 bg-slate-900 border border-slate-700/80 rounded-xl text-xs text-white focus:outline-none focus:border-amber-500"
-          />
+          <div className="flex items-center gap-2">
+            <input
+              type="date"
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              className="px-3.5 py-2 bg-slate-900 border border-slate-700/80 rounded-xl text-xs text-white focus:outline-none focus:border-amber-500 font-mono"
+            />
+            <span className="px-2.5 py-1.5 rounded-xl bg-slate-800 border border-slate-700/80 text-xs font-mono font-bold text-amber-400">
+              {formatDateDDMMMYYYY(selectedDate)}
+            </span>
+          </div>
 
           <button
             onClick={() => markAll('present')}

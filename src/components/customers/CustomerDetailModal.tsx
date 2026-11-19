@@ -38,6 +38,7 @@ import {
 } from 'lucide-react';
 import { Customer, Building, MealPlan, Invoice, Payment, PaymentMethod } from '../../types';
 import { formatAED } from '../../utils/currency';
+import { formatDateDDMMMYYYY } from '../../utils/dateFormatter';
 import { getCustomerDueDateInfo, sendWhatsAppReminder } from '../../utils/reminderService';
 import { getMonthlySubscriptionRate } from '../../utils/billingCycleService';
 import { getCustomerCancellationNotice, sendCancellationWhatsApp, ApproachingCancellation } from '../../utils/cancellationService';
@@ -446,8 +447,9 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
     const name = activeCustomer.full_name;
     const amountStr = formatAED(p.amount);
     const recNo = p.payment_number || 'N/A';
-    const dateStr = p.payment_date;
-    const expiryDateStr = p.covered_until_date || activeCustomer.payment_made_up_to_date || activeCustomer.billed_up_to_date || 'Active Cycle';
+    const dateStr = formatDateDDMMMYYYY(p.payment_date);
+    const rawExpiry = p.covered_until_date || activeCustomer.payment_made_up_to_date || activeCustomer.billed_up_to_date;
+    const expiryDateStr = rawExpiry ? formatDateDDMMMYYYY(rawExpiry) : 'Active Cycle';
     const isZeroDue = (activeCustomer.total_overdue || 0) === 0;
     const dueStatus = isZeroDue
       ? 'All mess dues cleared in full (AED 0.00)'
@@ -519,16 +521,12 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
         : '',
       activeCustomer.notes ? `Delivery / Account Notes: ${activeCustomer.notes}` : '',
       `Monthly Subscription Rate: AED ${activeCustomer.monthly_rate}`,
-      `Payment Made Up To: ${
-        activeCustomer.payment_made_up_to_date ||
-        activeCustomer.billing_start_date ||
-        'N/A'
-      }`,
-      `Billed Up To: ${
-        activeCustomer.billed_up_to_date ||
-        activeCustomer.billing_end_date ||
-        'N/A'
-      }`,
+      `Payment Made Up To: ${formatDateDDMMMYYYY(
+        activeCustomer.payment_made_up_to_date || activeCustomer.billing_start_date
+      )}`,
+      `Billed Up To: ${formatDateDDMMMYYYY(
+        activeCustomer.billed_up_to_date || activeCustomer.billing_end_date
+      )}`,
       `Outstanding Balance / Overdue: AED ${overdue}`,
     ]
       .filter(Boolean)
@@ -990,7 +988,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                 </div>
               </div>
               <div className="text-sm sm:text-base font-bold font-mono text-emerald-300 mt-1">
-                {activeCustomer.payment_made_up_to_date || activeCustomer.billing_start_date || '31 Oct 2026'}
+                {formatDateDDMMMYYYY(activeCustomer.payment_made_up_to_date || activeCustomer.billing_start_date || '2026-10-31')}
               </div>
             </div>
             <div className="text-[10px] text-slate-400 mt-2 flex items-center justify-between">
@@ -1027,7 +1025,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                 </div>
               </div>
               <div className="text-sm sm:text-base font-bold font-mono text-slate-200 mt-1">
-                {activeCustomer.billed_up_to_date || activeCustomer.billing_end_date || '31 Oct 2026'}
+                {formatDateDDMMMYYYY(activeCustomer.billed_up_to_date || activeCustomer.billing_end_date || '2026-10-31')}
               </div>
             </div>
             <div className="text-[10px] text-slate-400 mt-2 flex items-center justify-between">
@@ -1447,10 +1445,10 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                             {inv.invoice_number}
                           </td>
                           <td className="py-2.5 px-3 font-mono text-slate-300">
-                            {inv.issue_date}
+                            {formatDateDDMMMYYYY(inv.issue_date)}
                           </td>
-                          <td className="py-2.5 px-3 text-slate-400 text-[11px]">
-                            {inv.period_start} to {inv.period_end}
+                          <td className="py-2.5 px-3 text-slate-400 text-[11px] font-mono">
+                            {formatDateDDMMMYYYY(inv.period_start)} to {formatDateDDMMMYYYY(inv.period_end)}
                           </td>
                           <td className="py-2.5 px-3 font-mono font-bold text-white text-right">
                             {formatAED(inv.total_amount)}
@@ -1558,7 +1556,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                             {p.payment_number}
                           </td>
                           <td className="py-2.5 px-3 font-mono text-slate-300">
-                            {p.payment_date}
+                            {formatDateDDMMMYYYY(p.payment_date)}
                           </td>
                           <td className="py-2.5 px-3 uppercase font-semibold text-slate-300 text-[11px]">
                             {p.payment_method.replace('_', ' ')}
@@ -1692,7 +1690,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
         {isPayModalOpen && (
           <div className="fixed inset-0 z-[60] flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
             <div
-              className="bg-[#151c2c] border border-slate-700 rounded-2xl w-full max-w-lg shadow-2xl flex flex-col max-h-[92vh] overflow-hidden animate-slideUp"
+              className="bg-[#151c2c] border border-slate-700 rounded-2xl w-full max-w-lg shadow-2xl flex flex-col max-h-[85vh] overflow-hidden my-auto animate-slideUp"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}
@@ -1903,11 +1901,17 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
 
                   {/* Covered Until / Subscription Expiry Date */}
                   <div className="space-y-1">
-                    <label className="text-xs font-bold text-slate-300 flex items-center gap-1.5">
-                      <CalendarCheck className="w-3.5 h-3.5 text-sky-400" />
-                      <span>Subscription Valid Until (Expiry Date)</span>
-                      <span className="text-[10px] text-slate-400 font-normal">(Sent in WhatsApp receipt)</span>
-                    </label>
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-bold text-slate-300 flex items-center gap-1.5">
+                        <CalendarCheck className="w-3.5 h-3.5 text-sky-400" />
+                        <span>Subscription Valid Until (Expiry Date)</span>
+                      </label>
+                      {payCoveredUntilDate && (
+                        <span className="font-mono text-xs font-bold text-sky-400 bg-sky-500/10 px-2 py-0.5 rounded border border-sky-500/20">
+                          {formatDateDDMMMYYYY(payCoveredUntilDate)}
+                        </span>
+                      )}
+                    </div>
                     <input
                       type="date"
                       value={payCoveredUntilDate}
@@ -1919,9 +1923,16 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                   {/* Payment Date & Method Grid */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div className="space-y-1">
-                      <label className="text-xs font-bold text-slate-300">
-                        Payment Date <span className="text-rose-400">*</span>
-                      </label>
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-bold text-slate-300">
+                          Payment Date <span className="text-rose-400">*</span>
+                        </label>
+                        {payDate && (
+                          <span className="font-mono text-[11px] font-bold text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20">
+                            {formatDateDDMMMYYYY(payDate)}
+                          </span>
+                        )}
+                      </div>
                       <input
                         type="date"
                         value={payDate}
@@ -2214,7 +2225,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                 <div className="flex justify-between items-center pb-2.5 border-b border-slate-800">
                   <span className="text-xs text-slate-400 font-bold uppercase">Payment Date</span>
                   <span className="text-sm font-bold font-mono text-slate-200">
-                    {selectedReceipt.payment_date}
+                    {formatDateDDMMMYYYY(selectedReceipt.payment_date)}
                   </span>
                 </div>
 

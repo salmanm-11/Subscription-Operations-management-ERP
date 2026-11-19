@@ -3,6 +3,7 @@ import { FileText, Plus, Printer, Search, X, CheckCircle2, Clock, AlertCircle, F
 import { Invoice, Customer, BusinessSettings, InvoiceStatus } from '../../types';
 import { formatAED } from '../../utils/currency';
 import { getMonthlySubscriptionRate } from '../../utils/billingCycleService';
+import { formatDateDDMMMYYYY } from '../../utils/dateFormatter';
 import { PrintableInvoice } from './PrintableInvoice';
 import { exportInvoicesToExcel } from '../../utils/excelService';
 
@@ -150,7 +151,7 @@ export const InvoiceList: React.FC<InvoiceListProps> = ({
     const priorDue = Math.max(selected.total_overdue || 0, unpaidSum);
     const sortedPrior = [...custInvs].sort((a, b) => (b.period_end || '').localeCompare(a.period_end || ''));
     const latestPrior = sortedPrior[0];
-    const priorPeriodStr = latestPrior ? `${latestPrior.period_start} to ${latestPrior.period_end}` : undefined;
+    const priorPeriodStr = latestPrior ? `${formatDateDDMMMYYYY(latestPrior.period_start)} to ${formatDateDDMMMYYYY(latestPrior.period_end)}` : undefined;
 
     if (priorDue > 0) {
       return { amount: priorDue, period: priorPeriodStr };
@@ -485,13 +486,13 @@ export const InvoiceList: React.FC<InvoiceListProps> = ({
                       </td>
 
                       {/* Billing Period */}
-                      <td className="py-3 px-3 text-slate-300 whitespace-nowrap text-xs">
-                        {inv.period_start} to {inv.period_end}
+                      <td className="py-3 px-3 text-slate-300 whitespace-nowrap text-xs font-mono">
+                        {formatDateDDMMMYYYY(inv.period_start)} to {formatDateDDMMMYYYY(inv.period_end)}
                       </td>
 
                       {/* Due Date */}
-                      <td className="py-3 px-3 text-slate-300 whitespace-nowrap text-xs">
-                        {inv.due_date}
+                      <td className="py-3 px-3 text-slate-300 whitespace-nowrap text-xs font-mono">
+                        {formatDateDDMMMYYYY(inv.due_date)}
                       </td>
 
                       {/* Total Amount */}
@@ -810,8 +811,8 @@ export const InvoiceList: React.FC<InvoiceListProps> = ({
               <div className="text-slate-300">
                 Customer: <span className="font-bold text-white">{getCustomerInfo(deletingInvoice).name}</span>
               </div>
-              <div className="text-slate-400 text-[11px]">
-                Period: {deletingInvoice.period_start} to {deletingInvoice.period_end}
+              <div className="text-slate-400 text-[11px] font-mono">
+                Period: {formatDateDDMMMYYYY(deletingInvoice.period_start)} to {formatDateDDMMMYYYY(deletingInvoice.period_end)}
               </div>
               <div className="text-slate-400 text-[11px]">
                 Balance: <span className="text-rose-400 font-bold">{formatAED(deletingInvoice.balance_amount)}</span>

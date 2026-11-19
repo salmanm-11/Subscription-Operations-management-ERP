@@ -45,6 +45,7 @@ import {
   subscribeToRealtimeChanges
 } from '../../api/supabase';
 import { formatVendorAED } from '../../utils/currency';
+import { formatDateDDMMMYYYY } from '../../utils/dateFormatter';
 import { exportVendorsListToExcel, ParsedMomsAccountResult } from '../../utils/excelService';
 
 import { VendorDashboard } from './VendorDashboard';
@@ -568,7 +569,7 @@ export const VendorAccountsView: React.FC<VendorAccountsViewProps> = ({ currentU
                   {filteredTransactions.slice(0, 50).map((t) => (
                     <tr key={t.id} className="hover:bg-slate-800/40 transition-colors">
                       <td className="py-2.5 px-3 font-mono font-bold text-slate-200 whitespace-nowrap">
-                        {t.date}
+                        {formatDateDDMMMYYYY(t.date)}
                       </td>
                       <td className="py-2.5 px-2 text-slate-400 whitespace-nowrap">
                         {t.day_name || '-'}

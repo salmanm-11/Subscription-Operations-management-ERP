@@ -74,7 +74,7 @@ export function formatDisplayDate(d: Date): string {
   const day = d.getDate().toString().padStart(2, '0');
   const month = months[d.getMonth()];
   const year = d.getFullYear();
-  return `${day} ${month} ${year}`;
+  return `${day}-${month}-${year}`;
 }
 
 export interface CustomerDueDateInfo {

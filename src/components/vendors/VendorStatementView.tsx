@@ -17,6 +17,7 @@ import {
 import { Vendor, VendorStatement } from '../../types';
 import { formatVendorAED } from '../../utils/currency';
 import { exportVendorStatementToExcel } from '../../utils/excelService';
+import { formatDateDDMMMYYYY } from '../../utils/dateFormatter';
 
 interface VendorStatementViewProps {
   vendors: Vendor[];
@@ -182,7 +183,7 @@ export const VendorStatementView: React.FC<VendorStatementViewProps> = ({
             </div>
             <p className="text-xs text-slate-400 mt-1">Official supplier ledger &amp; meal transactions record (AED)</p>
             <div className="text-xs text-slate-300 font-mono mt-2">
-              Period: <strong className="text-white">{startDate || 'Genesis'}</strong> to <strong className="text-white">{endDate || 'Present'}</strong>
+              Period: <strong className="text-white">{startDate ? formatDateDDMMMYYYY(startDate) : 'Genesis'}</strong> to <strong className="text-white">{endDate ? formatDateDDMMMYYYY(endDate) : 'Present'}</strong>
             </div>
           </div>
 
@@ -289,7 +290,7 @@ export const VendorStatementView: React.FC<VendorStatementViewProps> = ({
                   items.map((item) => (
                     <tr key={item.id} className="hover:bg-slate-800/40 transition-colors">
                       <td className="py-2.5 px-3 font-mono text-[11px] text-slate-200 whitespace-nowrap">
-                        {item.date}
+                        {formatDateDDMMMYYYY(item.date)}
                       </td>
                       <td className="py-2.5 px-2 text-slate-400 text-[11px] whitespace-nowrap">
                         {item.day_name || '-'}

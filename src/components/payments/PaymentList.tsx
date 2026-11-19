@@ -3,6 +3,7 @@ import { CreditCard, Plus, Search, Printer, X, FileSpreadsheet, Building2, Phone
 import { Payment, Customer, Invoice, PaymentMethod } from '../../types';
 import { formatAED } from '../../utils/currency';
 import { getMonthlySubscriptionRate } from '../../utils/billingCycleService';
+import { formatDateDDMMMYYYY } from '../../utils/dateFormatter';
 
 interface PaymentListProps {
   payments: Payment[];
@@ -169,8 +170,9 @@ export const PaymentList: React.FC<PaymentListProps> = ({
     const name = info.name || 'Valued Customer';
     const amountStr = formatAED(p.amount);
     const recNo = p.payment_number || 'N/A';
-    const dateStr = p.payment_date || new Date().toISOString().split('T')[0];
-    const expiryDateStr = p.covered_until_date || cust?.payment_made_up_to_date || cust?.billed_up_to_date || 'Active Cycle';
+    const dateStr = formatDateDDMMMYYYY(p.payment_date || new Date());
+    const rawExpiry = p.covered_until_date || cust?.payment_made_up_to_date || cust?.billed_up_to_date;
+    const expiryDateStr = rawExpiry ? formatDateDDMMMYYYY(rawExpiry) : 'Active Cycle';
     const isZeroDue = cust ? (cust.total_overdue || 0) === 0 : false;
     const dueStatus = cust
       ? isZeroDue
@@ -406,8 +408,8 @@ export const PaymentList: React.FC<PaymentListProps> = ({
                       </td>
 
                       {/* Payment Date */}
-                      <td className="py-3 px-3 text-slate-300 font-semibold whitespace-nowrap text-xs">
-                        {p.payment_date}
+                      <td className="py-3 px-3 text-slate-300 font-semibold whitespace-nowrap text-xs font-mono">
+                        {formatDateDDMMMYYYY(p.payment_date)}
                       </td>
 
                       {/* Customer Name and Info */}
@@ -475,7 +477,7 @@ export const PaymentList: React.FC<PaymentListProps> = ({
                         {p.covered_until_date || cust?.payment_made_up_to_date ? (
                           <span className="inline-flex items-center gap-1 font-mono text-xs font-bold text-sky-300 bg-sky-500/15 px-2.5 py-0.5 rounded border border-sky-500/30">
                             <CalendarCheck className="w-3 h-3 text-sky-400" />
-                            <span>{p.covered_until_date || cust?.payment_made_up_to_date}</span>
+                            <span>{formatDateDDMMMYYYY(p.covered_until_date || cust?.payment_made_up_to_date)}</span>
                           </span>
                         ) : (
                           <span className="text-slate-600 text-xs">-</span>
@@ -563,7 +565,7 @@ export const PaymentList: React.FC<PaymentListProps> = ({
 
                     <div className="flex justify-between items-center pb-2.5 border-b border-slate-800">
                       <span className="text-xs text-slate-400 font-bold uppercase">Payment Date</span>
-                      <span className="text-sm font-bold text-slate-200">{selectedReceipt.payment_date}</span>
+                      <span className="text-sm font-bold text-slate-200 font-mono">{formatDateDDMMMYYYY(selectedReceipt.payment_date)}</span>
                     </div>
 
                     <div className="pb-2.5 border-b border-slate-800">
@@ -607,7 +609,7 @@ export const PaymentList: React.FC<PaymentListProps> = ({
                       <div className="flex justify-between items-center pb-2.5 border-b border-slate-800">
                         <span className="text-xs text-slate-400 font-bold uppercase">Valid Until (Expiry)</span>
                         <span className="font-mono text-xs font-bold text-sky-400">
-                          {selectedReceipt.covered_until_date}
+                          {formatDateDDMMMYYYY(selectedReceipt.covered_until_date)}
                         </span>
                       </div>
                     )}
@@ -690,7 +692,7 @@ export const PaymentList: React.FC<PaymentListProps> = ({
               {justRecordedPayment.covered_until_date && (
                 <div className="flex justify-between items-center text-slate-400">
                   <span>Valid Until (Expiry):</span>
-                  <span className="font-mono text-sky-400 font-bold">{justRecordedPayment.covered_until_date}</span>
+                  <span className="font-mono text-sky-400 font-bold">{formatDateDDMMMYYYY(justRecordedPayment.covered_until_date)}</span>
                 </div>
               )}
               <div className="flex justify-between items-center text-slate-400">
@@ -740,7 +742,7 @@ export const PaymentList: React.FC<PaymentListProps> = ({
       {/* Record Payment Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-[#151c2c] border border-slate-700/80 rounded-2xl w-full max-w-lg shadow-2xl flex flex-col max-h-[92vh] overflow-hidden">
+          <div className="bg-[#151c2c] border border-slate-700/80 rounded-2xl w-full max-w-lg shadow-2xl flex flex-col max-h-[85vh] overflow-hidden my-auto">
             {/* Modal Header (Fixed at top) */}
             <div className="flex items-center justify-between px-5 py-4 border-b border-slate-800 bg-[#151c2c] shrink-0">
               <div>
@@ -892,11 +894,17 @@ export const PaymentList: React.FC<PaymentListProps> = ({
 
                 {/* Covered Until / Subscription Expiry Date */}
                 <div>
-                  <label className="block text-slate-200 font-bold mb-1 flex items-center gap-1.5">
-                    <CalendarCheck className="w-3.5 h-3.5 text-sky-400" />
-                    <span>Subscription Valid Until (Expiry Date)</span>
-                    <span className="text-[10px] text-slate-400 font-normal">(Sent in WhatsApp receipt)</span>
-                  </label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-slate-200 font-bold flex items-center gap-1.5">
+                      <CalendarCheck className="w-3.5 h-3.5 text-sky-400" />
+                      <span>Subscription Valid Until (Expiry Date)</span>
+                    </label>
+                    {coveredUntilDate && (
+                      <span className="font-mono text-xs font-bold text-sky-400 bg-sky-500/10 px-2 py-0.5 rounded border border-sky-500/20">
+                        {formatDateDDMMMYYYY(coveredUntilDate)}
+                      </span>
+                    )}
+                  </div>
                   <input
                     type="date"
                     value={coveredUntilDate}
@@ -907,7 +915,14 @@ export const PaymentList: React.FC<PaymentListProps> = ({
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-slate-200 font-bold mb-1">Payment Date</label>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="text-slate-200 font-bold">Payment Date</label>
+                      {paymentDate && (
+                        <span className="font-mono text-[11px] font-bold text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20">
+                          {formatDateDDMMMYYYY(paymentDate)}
+                        </span>
+                      )}
+                    </div>
                     <input
                       type="date"
                       required

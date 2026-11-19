@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Utensils, UserX, UserCheck, Users, UserPlus, Building2, Sparkles } from 'lucide-react';
 import { Customer } from '../../types';
+import { formatDateDDMMMYYYY } from '../../utils/dateFormatter';
 
 interface RecentCustomersTableProps {
   customers: Customer[];
@@ -178,8 +179,8 @@ export const RecentCustomersTable: React.FC<RecentCustomersTableProps> = ({
                       </span>
                     </div>
                   </td>
-                  <td className="py-3.5 px-4 text-slate-200 text-xs sm:text-sm font-medium">
-                    {c.joining_date || c.billing_start_date || 'N/A'}
+                  <td className="py-3.5 px-4 text-slate-200 text-xs sm:text-sm font-medium font-mono">
+                    {c.joining_date || c.billing_start_date ? formatDateDDMMMYYYY(c.joining_date || c.billing_start_date) : 'N/A'}
                   </td>
                 </tr>
               ))

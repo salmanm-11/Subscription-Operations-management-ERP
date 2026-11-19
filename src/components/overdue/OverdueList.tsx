@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { Customer, Building, MealPlan, Invoice, Payment, PaymentMethod } from '../../types';
 import { formatAED } from '../../utils/currency';
+import { formatDateDDMMMYYYY } from '../../utils/dateFormatter';
 import { getMonthlySubscriptionRate } from '../../utils/billingCycleService';
 import { exportTableToExcel } from '../../utils/excelService';
 import {
@@ -399,8 +400,9 @@ export const OverdueList: React.FC<OverdueListProps> = ({
     const name = cust?.full_name || 'Valued Customer';
     const amountStr = formatAED(item.amount);
     const recNo = item.payment_number || 'N/A';
-    const dateStr = item.payment_date || new Date().toISOString().split('T')[0];
-    const expiryDateStr = item.covered_until_date || cust?.payment_made_up_to_date || cust?.billed_up_to_date || 'Active Cycle';
+    const dateStr = formatDateDDMMMYYYY(item.payment_date || new Date());
+    const rawExpiry = item.covered_until_date || cust?.payment_made_up_to_date || cust?.billed_up_to_date;
+    const expiryDateStr = rawExpiry ? formatDateDDMMMYYYY(rawExpiry) : 'Active Cycle';
     const isZeroDue = (cust?.total_overdue || 0) === 0;
     const dueStatus = isZeroDue
       ? 'All mess dues cleared in full (AED 0.00)'
@@ -896,7 +898,7 @@ export const OverdueList: React.FC<OverdueListProps> = ({
 
                         {/* Billed Up to */}
                         <td className="py-3.5 px-4 text-slate-300 text-xs whitespace-nowrap font-mono">
-                          {c.billed_up_to_date || c.billing_end_date || '31 Oct 2026'}
+                          {formatDateDDMMMYYYY(c.billed_up_to_date || c.billing_end_date || '2026-10-31')}
                         </td>
 
                         {/* Rating Badge */}
@@ -1379,7 +1381,7 @@ export const OverdueList: React.FC<OverdueListProps> = ({
                           </div>
                           <div className="text-[11px] text-slate-400 font-mono mt-0.5 flex items-center gap-1">
                             <Calendar className="w-3 h-3 text-slate-500" />
-                            <span>{item.payment_date || item.created_at?.split('T')[0] || '-'}</span>
+                            <span>{formatDateDDMMMYYYY(item.payment_date || item.created_at?.split('T')[0])}</span>
                           </div>
                         </td>
 
@@ -1714,7 +1716,7 @@ export const OverdueList: React.FC<OverdueListProps> = ({
                   <div className="flex justify-between items-center pb-2.5 border-b border-slate-800">
                     <span className="text-xs text-slate-400 font-bold uppercase">Payment Date</span>
                     <span className="text-sm font-bold font-mono text-slate-200">
-                      {selectedReceipt.payment_date || selectedReceipt.created_at?.split('T')[0] || '-'}
+                      {formatDateDDMMMYYYY(selectedReceipt.payment_date || selectedReceipt.created_at?.split('T')[0])}
                     </span>
                   </div>
 

@@ -67,7 +67,7 @@ describe('Payment Due Date Approaching Reminders System', () => {
     expect(info.isApproaching).toBe(true);
     expect(info.isDueToday).toBe(false);
     expect(info.statusLabel).toBe('Due in 3 days');
-    expect(info.targetDueDateDisplay).toBe('31 Oct 2026');
+    expect(info.targetDueDateDisplay).toBe('31-Oct-2026');
     expect(info.amountDue).toBe(310);
   });
 
@@ -144,7 +144,7 @@ describe('Payment Due Date Approaching Reminders System', () => {
 
     const info = getCustomerDueDateInfo(customer, [invoice], baseDate, 5);
     expect(info.daysRemaining).toBe(2);
-    expect(info.targetDueDateDisplay).toBe('30 Oct 2026');
+    expect(info.targetDueDateDisplay).toBe('30-Oct-2026');
     expect(info.amountDue).toBe(250);
     expect(info.isApproaching).toBe(true);
   });

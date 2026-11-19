@@ -3,6 +3,7 @@ import { X, Printer, Pencil, Trash2 } from 'lucide-react';
 import { Invoice, Customer, BusinessSettings } from '../../types';
 import { formatAED } from '../../utils/currency';
 import { getMonthlySubscriptionRate } from '../../utils/billingCycleService';
+import { formatDateDDMMMYYYY } from '../../utils/dateFormatter';
 
 interface PrintableInvoiceProps {
   invoice: Invoice;
@@ -66,7 +67,7 @@ export const PrintableInvoice: React.FC<PrintableInvoiceProps> = ({
           id: prev.id,
           title: `Previous Unpaid Balance (Bill #${prev.invoice_number})`,
           subtitle: `Unpaid mess charges carried forward from previous cycle`,
-          period: `${prev.period_start} to ${prev.period_end}`,
+          period: `${formatDateDDMMMYYYY(prev.period_start)} to ${formatDateDDMMMYYYY(prev.period_end)}`,
           rate: prev.balance_amount,
           amount: prev.balance_amount,
           isArrears: true,
@@ -77,7 +78,7 @@ export const PrintableInvoice: React.FC<PrintableInvoiceProps> = ({
         id: invoice.id,
         title: 'Monthly Mess Subscription Package',
         subtitle: `Current cycle meal delivery (Karama, Dubai)`,
-        period: `${invoice.period_start} to ${invoice.period_end}`,
+        period: `${formatDateDDMMMYYYY(invoice.period_start)} to ${formatDateDDMMMYYYY(invoice.period_end)}`,
         rate: invoice.subtotal || invoice.total_amount,
         amount: invoice.subtotal || invoice.total_amount,
         isArrears: false,
@@ -98,7 +99,7 @@ export const PrintableInvoice: React.FC<PrintableInvoiceProps> = ({
         id: invoice.id,
         title: 'Monthly Mess Subscription Package',
         subtitle: 'Current cycle meal delivery (Karama, Dubai)',
-        period: `${invoice.period_start} to ${invoice.period_end}`,
+        period: `${formatDateDDMMMYYYY(invoice.period_start)} to ${formatDateDDMMMYYYY(invoice.period_end)}`,
         rate: currentFee || baseMonthly,
         amount: currentFee || baseMonthly,
         isArrears: false,
@@ -119,7 +120,7 @@ export const PrintableInvoice: React.FC<PrintableInvoiceProps> = ({
         id: invoice.id,
         title: 'Monthly Mess Subscription Package',
         subtitle: 'Current cycle meal delivery (Karama, Dubai)',
-        period: `${invoice.period_start} to ${invoice.period_end}`,
+        period: `${formatDateDDMMMYYYY(invoice.period_start)} to ${formatDateDDMMMYYYY(invoice.period_end)}`,
         rate: baseMonthly,
         amount: baseMonthly,
         isArrears: false,
@@ -129,7 +130,7 @@ export const PrintableInvoice: React.FC<PrintableInvoiceProps> = ({
         id: invoice.id,
         title: 'Monthly Mess Subscription Package',
         subtitle: 'Daily delivery of prepared tiffin meals (Karama, Dubai)',
-        period: `${invoice.period_start} to ${invoice.period_end}`,
+        period: `${formatDateDDMMMYYYY(invoice.period_start)} to ${formatDateDDMMMYYYY(invoice.period_end)}`,
         rate: invoice.subtotal || invoice.total_amount,
         amount: invoice.subtotal || invoice.total_amount,
         isArrears: false,
@@ -225,10 +226,10 @@ export const PrintableInvoice: React.FC<PrintableInvoiceProps> = ({
                 {invoice.invoice_number}
               </div>
               <div className="text-[11px] text-slate-500 mt-1">
-                Date: <b>{invoice.issue_date}</b>
+                Date: <b>{formatDateDDMMMYYYY(invoice.issue_date)}</b>
               </div>
               <div className="text-[11px] text-slate-500">
-                Due Date: <b>{invoice.due_date}</b>
+                Due Date: <b>{formatDateDDMMMYYYY(invoice.due_date)}</b>
               </div>
             </div>
           </div>
@@ -255,10 +256,10 @@ export const PrintableInvoice: React.FC<PrintableInvoiceProps> = ({
               <div className="text-xs font-semibold text-slate-800">
                 {lineItems.length > 1 ? (
                   <span>
-                    Multiple Periods ({lineItems[0].period.split(' to ')[0]} to {invoice.period_end})
+                    Multiple Periods ({lineItems[0].period.split(' to ')[0]} to {formatDateDDMMMYYYY(invoice.period_end)})
                   </span>
                 ) : (
-                  <span>{invoice.period_start} to {invoice.period_end}</span>
+                  <span>{formatDateDDMMMYYYY(invoice.period_start)} to {formatDateDDMMMYYYY(invoice.period_end)}</span>
                 )}
               </div>
               <div className="mt-2 inline-block px-2.5 py-0.5 rounded text-[10px] font-bold uppercase border">

@@ -1,4 +1,5 @@
 import { Customer } from '../types';
+import { formatDateDDMMMYYYY } from './dateFormatter';
 import { formatAED } from './currency';
 
 export interface ApproachingCancellation {
@@ -99,11 +100,7 @@ export function getCustomerCancellationNotice(customer: Customer): ApproachingCa
     if (reasonMatch) reason = reasonMatch[1].trim();
   }
 
-  const targetDateDisplay = new Intl.DateTimeFormat('en-GB', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  }).format(targetDate);
+  const targetDateDisplay = formatDateDDMMMYYYY(targetDate);
 
   // Compute mid-month pro-rata settlement based on exact daily pricing
   const monthlyRate = customer.monthly_rate || 380;

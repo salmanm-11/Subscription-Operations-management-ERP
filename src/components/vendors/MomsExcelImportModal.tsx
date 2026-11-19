@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { parseMomsAccountExcel, ParsedMomsAccountResult, ParsedMomsRow } from '../../utils/excelService';
 import { formatVendorAED } from '../../utils/currency';
+import { formatDateDDMMMYYYY } from '../../utils/dateFormatter';
 import initialVendorData from '../../api/initialVendorData.json';
 
 interface MomsExcelImportModalProps {
@@ -315,7 +316,7 @@ export const MomsExcelImportModal: React.FC<MomsExcelImportModalProps> = ({
                     <tbody className="divide-y divide-slate-800/80 font-mono text-[11px]">
                       {parseResult.validRows.slice(0, 15).map((row, idx) => (
                         <tr key={idx} className="hover:bg-slate-800/30">
-                          <td className="py-2 px-3 text-slate-300">{row.date}</td>
+                          <td className="py-2 px-3 text-slate-300 font-mono">{formatDateDDMMMYYYY(row.date)}</td>
                           <td className="py-2 px-2 text-slate-400 font-sans">{row.day_name}</td>
                           <td className="py-2 px-2 text-center text-amber-300">{row.breakfast_qty || '-'}</td>
                           <td className="py-2 px-2 text-center text-emerald-300">{row.lunch_qty || '-'}</td>

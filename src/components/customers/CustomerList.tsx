@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Plus, Search, Filter, Download, Edit, Trash2, Utensils, Phone, PhoneCall, Building2, FileSpreadsheet, Upload, ChevronDown, Clock, Eye, AlertTriangle, Check, X, Share2, Copy, MessageSquare, ExternalLink, Globe, Edit2, RotateCcw, RefreshCw } from 'lucide-react';
 import { Customer, Building, MealPlan, Invoice, Payment } from '../../types';
 import { formatAED } from '../../utils/currency';
+import { formatDateDDMMMYYYY } from '../../utils/dateFormatter';
 import { exportCustomersToExcel, downloadCustomerTemplate, ParsedImportRow } from '../../utils/excelService';
 import { getCustomerCancellationNotice } from '../../utils/cancellationService';
 import { ExcelImportModal } from '../excel/ExcelImportModal';
@@ -958,13 +959,13 @@ export const CustomerList: React.FC<CustomerListProps> = ({
                       {/* Payment Made Up To The Date */}
                       <td className="py-3 px-2 text-center whitespace-nowrap min-w-[150px]">
                         <span className="inline-flex items-center font-mono text-xs font-bold text-emerald-300 bg-emerald-500/15 px-2 py-0.5 rounded border border-emerald-500/30">
-                          {c.payment_made_up_to_date || c.billing_start_date || '31 Oct 2026'}
+                          {formatDateDDMMMYYYY(c.payment_made_up_to_date || c.billing_start_date || '2026-10-31')}
                         </span>
                       </td>
                       {/* Billed Up To The Date */}
                       <td className="py-3 px-2 text-center whitespace-nowrap min-w-[130px]">
                         <span className="inline-flex items-center font-mono text-xs font-bold text-slate-200 bg-slate-800/90 px-2 py-0.5 rounded border border-slate-700/70">
-                          {c.billed_up_to_date || c.billing_end_date || '31 Oct 2026'}
+                          {formatDateDDMMMYYYY(c.billed_up_to_date || c.billing_end_date || '2026-10-31')}
                         </span>
                       </td>
                       <td className="py-3 px-3.5 text-right font-black whitespace-nowrap font-mono text-xs sm:text-sm min-w-[130px]">
