@@ -634,7 +634,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Top Header */}
-        <div className="px-5 py-4 bg-gradient-to-r from-[#151c2c] via-[#1a233a] to-[#151c2c] border-b border-slate-800 flex items-center justify-between gap-4">
+        <div className="px-5 py-4 bg-gradient-to-r from-[#151c2c] via-[#1a233a] to-[#151c2c] border-b border-slate-800 flex items-center justify-between gap-4 shrink-0">
           <div className="flex items-center gap-3.5 min-w-0">
             {/* Avatar Badge with Customer Code (Auto-sizing cleanly on single line) */}
             <div className="min-w-[64px] px-2.5 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-slate-950 font-black text-sm tracking-tight shadow-lg shrink-0 whitespace-nowrap">
@@ -748,25 +748,27 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
           </div>
         </div>
 
-        {/* Real-time Payment Success Notification Banner */}
-        {paySuccessMsg && (
-          <div className="mx-4 mt-3 p-3 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-bold flex items-center justify-between gap-2 animate-fadeIn shadow-lg">
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-              <span>{paySuccessMsg}</span>
+        {/* Scrollable Modal Body Container (Prevents any banner or card clipping) */}
+        <div className="flex-1 overflow-y-auto min-h-0 custom-scrollbar flex flex-col">
+          {/* Real-time Payment Success Notification Banner */}
+          {paySuccessMsg && (
+            <div className="mx-4 mt-3 p-3 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-bold flex items-center justify-between gap-2 shrink-0 animate-fadeIn shadow-lg">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                <span>{paySuccessMsg}</span>
+              </div>
+              <button
+                onClick={() => setPaySuccessMsg(null)}
+                className="text-emerald-400 hover:text-white"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
             </div>
-            <button
-              onClick={() => setPaySuccessMsg(null)}
-              className="text-emerald-400 hover:text-white"
-            >
-              <X className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        )}
+          )}
 
-        {/* Scheduled Cancellation / Advance Notice Alert Banner */}
-        {cancellationNotice && (
-          <div className="mx-4 mt-3 p-4 rounded-2xl bg-gradient-to-r from-amber-950/40 via-slate-900 to-rose-950/30 border border-amber-500/40 shadow-xl relative overflow-hidden animate-fadeIn">
+          {/* Scheduled Cancellation / Advance Notice Alert Banner */}
+          {cancellationNotice && (
+            <div className="mx-4 mt-3 p-4 rounded-2xl bg-gradient-to-r from-amber-950/40 via-slate-900 to-rose-950/30 border border-amber-500/40 shadow-xl relative shrink-0 animate-fadeIn">
             {/* Top row: Alert title & countdown badge */}
             <div className="flex flex-wrap items-center justify-between gap-2.5 pb-3 border-b border-slate-800">
               <div className="flex items-center gap-2.5">
@@ -874,7 +876,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
         )}
 
         {/* 4 Financial Highlight KPI Cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 bg-[#0a0f1d] border-b border-slate-800/80">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 bg-[#0a0f1d] border-b border-slate-800/80 shrink-0">
           {/* Monthly Plan */}
           <div className="p-3 rounded-xl bg-slate-800/50 border border-slate-700/50 flex flex-col justify-between">
             <div>
@@ -1043,7 +1045,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
 
         {/* Approaching Due Date Reminder Banner */}
         {dueDateInfo && dueDateInfo.isApproaching && (
-          <div className="mx-4 my-2.5 p-3 rounded-xl bg-amber-500/15 border border-amber-500/35 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 animate-fadeIn">
+          <div className="mx-4 my-2.5 p-3 rounded-xl bg-amber-500/15 border border-amber-500/35 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shrink-0 animate-fadeIn">
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-lg bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
                 <Clock className="w-4 h-4" />
@@ -1097,8 +1099,8 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
           </div>
         )}
 
-        {/* Tab Navigation */}
-        <div className="flex items-center px-4 bg-[#111827] border-b border-slate-800">
+        {/* Tab Navigation (Sticky on scroll) */}
+        <div className="sticky top-0 z-10 flex items-center px-4 bg-[#111827] border-b border-slate-800 shrink-0 shadow-sm">
           <button
             onClick={() => setActiveTab('overview')}
             className={`flex items-center gap-2 py-3 px-4 text-xs font-bold border-b-2 transition-all ${
@@ -1143,7 +1145,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
         </div>
 
         {/* Tab Content Container */}
-        <div className="flex-1 overflow-y-auto p-5 space-y-5">
+        <div className="p-5 space-y-5 flex-1">
           {/* TAB 1: OVERVIEW & LOGISTICS */}
           {activeTab === 'overview' && (
             <div className="space-y-5">
@@ -1608,9 +1610,10 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
             </div>
           )}
         </div>
+        </div>
 
         {/* Modal Bottom Action Footer */}
-        <div className="px-5 py-3.5 bg-[#111827] border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="px-5 py-3.5 bg-[#111827] border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
           {/* Quick Copy & External actions */}
           <div className="flex items-center gap-2 w-full sm:w-auto">
             <button
