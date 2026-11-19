@@ -292,7 +292,7 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
       delivery_time: deliveryTime.trim(),
       door_passcode: doorPasscode.trim(),
       joining_date: joiningDate,
-      billing_start_date: !customer ? joiningDate : (paymentMadeUpTo || undefined),
+      billing_start_date: !customer ? joiningDate : (customer?.billing_start_date || joiningDate),
       billing_end_date: isNotice && finalCancelDate ? finalCancelDate : (billedUpTo || undefined),
       cancellation_date: finalCancelDate,
       cancellation_reason: isNotice && cancellationReason ? cancellationReason.trim() : undefined,
@@ -1025,10 +1025,24 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
-                    <label className="block text-slate-300 font-semibold text-xs sm:text-sm">Payment Made Up To The Date</label>
+                    <label className="block text-slate-300 font-semibold text-xs">Joining Date</label>
+                    <span className="font-mono text-[11px] font-bold text-sky-400">
+                      {formatDateDDMMMYYYY(joiningDate)}
+                    </span>
+                  </div>
+                  <input
+                    type="date"
+                    value={joiningDate}
+                    onChange={(e) => setJoiningDate(e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono text-xs focus:outline-none focus:border-sky-500"
+                  />
+                </div>
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-slate-300 font-semibold text-xs">Payment Made Up To</label>
                     <span className="font-mono text-[11px] font-bold text-emerald-400">
                       {formatDateDDMMMYYYY(paymentMadeUpTo)}
                     </span>
@@ -1037,12 +1051,12 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
                     type="date"
                     value={paymentMadeUpTo}
                     onChange={(e) => setPaymentMadeUpTo(e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono focus:outline-none focus:border-emerald-500"
+                    className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono text-xs focus:outline-none focus:border-emerald-500"
                   />
                 </div>
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
-                    <label className="block text-slate-300 font-semibold text-xs sm:text-sm">Billed Up To The Date</label>
+                    <label className="block text-slate-300 font-semibold text-xs">Billed Up To</label>
                     <span className="font-mono text-[11px] font-bold text-amber-400">
                       {formatDateDDMMMYYYY(billedUpTo)}
                     </span>
@@ -1051,7 +1065,7 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
                     type="date"
                     value={billedUpTo}
                     onChange={(e) => setBilledUpTo(e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono focus:outline-none focus:border-amber-500"
+                    className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono text-xs focus:outline-none focus:border-amber-500"
                   />
                 </div>
               </div>

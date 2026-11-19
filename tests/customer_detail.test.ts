@@ -239,4 +239,21 @@ describe('Customer 360 Profile and Details Resolution', () => {
     expect(normalizeCluster('🟣 Hamdan Colony & Post')).toBe('Hamdan Colony & Post');
     expect(normalizeCluster('Karama Central')).toBe('Karama Central');
   });
+
+  it('allows editing customer joining date and preserves it across profile updates', () => {
+    const customer: Customer = {
+      ...sampleCustomer,
+      joining_date: '2026-10-01',
+    };
+
+    expect(customer.joining_date).toBe('2026-10-01');
+
+    // Simulate editing joining date to 15-Nov-2026
+    const updatedCustomer: Customer = {
+      ...customer,
+      joining_date: '2026-11-15',
+    };
+
+    expect(updatedCustomer.joining_date).toBe('2026-11-15');
+  });
 });

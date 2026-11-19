@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { Customer, Payment, Invoice, MealPlan } from '../../types';
 import { formatAED } from '../../utils/currency';
+import { formatDateDDMMMYYYY } from '../../utils/dateFormatter';
 
 interface MobileCustomerDetailViewProps {
   customer: Customer;
@@ -259,14 +260,14 @@ export const MobileCustomerDetailView: React.FC<MobileCustomerDetailViewProps> =
         {/* Tab 1: Account Info Rows */}
         {activeTab === 'account' && (
           <div className="bg-white rounded-3xl p-5 border border-[#EFE8DE] shadow-sm divide-y divide-stone-100 text-xs">
-            {/* Start Date */}
+            {/* Start Date / Joining Date */}
             <div className="py-3 flex items-center justify-between first:pt-0">
               <div className="flex items-center gap-2.5 text-stone-600 font-semibold">
                 <Calendar className="w-4 h-4 text-stone-400" />
                 <span>Start Date</span>
               </div>
               <span className="font-bold text-stone-900 font-mono">
-                {customer.joining_date || customer.billing_start_date || '01 Aug 2026'}
+                {customer.joining_date || customer.billing_start_date ? formatDateDDMMMYYYY(customer.joining_date || customer.billing_start_date) : '01-Aug-2026'}
               </span>
             </div>
 
@@ -277,7 +278,7 @@ export const MobileCustomerDetailView: React.FC<MobileCustomerDetailViewProps> =
                 <span>Next Due Date</span>
               </div>
               <span className="font-bold text-amber-700 font-mono">
-                {customer.billed_up_to_date || customer.billing_end_date || '01 Nov 2026'}
+                {customer.billed_up_to_date || customer.billing_end_date ? formatDateDDMMMYYYY(customer.billed_up_to_date || customer.billing_end_date) : '01-Nov-2026'}
               </span>
             </div>
 

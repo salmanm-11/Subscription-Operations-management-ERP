@@ -85,6 +85,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
   const [isDueModalOpen, setIsDueModalOpen] = useState(false);
   const [dueAmountInput, setDueAmountInput] = useState<number>(0);
   const [dueRatingInput, setDueRatingInput] = useState<'Good' | 'Late payer' | 'Bad'>('Good');
+  const [joiningDateInput, setJoiningDateInput] = useState<string>('');
   const [billedUpToInput, setBilledUpToInput] = useState<string>('');
   const [paymentMadeUpToInput, setPaymentMadeUpToInput] = useState<string>('');
   const [dueReasonInput, setDueReasonInput] = useState<string>('');
@@ -141,6 +142,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
     customer?.payment_made_up_to_date,
     customer?.billed_up_to_date,
     customer?.status,
+    customer?.joining_date,
   ]);
 
   // Keep customer data synchronized in real-time if live customers array updates
@@ -357,12 +359,15 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
   };
 
   // Open the Add / Edit Due dialog
-  const handleOpenDueModal = (initialField?: 'due' | 'billed' | 'paid') => {
+  const handleOpenDueModal = (initialField?: 'due' | 'billed' | 'paid' | 'joining') => {
     if (!activeCustomer) return;
     setDueAmountInput(activeCustomer.total_overdue || 0);
     setDueRatingInput(
       activeCustomer.payment_rating ||
         (activeCustomer.total_overdue && activeCustomer.total_overdue > 0 ? 'Late payer' : 'Good')
+    );
+    setJoiningDateInput(
+      activeCustomer.joining_date || activeCustomer.billing_start_date || ''
     );
     setBilledUpToInput(
       activeCustomer.billed_up_to_date || activeCustomer.billing_end_date || ''
@@ -385,6 +390,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
     setOptimisticCustomer({
       total_overdue: newDue,
       payment_rating: dueRatingInput,
+      joining_date: joiningDateInput || activeCustomer.joining_date,
       billed_up_to_date: billedUpToInput || activeCustomer.billed_up_to_date,
       payment_made_up_to_date: paymentMadeUpToInput || activeCustomer.payment_made_up_to_date,
     });
@@ -395,14 +401,15 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
         ...activeCustomer,
         total_overdue: newDue,
         payment_rating: dueRatingInput,
+        joining_date: joiningDateInput || activeCustomer.joining_date,
         billed_up_to_date: billedUpToInput || activeCustomer.billed_up_to_date,
         billing_end_date: billedUpToInput || activeCustomer.billing_end_date,
         payment_made_up_to_date: paymentMadeUpToInput || activeCustomer.payment_made_up_to_date,
-        billing_start_date: paymentMadeUpToInput || activeCustomer.billing_start_date,
+        billing_start_date: joiningDateInput || activeCustomer.billing_start_date,
         notes: dueReasonInput.trim()
           ? activeCustomer.notes
-            ? `${activeCustomer.notes}\n[${new Date().toISOString().split('T')[0]}] Due adjusted to AED ${newDue}: ${dueReasonInput.trim()}`
-            : `Due adjusted to AED ${newDue}: ${dueReasonInput.trim()}`
+            ? `${activeCustomer.notes}\n[${new Date().toISOString().split('T')[0]}] Dates/due adjusted to AED ${newDue}: ${dueReasonInput.trim()}`
+            : `Dates/due adjusted to AED ${newDue}: ${dueReasonInput.trim()}`
           : activeCustomer.notes,
         updated_at: new Date().toISOString(),
       };
@@ -700,8 +707,18 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                   </span>
                 </span>
                 <span>•</span>
-                <span className="text-slate-400">
-                  Joined: <strong className="text-slate-200">{activeCustomer.joining_date || activeCustomer.billing_start_date ? formatDateDDMMMYYYY(activeCustomer.joining_date || activeCustomer.billing_start_date) : '01-Oct-2026'}</strong>
+                <span className="inline-flex items-center gap-1 text-slate-400">
+                  <span>Joined: <strong className="text-slate-200">{activeCustomer.joining_date || activeCustomer.billing_start_date ? formatDateDDMMMYYYY(activeCustomer.joining_date || activeCustomer.billing_start_date) : '01-Oct-2026'}</strong></span>
+                  {!isReadOnly && (
+                    <button
+                      type="button"
+                      onClick={() => handleOpenDueModal('joining')}
+                      className="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-amber-400 transition-colors cursor-pointer"
+                      title="Edit Joining Date"
+                    >
+                      <Edit3 className="w-3 h-3" />
+                    </button>
+                  )}
                 </span>
                 {activeCustomer.company_name && (
                   <>
@@ -1262,9 +1279,21 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                         <Calendar className="w-3.5 h-3.5 text-slate-500" />
                         Customer Since / Joined
                       </span>
-                      <span className="text-slate-200 font-mono font-medium">
-                        {activeCustomer.joining_date || activeCustomer.billing_start_date ? formatDateDDMMMYYYY(activeCustomer.joining_date || activeCustomer.billing_start_date) : '01-Oct-2026'}
-                      </span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-slate-200 font-mono font-medium">
+                          {activeCustomer.joining_date || activeCustomer.billing_start_date ? formatDateDDMMMYYYY(activeCustomer.joining_date || activeCustomer.billing_start_date) : '01-Oct-2026'}
+                        </span>
+                        {!isReadOnly && (
+                          <button
+                            type="button"
+                            onClick={() => handleOpenDueModal('joining')}
+                            className="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-amber-400 transition-colors cursor-pointer"
+                            title="Edit Joining Date"
+                          >
+                            <Edit3 className="w-3 h-3" />
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -2140,24 +2169,48 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                   </div>
                 </div>
 
-                {/* Due Date & Paid Up To Dates */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                {/* Joining Date, Due Date & Paid Up To Dates */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
                   <div className="space-y-1">
-                    <label className="text-xs font-semibold text-slate-300">Billed Up To Date (Due Target)</label>
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-semibold text-slate-300">Joining Date</label>
+                      <span className="font-mono text-[10px] text-sky-400 font-bold">
+                        {formatDateDDMMMYYYY(joiningDateInput)}
+                      </span>
+                    </div>
+                    <input
+                      type="date"
+                      value={joiningDateInput}
+                      onChange={(e) => setJoiningDateInput(e.target.value)}
+                      className="w-full px-2.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono text-xs focus:outline-none focus:border-sky-400"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-semibold text-slate-300">Billed Up To</label>
+                      <span className="font-mono text-[10px] text-amber-400 font-bold">
+                        {formatDateDDMMMYYYY(billedUpToInput)}
+                      </span>
+                    </div>
                     <input
                       type="date"
                       value={billedUpToInput}
                       onChange={(e) => setBilledUpToInput(e.target.value)}
-                      className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono text-xs focus:outline-none focus:border-amber-400"
+                      className="w-full px-2.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono text-xs focus:outline-none focus:border-amber-400"
                     />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-xs font-semibold text-slate-300">Paid Up To Date</label>
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-semibold text-slate-300">Paid Up To</label>
+                      <span className="font-mono text-[10px] text-emerald-400 font-bold">
+                        {formatDateDDMMMYYYY(paymentMadeUpToInput)}
+                      </span>
+                    </div>
                     <input
                       type="date"
                       value={paymentMadeUpToInput}
                       onChange={(e) => setPaymentMadeUpToInput(e.target.value)}
-                      className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono text-xs focus:outline-none focus:border-emerald-400"
+                      className="w-full px-2.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono text-xs focus:outline-none focus:border-emerald-400"
                     />
                   </div>
                 </div>
