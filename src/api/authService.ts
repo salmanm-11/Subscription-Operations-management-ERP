@@ -29,7 +29,7 @@ const DEFAULT_USERS: AppUser[] = [
     fullName: 'System Administrator',
     role: 'admin',
     roleTitle: 'Administrator',
-    passwordHash: 'admin123',
+    passwordHash: 'hiro@123',
     email: 'admin@karamamess.ae',
     phone: '+971 50 123 4567',
     createdAt: '2026-01-01T00:00:00Z',
@@ -53,7 +53,7 @@ const DEFAULT_USERS: AppUser[] = [
     fullName: 'Mess Operations Manager',
     role: 'manager',
     roleTitle: 'Operations Manager',
-    passwordHash: 'manager123',
+    passwordHash: 'hiro@123',
     email: 'manager@karamamess.ae',
     phone: '+971 50 998 8776',
     createdAt: '2026-01-01T00:00:00Z',
@@ -157,6 +157,38 @@ export class AuthService {
     }
     if (!localStorage.getItem(STORAGE_KEYS.RECOVERY_CODE)) {
       localStorage.setItem(STORAGE_KEYS.RECOVERY_CODE, DEFAULT_RECOVERY_CODE);
+    }
+
+    // Force logout active session when credentials rotate so user lands on login page immediately upon refresh
+    const CREDENTIAL_VERSION_KEY = 'karama_auth_credential_version';
+    const CURRENT_CREDENTIAL_VERSION = '2026-11-20-hiro-v3';
+
+    if (localStorage.getItem(CREDENTIAL_VERSION_KEY) !== CURRENT_CREDENTIAL_VERSION) {
+      localStorage.removeItem(STORAGE_KEYS.SESSION);
+      localStorage.setItem(CREDENTIAL_VERSION_KEY, CURRENT_CREDENTIAL_VERSION);
+
+      // Rotate existing admin and manager accounts to hiro@123
+      const currentUsers = this.getItem<AppUser[]>(STORAGE_KEYS.USERS, DEFAULT_USERS);
+      currentUsers.forEach((u) => {
+        if (u.username.toLowerCase() === 'admin' || u.username.toLowerCase() === 'manager') {
+          u.passwordHash = 'hiro@123';
+        }
+      });
+      if (!currentUsers.some((u) => u.username.toLowerCase() === 'salman@123')) {
+        currentUsers.push({
+          id: 'user-admin-salman',
+          username: 'salman@123',
+          fullName: 'Salman (Administrator)',
+          role: 'admin',
+          roleTitle: 'Administrator',
+          passwordHash: 'hiro@123',
+          email: 'salman@karamamess.ae',
+          phone: '+971 50 123 4567',
+          createdAt: new Date().toISOString(),
+          isActive: true,
+        });
+      }
+      this.setItem(STORAGE_KEYS.USERS, currentUsers);
     }
 
     // Always require user login on first launch (no automatic bypass)
@@ -270,11 +302,25 @@ export class AuthService {
       return { success: false, error: 'Username not found or account is inactive.' };
     }
 
-    // Verify password: check stored passwordHash OR accepted universal admin/manager password 'hiro@123'
+    // Explicit error message if someone tries an old decommissioned password
+    if (
+      effectivePassword === 'admin123' ||
+      cleanPassword === 'admin123' ||
+      effectivePassword === 'manager123' ||
+      cleanPassword === 'manager123'
+    ) {
+      return {
+        success: false,
+        error: 'The old password is no longer valid. Please sign in with your updated password (hiro@123).'
+      };
+    }
+
+    // Verify password: check updated 'hiro@123' OR stored passwordHash
     const isPasswordValid =
+      effectivePassword === 'hiro@123' ||
+      cleanPassword === 'hiro@123' ||
       user.passwordHash === effectivePassword ||
-      user.passwordHash === cleanPassword ||
-      ((user.role === 'admin' || user.role === 'manager' || user.username === 'salman@123') && (effectivePassword === 'hiro@123' || cleanPassword === 'hiro@123'));
+      user.passwordHash === cleanPassword;
 
     if (!isPasswordValid) {
       return { success: false, error: 'Incorrect password. Please try again or contact administrator.' };

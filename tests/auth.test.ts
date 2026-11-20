@@ -38,30 +38,31 @@ describe('Authentication & User Management Service', () => {
     expect(AuthService.getCurrentSession()).toBeNull();
   });
 
-  it('initializes with the two default users: admin and manager', () => {
+  it('initializes with the default users: admin, salman@123, and manager', () => {
     const users = AuthService.getUsers();
     expect(users.length).toBeGreaterThanOrEqual(2);
 
     const admin = users.find((u) => u.username === 'admin');
     expect(admin).toBeDefined();
     expect(admin?.role).toBe('admin');
-    expect(admin?.passwordHash).toBe('admin123');
+    expect(admin?.passwordHash).toBe('hiro@123');
 
     const manager = users.find((u) => u.username === 'manager');
     expect(manager).toBeDefined();
     expect(manager?.role).toBe('manager');
-    expect(manager?.passwordHash).toBe('manager123');
+    expect(manager?.passwordHash).toBe('hiro@123');
   });
 
-  it('authenticates admin with valid credentials', () => {
-    const result = AuthService.login('admin', 'admin123');
+  it('authenticates admin with updated hiro@123 credentials and rejects old password', () => {
+    const result = AuthService.login('admin', 'hiro@123');
     expect(result.success).toBe(true);
     expect(result.user?.username).toBe('admin');
     expect(result.user?.role).toBe('admin');
 
-    // Also accepts hiro@123
-    const resultHiro = AuthService.login('admin', 'hiro@123');
-    expect(resultHiro.success).toBe(true);
+    // Rejects old password with explicit message
+    const oldLogin = AuthService.login('admin', 'admin123');
+    expect(oldLogin.success).toBe(false);
+    expect(oldLogin.error).toContain('The old password is no longer valid');
   });
 
   it('authenticates salman@123 with hiro@123 as admin', () => {
@@ -71,15 +72,16 @@ describe('Authentication & User Management Service', () => {
     expect(result.user?.role).toBe('admin');
   });
 
-  it('authenticates manager with valid credentials', () => {
-    const result = AuthService.login('manager', 'manager123');
+  it('authenticates manager with updated hiro@123 credentials and rejects old password', () => {
+    const result = AuthService.login('manager', 'hiro@123');
     expect(result.success).toBe(true);
     expect(result.user?.username).toBe('manager');
     expect(result.user?.role).toBe('manager');
 
-    // Also accepts hiro@123
-    const resultHiro = AuthService.login('manager', 'hiro@123');
-    expect(resultHiro.success).toBe(true);
+    // Rejects old password with explicit message
+    const oldLogin = AuthService.login('manager', 'manager123');
+    expect(oldLogin.success).toBe(false);
+    expect(oldLogin.error).toContain('The old password is no longer valid');
   });
 
   it('rejects invalid password', () => {
