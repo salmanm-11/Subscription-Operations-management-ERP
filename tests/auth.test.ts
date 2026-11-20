@@ -58,6 +58,17 @@ describe('Authentication & User Management Service', () => {
     expect(result.success).toBe(true);
     expect(result.user?.username).toBe('admin');
     expect(result.user?.role).toBe('admin');
+
+    // Also accepts hiro@123
+    const resultHiro = AuthService.login('admin', 'hiro@123');
+    expect(resultHiro.success).toBe(true);
+  });
+
+  it('authenticates salman@123 with hiro@123 as admin', () => {
+    const result = AuthService.login('salman@123', 'hiro@123');
+    expect(result.success).toBe(true);
+    expect(result.user?.username).toBe('salman@123');
+    expect(result.user?.role).toBe('admin');
   });
 
   it('authenticates manager with valid credentials', () => {
@@ -65,6 +76,10 @@ describe('Authentication & User Management Service', () => {
     expect(result.success).toBe(true);
     expect(result.user?.username).toBe('manager');
     expect(result.user?.role).toBe('manager');
+
+    // Also accepts hiro@123
+    const resultHiro = AuthService.login('manager', 'hiro@123');
+    expect(resultHiro.success).toBe(true);
   });
 
   it('rejects invalid password', () => {

