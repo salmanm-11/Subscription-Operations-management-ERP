@@ -89,7 +89,7 @@ describe('AutoBackupService Tests', () => {
     const jsonStr = AutoBackupService.generateSystemSnapshotJson(mockDataset);
     expect(jsonStr).toBeTypeOf('string');
     const parsed = JSON.parse(jsonStr);
-    expect(parsed.app).toBe('Karama Mess Management Software');
+    expect(parsed.app).toBe('Orbit Enterprise ERP');
     expect(parsed.customers.length).toBe(2);
     expect(parsed.invoices.length).toBe(1);
     expect(parsed.payments.length).toBe(1);

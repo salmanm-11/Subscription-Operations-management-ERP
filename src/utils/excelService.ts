@@ -100,7 +100,7 @@ export function exportCustomersToExcel(
   }));
 
   const dateStr = new Date().toISOString().slice(0, 10);
-  const filename = `Karama_Mess_Customers_${filterType.toUpperCase()}_${dateStr}`;
+  const filename = `Orbit_Customers_${filterType.toUpperCase()}_${dateStr}`;
   exportTableToExcel(exportRows, filename, 'Customers', format);
 }
 
@@ -123,7 +123,7 @@ export function exportInvoicesToExcel(invoices: Invoice[], format: 'xlsx' | 'csv
   }));
 
   const dateStr = new Date().toISOString().slice(0, 10);
-  const filename = `Karama_Mess_Invoices_${dateStr}`;
+  const filename = `Orbit_Invoices_${dateStr}`;
   exportTableToExcel(exportRows, filename, 'Invoices', format);
 }
 
@@ -143,7 +143,7 @@ export function exportLedgerToExcel(ledgerRecords: any[], format: 'xlsx' | 'csv'
   }));
 
   const dateStr = new Date().toISOString().slice(0, 10);
-  const filename = `Karama_Mess_Daily_Ledger_365Days_${dateStr}`;
+  const filename = `Orbit_Daily_Ledger_365Days_${dateStr}`;
   exportTableToExcel(exportRows, filename, 'Daily Ledger', format);
 }
 
@@ -173,7 +173,7 @@ export function exportDeliverySheetToExcel(customers: Customer[], format: 'xlsx'
   }));
 
   const dateStr = new Date().toISOString().slice(0, 10);
-  const filename = `Karama_Mess_Delivery_RunSheet_${dateStr}`;
+  const filename = `Orbit_Delivery_RunSheet_${dateStr}`;
   exportTableToExcel(exportRows, filename, 'Delivery Sheet', format);
 }
 
@@ -233,7 +233,7 @@ export function downloadCustomerTemplate(format: 'xlsx' | 'csv' = 'xlsx') {
     }
   ];
 
-  exportTableToExcel(sampleData, 'Karama_Mess_Customer_Import_Template', 'Template', format);
+  exportTableToExcel(sampleData, 'Orbit_Customer_Import_Template', 'Template', format);
 }
 
 export function normalizeToDateString(val: any): string | undefined {
@@ -604,7 +604,7 @@ export function exportVendorStatementToExcel(statement: VendorStatement, format:
 
   const dateStr = new Date().toISOString().slice(0, 10);
   const cleanVendorName = statement.vendor.name.replace(/[^a-zA-Z0-9]/g, '_');
-  const filename = `Karama_Vendor_Statement_${cleanVendorName}_${dateStr}`;
+  const filename = `Orbit_Vendor_Statement_${cleanVendorName}_${dateStr}`;
   exportTableToExcel(exportRows, filename, 'Statement', format);
 }
 
@@ -629,7 +629,7 @@ export function exportVendorsListToExcel(vendors: Vendor[], format: 'xlsx' | 'cs
   }));
 
   const dateStr = new Date().toISOString().slice(0, 10);
-  const filename = `Karama_Vendor_Directory_${dateStr}`;
+  const filename = `Orbit_Vendor_Directory_${dateStr}`;
   exportTableToExcel(exportRows, filename, 'Vendors', format);
 }
 

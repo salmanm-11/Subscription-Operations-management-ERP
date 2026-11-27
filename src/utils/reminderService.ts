@@ -377,14 +377,14 @@ export function generateWhatsAppReminderMessage(
       : `• *Amount Due:* *${formatAED(amount)}*\n\n`;
 
   return (
-    `*KARAMA HOMELY MESS - PAYMENT REMINDER*\n\n` +
+    `*ORBIT OPERATIONS - PAYMENT REMINDER*\n\n` +
     `Dear ${customer.full_name},\n\n` +
     `This is a friendly reminder that your mess subscription payment is due ${timePhrase}.\n\n` +
     advanceBreakdown +
     `🏢 *Accommodation:* ${customer.building_name_cache || 'Belrasheed Building'}${customer.apartment_cache ? ` (Apt ${customer.apartment_cache})` : ''}\n` +
     `📋 *Customer ID:* #${customer.customer_code}\n\n` +
     `Kindly arrange settlement at your earliest convenience to maintain uninterrupted daily meal delivery.\n\n` +
-    `Thank you,\n*Karama Homely Mess*`
+    `Thank you,\n*Orbit Operations Team*`
   );
 }
 

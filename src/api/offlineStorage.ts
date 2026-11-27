@@ -1106,8 +1106,8 @@ export class OfflineStorage {
   }
 
   static getSupabaseConfig(): { url: string; anonKey: string } {
-    const defaultUrl = (typeof process !== 'undefined' && process.env?.VITE_SUPABASE_URL) || 'https://bbqrieuujxazhqgelppr.supabase.co';
-    const defaultKey = (typeof process !== 'undefined' && process.env?.VITE_SUPABASE_ANON_KEY) || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJicXJpZXV1anhhemhxZ2VscHByIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI4OTczMjAsImV4cCI6MjEwODQ3MzMyMH0.VzeXJPGwWod5AwZmCkQ3YIWyhBdEVeTLgZUjZLndSlw';
+    const defaultUrl = (import.meta as any)?.env?.VITE_SUPABASE_URL || (typeof process !== 'undefined' && process.env?.VITE_SUPABASE_URL) || '';
+    const defaultKey = (import.meta as any)?.env?.VITE_SUPABASE_ANON_KEY || (typeof process !== 'undefined' && process.env?.VITE_SUPABASE_ANON_KEY) || '';
 
     const saved = this.getItem<{ url?: string; anonKey?: string }>(STORAGE_KEYS.SUPABASE_CONFIG, {
       url: defaultUrl,

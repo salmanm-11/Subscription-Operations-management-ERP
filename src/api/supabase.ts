@@ -6,9 +6,9 @@ import { OfflineStorage, DEFAULT_BUSINESS } from './offlineStorage';
 import { Customer, Building, Room, MealPlan, Invoice, Payment, BusinessSettings, DashboardMetrics, Vendor, VendorTransaction, VendorPayment } from '../types';
 import { generateUUID, isValidUUID } from '../utils/uuid';
 
-// Built-in Internal Supabase Cloud Credentials (Hidden from frontend UI)
-export const BUILTIN_SUPABASE_URL = 'https://bbqrieuujxazhqgelppr.supabase.co';
-export const BUILTIN_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJicXJpZXV1anhhemhxZ2VscHByIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI4OTczMjAsImV4cCI6MjEwODQ3MzMyMH0.VzeXJPGwWod5AwZmCkQ3YIWyhBdEVeTLgZUjZLndSlw';
+// Built-in Internal Supabase Cloud Credentials from environment variables (.env)
+export const BUILTIN_SUPABASE_URL = (import.meta as any)?.env?.VITE_SUPABASE_URL || '';
+export const BUILTIN_SUPABASE_ANON_KEY = (import.meta as any)?.env?.VITE_SUPABASE_ANON_KEY || '';
 
 let supabaseClient: SupabaseClient | null = null;
 

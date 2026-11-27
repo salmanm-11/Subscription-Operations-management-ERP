@@ -138,7 +138,7 @@ export class AutoBackupService {
    */
   static generateSystemSnapshotJson(dataset: BackupDataset): string {
     const snapshot = {
-      app: 'Karama Mess Management Software',
+      app: 'Orbit Enterprise ERP',
       schema_version: '1.0.4',
       exported_at: new Date().toISOString(),
       business: dataset.business || OfflineStorage.getBusiness(),

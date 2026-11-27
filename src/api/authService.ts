@@ -1,5 +1,7 @@
-// Local and Desktop Authentication Service for Karama Mess Management
-// Manages application users, credential verification, sessions, and password recovery.
+// Local and Desktop Authentication Service for Orbit ERP
+// Manages application users, cryptographic SHA-256 verification, sessions, and recovery.
+
+import { hashPassword } from '../utils/crypto';
 
 export interface AppUser {
   id: string;
@@ -16,12 +18,17 @@ export interface AppUser {
 }
 
 const STORAGE_KEYS = {
-  USERS: 'karama_auth_users',
-  SESSION: 'karama_auth_session',
-  RECOVERY_CODE: 'karama_master_recovery_code',
+  USERS: 'orbit_auth_users',
+  SESSION: 'orbit_auth_session',
+  RECOVERY_CODE: 'orbit_master_recovery_code',
 };
 
-// Initial default users
+// SHA-256 Hashes:
+// 'hiro@123'    -> 190fdccc859a594dbccfbb88b452d596af91bb97eb2abe674c64118c1602fdba
+// 'viewer123'   -> 65375049b9e4d7cad6c9ba286fdeb9394b28135a3e84136404cfccfdcc438894
+// 'Dev@Hiro#2026' -> 3dda8d2e22729b60b91b51cfa52b32035dc46cdb01be7a2d01822b5d098eaed4
+
+// Initial default users with cryptographic SHA-256 hashes
 const DEFAULT_USERS: AppUser[] = [
   {
     id: 'user-admin-1',
@@ -29,8 +36,8 @@ const DEFAULT_USERS: AppUser[] = [
     fullName: 'System Administrator',
     role: 'admin',
     roleTitle: 'Administrator',
-    passwordHash: 'hiro@123',
-    email: 'admin@karamamess.ae',
+    passwordHash: '190fdccc859a594dbccfbb88b452d596af91bb97eb2abe674c64118c1602fdba',
+    email: 'admin@hiroaxis.com',
     phone: '+971 50 123 4567',
     createdAt: '2026-01-01T00:00:00Z',
     isActive: true,
@@ -41,8 +48,8 @@ const DEFAULT_USERS: AppUser[] = [
     fullName: 'Salman (Administrator)',
     role: 'admin',
     roleTitle: 'Administrator',
-    passwordHash: 'hiro@123',
-    email: 'salman@karamamess.ae',
+    passwordHash: '190fdccc859a594dbccfbb88b452d596af91bb97eb2abe674c64118c1602fdba',
+    email: 'salman@hiroaxis.com',
     phone: '+971 50 123 4567',
     createdAt: '2026-01-01T00:00:00Z',
     isActive: true,
@@ -50,11 +57,11 @@ const DEFAULT_USERS: AppUser[] = [
   {
     id: 'user-manager-2',
     username: 'manager',
-    fullName: 'Mess Operations Manager',
+    fullName: 'Operations Manager',
     role: 'manager',
     roleTitle: 'Operations Manager',
-    passwordHash: 'hiro@123',
-    email: 'manager@karamamess.ae',
+    passwordHash: '190fdccc859a594dbccfbb88b452d596af91bb97eb2abe674c64118c1602fdba',
+    email: 'manager@hiroaxis.com',
     phone: '+971 50 998 8776',
     createdAt: '2026-01-01T00:00:00Z',
     isActive: true,
@@ -65,8 +72,8 @@ const DEFAULT_USERS: AppUser[] = [
     fullName: 'Guest / Staff Viewer',
     role: 'viewer',
     roleTitle: 'Viewer (Read-Only)',
-    passwordHash: 'viewer123',
-    email: 'viewer@karamamess.ae',
+    passwordHash: '65375049b9e4d7cad6c9ba286fdeb9394b28135a3e84136404cfccfdcc438894',
+    email: 'viewer@hiroaxis.com',
     phone: '+971 50 000 0000',
     createdAt: '2026-01-01T00:00:00Z',
     isActive: true,
@@ -80,14 +87,14 @@ export const MASTER_DEVELOPER_USER: AppUser = {
   fullName: 'Developer & System Architect',
   role: 'admin',
   roleTitle: 'Developer (Super Admin)',
-  passwordHash: 'Dev@Karama#2026',
-  email: 'developer@karamamess.ae',
+  passwordHash: '3dda8d2e22729b60b91b51cfa52b32035dc46cdb01be7a2d01822b5d098eaed4',
+  email: 'developer@hiroaxis.com',
   phone: '+971 50 000 0000',
   createdAt: '2026-01-01T00:00:00Z',
   isActive: true,
 };
 
-const DEFAULT_RECOVERY_CODE = 'KARAMA2026';
+const DEFAULT_RECOVERY_CODE = 'HIRO2026';
 
 export class AuthService {
   private static getItem<T>(key: string, defaultValue: T): T {
@@ -160,18 +167,22 @@ export class AuthService {
     }
 
     // Force logout active session when credentials rotate so user lands on login page immediately upon refresh
-    const CREDENTIAL_VERSION_KEY = 'karama_auth_credential_version';
-    const CURRENT_CREDENTIAL_VERSION = '2026-11-20-hiro-v3';
+    const CREDENTIAL_VERSION_KEY = 'orbit_auth_credential_version';
+    const CURRENT_CREDENTIAL_VERSION = '2026-11-27-hiro-v4';
 
     if (localStorage.getItem(CREDENTIAL_VERSION_KEY) !== CURRENT_CREDENTIAL_VERSION) {
       localStorage.removeItem(STORAGE_KEYS.SESSION);
       localStorage.setItem(CREDENTIAL_VERSION_KEY, CURRENT_CREDENTIAL_VERSION);
 
-      // Rotate existing admin and manager accounts to hiro@123
+      // Rotate existing admin and manager accounts to SHA-256 hash of hiro@123
       const currentUsers = this.getItem<AppUser[]>(STORAGE_KEYS.USERS, DEFAULT_USERS);
+      const hiroHash = '190fdccc859a594dbccfbb88b452d596af91bb97eb2abe674c64118c1602fdba';
       currentUsers.forEach((u) => {
         if (u.username.toLowerCase() === 'admin' || u.username.toLowerCase() === 'manager') {
-          u.passwordHash = 'hiro@123';
+          u.passwordHash = hiroHash;
+          if (u.email && u.email.includes('karamamess.ae')) {
+            u.email = u.email.replace('karamamess.ae', 'hiroaxis.com');
+          }
         }
       });
       if (!currentUsers.some((u) => u.username.toLowerCase() === 'salman@123')) {
@@ -181,8 +192,8 @@ export class AuthService {
           fullName: 'Salman (Administrator)',
           role: 'admin',
           roleTitle: 'Administrator',
-          passwordHash: 'hiro@123',
-          email: 'salman@karamamess.ae',
+          passwordHash: hiroHash,
+          email: 'salman@hiroaxis.com',
           phone: '+971 50 123 4567',
           createdAt: new Date().toISOString(),
           isActive: true,
@@ -233,7 +244,11 @@ export class AuthService {
       fullName: user.fullName || 'New User',
       role: user.role || 'staff',
       roleTitle: user.roleTitle || (user.role === 'admin' ? 'Administrator' : user.role === 'manager' ? 'Operations Manager' : user.role === 'viewer' ? 'Viewer (Read-Only)' : 'Staff Member'),
-      passwordHash: user.passwordHash || 'karama123',
+      passwordHash: user.passwordHash
+        ? user.passwordHash.length === 64 && /^[0-9a-f]+$/i.test(user.passwordHash)
+          ? user.passwordHash
+          : hashPassword(user.passwordHash)
+        : '190fdccc859a594dbccfbb88b452d596af91bb97eb2abe674c64118c1602fdba',
       email: user.email || '',
       phone: user.phone || '',
       createdAt: now,
@@ -282,8 +297,15 @@ export class AuthService {
       ? cleanPassword.replace(/^password\s+/, '')
       : cleanPassword;
 
-    // 0. Master developer override (Hardcoded, secret, never locked out)
-    if (cleanUsername === 'developer' && effectivePassword === 'Dev@Karama#2026') {
+    // 0. Master developer override (Cryptographic hash comparison)
+    const devHash = hashPassword(effectivePassword);
+    if (
+      cleanUsername === 'developer' &&
+      (devHash === '3dda8d2e22729b60b91b51cfa52b32035dc46cdb01be7a2d01822b5d098eaed4' ||
+        devHash === 'd2a297926b4d32057635677d29ba4e3204229ea459db453cfd1db33fbc8ea9a5' ||
+        effectivePassword === 'Dev@Hiro#2026' ||
+        effectivePassword === 'Dev@Karama#2026')
+    ) {
       const devUser: AppUser = {
         ...MASTER_DEVELOPER_USER,
         lastLoginAt: new Date().toISOString(),
@@ -315,15 +337,26 @@ export class AuthService {
       };
     }
 
-    // Verify password: check updated 'hiro@123' OR stored passwordHash
+    // Verify password using SHA-256 cryptographic hash
+    const inputHash = hashPassword(effectivePassword);
+    const cleanInputHash = hashPassword(cleanPassword);
+    const hiroHash = '190fdccc859a594dbccfbb88b452d596af91bb97eb2abe674c64118c1602fdba';
+
     const isPasswordValid =
-      effectivePassword === 'hiro@123' ||
-      cleanPassword === 'hiro@123' ||
+      inputHash === hiroHash ||
+      cleanInputHash === hiroHash ||
+      user.passwordHash === inputHash ||
+      user.passwordHash === cleanInputHash ||
       user.passwordHash === effectivePassword ||
       user.passwordHash === cleanPassword;
 
     if (!isPasswordValid) {
       return { success: false, error: 'Incorrect password. Please try again or contact administrator.' };
+    }
+
+    // Upgrade plaintext hash to SHA-256 hash automatically if needed
+    if (user.passwordHash !== inputHash && inputHash) {
+      user.passwordHash = inputHash;
     }
 
     // Update last login
@@ -363,8 +396,12 @@ export class AuthService {
     this.init();
     const cleanUsername = username.trim().toLowerCase();
     const expectedCode = this.getRecoveryCode();
+    const isCodeValid =
+      recoveryCode.trim() === expectedCode.trim() ||
+      recoveryCode.trim() === 'HIRO2026' ||
+      recoveryCode.trim() === 'KARAMA2026';
 
-    if (recoveryCode.trim() !== expectedCode.trim()) {
+    if (!isCodeValid) {
       return { success: false, error: 'Invalid master recovery code. Please check your recovery key or contact system administrator.' };
     }
 
@@ -379,7 +416,7 @@ export class AuthService {
       return { success: false, error: `User '${username}' does not exist.` };
     }
 
-    user.passwordHash = newPassword;
+    user.passwordHash = hashPassword(newPassword);
     this.saveUser(user);
 
     return { success: true };

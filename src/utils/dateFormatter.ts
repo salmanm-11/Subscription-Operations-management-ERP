@@ -1,5 +1,5 @@
 /**
- * Karama Homely Mess - Unified Date Formatting Utilities
+ * Orbit ERP - Unified Date Formatting Utilities
  * Standardized format: dd-mmm-yyyy (e.g. 19-Nov-2026, 31-Oct-2026)
  */
 

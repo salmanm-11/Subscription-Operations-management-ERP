@@ -153,7 +153,7 @@ export class ActivityLogService {
 
     XLSX.utils.book_append_sheet(wb, ws, 'Activity Logs');
     const dateStr = new Date().toISOString().slice(0, 10);
-    const filename = `Karama_Mess_Activity_Logs_${dateStr}`;
+    const filename = `Orbit_Activity_Logs_${dateStr}`;
 
     if (format === 'csv') {
       XLSX.writeFile(wb, `${filename}.csv`, { bookType: 'csv' });

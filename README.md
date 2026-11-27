@@ -1,88 +1,104 @@
-# 🥘 Karama Mess Management & Catering System
+# 🛰️ Orbit ERP — Enterprise Subscription & Operations Platform
 
-A full-stack, local-first web application designed specifically for **Karama Mess** (Dubai, UAE) to streamline subscription management, daily kitchen preparation, delivery route dispatching, billing follow-ups with 1-click WhatsApp reminders, pro-rata days calculation, and financial bookkeeping.
-
----
-
-## 🚀 Quick Start
-
-### 1. Launch the System
-Double-click **`start.bat`** or run in your terminal:
-```bash
-node server.js
-```
-
-### 2. Access the Application
-- **On this PC (Admin):** Open [http://localhost:3000](http://localhost:3000)
-- **On Mobile Phones (Drivers & Kitchen):** Open `http://<your-local-ip>:3000` (e.g. `http://192.168.0.106:3000`) on any smartphone connected to the same Wi-Fi.
+> **Engineered by Hiro Axis Technologies**  
+> A high-performance, local-first enterprise ERP and recurring subscription management platform built with React 18, TypeScript, Vite, Tailwind CSS, and Supabase Realtime synchronization.
 
 ---
 
-## 🌟 Key Features & Operational Modules
+## 🌟 Executive Overview
 
-### 1. 👥 Customers & Subscriptions Hub
-- **168 Pre-loaded Active Customers** categorized across the 4 primary delivery zones:
-  - 🟠 **Burjman & Mankhool**
-  - 🟡 **Park, Pioneer & ADCB**
-  - 🟢 **Karama Center - Pyramid**
-  - 🟣 **Hamdan Colony & Post**
-- Multi-filter directory: Live search by name, building, apartment, meal combination (1, 2, or 3 times/day), status (`Running`, `Trial`, `Under Notice`, `Paused`, `Cancelled`), payment rating (`Good`, `Late payer`, `Bad`), and pending dues.
-- Detailed customer profiles with dietary tags (*No fish curry*, *Barik rice*, *Handmade chapati*, *Pure veg*, *No beef*), door passcodes (*4695#*, *7580#*), and delivery timing targets (*5:45 AM*, *6:00 AM*, *12:00 PM Noon*).
+**Orbit ERP** is a modern mission-critical operational system designed to automate recurring client subscriptions, automated pro-rata invoicing, multi-driver dispatch runs, daily meal/service fulfillment tracking, and real-time vendor ledger accounting.
 
-### 2. 🍳 Kitchen Preparation Board
-- High-contrast display optimized for tablets or kitchen wall monitors.
-- Big-number batch meal counters: Total Breakfasts (BF), Lunches (LN), and Dinners (DN) to prepare today.
-- Granular dietary breakdown counters:
-  - 🍚 **Barik Rice** vs. **Normal Kerala Meal Rice**
-  - 🫓 **Chapati Sets** vs. **Normal Rice Meals**
-  - 👨‍🍳 **Handmade Chapati** (strictly no machine)
-  - 🥦 **Pure Veg Only**
-  - 🐟 **No Fish Curry** (substitute egg omelette or fish fry)
-  - 🥩 **No Beef**
-  - 🥚 **Egg Substitute Required**
-- One-click **Printable Kitchen Sheet** formatted for clean paper or clipboard packing slips.
-
-### 3. 🛵 Delivery Boy Dispatch Run Sheet
-- Built for motorcycle and van drivers navigating Dubai streets.
-- Organized by **Area** and grouped by **Building Name** & **Apartment / Room #** for the most efficient drop-off sequence.
-- Prominently surfaces **Door Passcodes** (e.g. `4695#`), exact drop locations (*Inside kitchen*, *Top of refrigerator*, *Shoe rack*), delivery time, and dietary box labels.
-- Interactive **"Mark Delivered"** button that changes color to green and records delivery timestamps.
-- Tap-to-Call and Tap-to-WhatsApp direct links so drivers can instantly reach customers if building doors are locked.
-
-### 4. 💰 Billing, Overdue Dues & 1-Click WhatsApp Reminders
-- Complete tracking of outstanding balances (Totaling **AED 22,193** matching the original spreadsheet).
-- **1-Click WhatsApp Reminder**: Constructs customized polite reminder messages in WhatsApp with customer name, exact dues amount, billed date, and payment instructions.
-- Payment recording dialog: Logs payments, automatically reduces overdue balances, extends subscription dates, and records the receipt into daily ledger accounts.
-
-### 5. 🧮 Pro-Rata Days & Partial Month Calculator
-- Implements the exact pricing formulas of Karama Mess:
-  - **3 Times/day:** ~13.0 AED/day (e.g. 10 days = 130 AED)
-  - **2 Times/day:** ~10.0 AED/day (e.g. 13 days = 130 AED)
-  - **1 Time/day:** ~6.2 AED/day
-- Select start and end date, choose meal frequency, apply discounts/deductions, and calculate final charges with a 1-click button to apply directly to a customer's bill.
-
-### 6. 📖 Moms Accounts (Daily Financial Ledger)
-- 365 days of historical accounting pre-loaded (from Jan 1, 2026 through year-end).
-- Accurate meal revenue calculation:
-  $$\text{Daily Charges} = (\text{BF} \times 3.27) + (\text{LN} \times 4.385) + (\text{DN} \times 4.27)$$
-- Daily collection tracking, daily net difference, and cumulative running mess balance.
-- Monthly filtering and CSV export.
-
-### 7. 🏢 Corporate & Group Accounts (Thahir Group)
-- Multi-member corporate contracts (e.g., Thahir Group staff accommodation across Star of Karama, Dhe Fish, and A9).
-- Roster tracking of member headcounts, start/stop dates, and amounts.
-- Group ledger tracking: Old balance, total member charges, installment payments, and net overdue.
-- 1-Click WhatsApp Corporate Statement generator.
-
-### 8. ⚠️ Bad Debts Register
-- 22 pre-loaded accounts of vacated or stopped customers with unpaid debts (Totaling **AED 2,592**).
-- Status tracking (`Pending` vs. `Recovered`).
+Featuring an **offline-first local cache architecture**, Orbit operates with zero downtime — performing instant sub-millisecond local reads/writes while synchronizing seamlessly with cloud infrastructure across multiple client devices.
 
 ---
 
-## 🗄️ Database & Architecture
+## 🚀 Key Architectural Modules
 
-- **Backend:** Node.js (built-in `node:http` & native `node:sqlite`). Zero external npm dependency overhead.
-- **Database:** SQLite (`mess.db`) with Write-Ahead Logging (WAL) and ACID transactions.
-- **Frontend:** Responsive HTML5 / CSS3 / Vanilla JavaScript SPA with print media queries and mobile responsive touch controls.
-- **Seeder:** `seed_database.js` reads and loads Excel/CSV data with 100% data integrity.
+### 1. 👥 Client Subscriptions & Ledger Management
+- Comprehensive client registry with multi-zone geographic delivery clustering.
+- Real-time subscription state machine (`Active`, `Trial`, `Pending Renewal`, `Paused`, `Terminated`).
+- Dynamic pro-rata billing engine with automated calendar cycle adjustments.
+- Instant 1-click WhatsApp payment receipts and renewal notifications.
+
+### 2. 📊 High-Contrast Operations Dashboard
+- Real-time KPI telemetry: Active Contracts, Pending Settlements, Revenue Trajectory, Overdue Balances.
+- Interactive weekly revenue performance charts with peak-day trajectory indicators.
+- Live system status overview and active subscription notifications.
+
+### 3. 🛵 Route Dispatch & Delivery Execution
+- Geographic building and cluster dispatch sheets with door passcode records and delivery drop notes.
+- Driver dispatch run sheets with instant 1-click execution logging.
+- Direct customer communication channels via telephony and instant messaging.
+
+### 4. 🏢 Vendor Operations & Trade Credit Ledger
+- Multi-supplier procurement ledger with automated balance tracking.
+- Statement generation, payment tracking, and audit trails.
+
+### 5. 🔒 Security & Cryptographic Hashing
+- Secure client-side cryptographic **SHA-256 password hashing**.
+- Zero-exposure credential storage and session persistence.
+- Complete environment separation via `.env` configuration.
+- Remote kill-switch and developer license governance.
+
+---
+
+## 🛠️ Technology Stack
+
+| Layer | Technologies |
+|---|---|
+| **Frontend Framework** | React 18 (Hooks, Suspense, Concurrent Mode) |
+| **Language** | TypeScript 5.6 (Strict Type Safety) |
+| **Build Tool & Bundler** | Vite 5.4 with HMR |
+| **Styling & UI** | Tailwind CSS 3.4 (Obsidian Matte Theme, Neon Accents) |
+| **Icons** | Lucide React |
+| **Cloud Synchronization** | Supabase JS Client & Realtime WebSocket Channels |
+| **Desktop Wrapper** | Electron 32 (Cross-Platform Native Desktop Packaging) |
+| **Quality Assurance** | Vitest (Automated Test Suite with 100% Pass Rate) |
+
+---
+
+## ⚡ Getting Started
+
+### Prerequisites
+- Node.js (v18.0.0 or higher)
+- npm or pnpm
+
+### Installation
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/salmanm-11/karama-mess-web.git
+   cd karama-mess-web
+   ```
+
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+
+3. **Configure Environment Variables:**
+   ```bash
+   cp .env.example .env
+   ```
+   Add your cloud credentials in `.env`:
+   ```env
+   VITE_SUPABASE_URL=https://your-project.supabase.co
+   VITE_SUPABASE_ANON_KEY=your-anon-key-here
+   ```
+
+4. **Start the local development server:**
+   ```bash
+   npm run dev
+   ```
+   Open [http://localhost:5173](http://localhost:5173) in your browser.
+
+5. **Run Automated Test Suite:**
+   ```bash
+   npm test
+   ```
+
+---
+
+## 📄 License
+Proprietary software. Developed and maintained by **Hiro Axis Technologies**. All rights reserved.

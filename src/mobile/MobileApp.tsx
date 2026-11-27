@@ -50,7 +50,7 @@ export const MobileApp: React.FC<MobileAppProps> = ({
 }) => {
   // Navigation State
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState<boolean>(() => {
-    return localStorage.getItem('karama_mobile_onboarded') === 'true';
+    return localStorage.getItem('orbit_mobile_onboarded') === 'true';
   });
 
   const [activeTab, setActiveTab] = useState<MobileTab>('home');
@@ -62,7 +62,7 @@ export const MobileApp: React.FC<MobileAppProps> = ({
 
   // Handle Onboarding Completion
   const handleFinishOnboarding = () => {
-    localStorage.setItem('karama_mobile_onboarded', 'true');
+    localStorage.setItem('orbit_mobile_onboarded', 'true');
     setHasCompletedOnboarding(true);
   };
 

@@ -1,4 +1,4 @@
-// TypeScript Domain Types for Karama Mess Management Software
+// TypeScript Domain Types for Orbit ERP Enterprise Platform
 
 export type UserRole = 'owner' | 'manager' | 'staff' | 'viewer';
 export type CustomerStatus = 'active' | 'inactive' | 'paused' | 'left' | 'cancelled' | 'trial' | 'cancelling_soon';

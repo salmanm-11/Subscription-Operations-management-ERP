@@ -45,12 +45,12 @@ describe('Authentication & User Management Service', () => {
     const admin = users.find((u) => u.username === 'admin');
     expect(admin).toBeDefined();
     expect(admin?.role).toBe('admin');
-    expect(admin?.passwordHash).toBe('hiro@123');
+    expect(admin?.passwordHash).toBe('190fdccc859a594dbccfbb88b452d596af91bb97eb2abe674c64118c1602fdba');
 
     const manager = users.find((u) => u.username === 'manager');
     expect(manager).toBeDefined();
     expect(manager?.role).toBe('manager');
-    expect(manager?.passwordHash).toBe('hiro@123');
+    expect(manager?.passwordHash).toBe('190fdccc859a594dbccfbb88b452d596af91bb97eb2abe674c64118c1602fdba');
   });
 
   it('authenticates admin with updated hiro@123 credentials and rejects old password', () => {

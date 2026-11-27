@@ -1,7 +1,7 @@
 {
-  "name": "karama-mess-management",
+  "name": "orbit-enterprise-erp",
   "version": "1.0.4",
-  "description": "Professional Windows Desktop Application for Karama Mess & Catering, Dubai",
+  "description": "Orbit ERP - Enterprise Subscription & Operations Management Platform",
   "main": "electron/dist/main.cjs",
   "scripts": {
     "dev": "vite",
@@ -39,14 +39,14 @@
     "vitest": "^2.1.1"
   },
   "keywords": [
-    "karama-mess",
-    "electron",
+    "orbit-erp",
+    "saas",
+    "subscription-management",
     "react",
     "typescript",
     "supabase",
-    "postgresql",
-    "dubai-catering"
+    "enterprise-operations"
   ],
-  "author": "Karama Mess",
+  "author": "Hiro Axis Technologies",
   "license": "Proprietary"
 }

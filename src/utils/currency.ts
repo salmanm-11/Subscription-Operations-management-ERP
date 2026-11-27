@@ -1,6 +1,6 @@
 /**
  * Centralized UAE Currency (AED) & Financial Arithmetic Utilities
- * Enforces decimal-safe financial calculations and consistent AED formatting throughout Karama Mess.
+ * Enforces decimal-safe financial calculations and consistent AED formatting throughout the platform.
  */
 
 export const DEFAULT_CURRENCY = 'AED';
