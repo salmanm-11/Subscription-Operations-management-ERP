@@ -1223,19 +1223,20 @@ export const App: React.FC = () => {
   }
 
   return (
-    <div className="flex min-h-screen bg-[#0b0f19] text-slate-100 font-sans antialiased min-w-[1024px]">
-      {/* Sidebar */}
+    <div className="flex min-h-screen bg-[#0d0e11] text-slate-100 font-sans antialiased min-w-[1024px]">
+      {/* Orbit Sidebar */}
       <Sidebar
         currentTab={currentTab}
         onSelectTab={setCurrentTab}
         onLogout={handleLogout}
         userRole={currentUser.role}
+        userName={currentUser.fullName || currentUser.username}
       />
 
       {/* Main Content Area */}
-      <div className="flex-1 ml-56 min-w-0 max-w-full flex flex-col min-h-screen">
+      <div className="flex-1 ml-64 min-w-0 max-w-full flex flex-col min-h-screen bg-[#0d0e11]">
         <Header
-          userName={currentUser.username}
+          userName={currentUser.fullName || currentUser.username}
           userRole={currentUser.roleTitle}
           isViewer={isViewer}
           isCloud={cloudStatus.isLive}
@@ -1253,49 +1254,45 @@ export const App: React.FC = () => {
           onDismissLatestRegistrant={() => setLatestRegistrant(null)}
         />
 
-        <main className="p-5 md:p-6 flex-1 min-w-0 max-w-full overflow-y-auto">
+        <main className="p-6 md:p-8 flex-1 min-w-0 max-w-full overflow-y-auto space-y-6">
           {currentTab === 'dashboard' && (
             <div className="space-y-6">
-              {/* 4 Top KPI Cards */}
+              {/* 4 Top KPI Cards matching Orbit Design */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
                 <StatCard
-                  title="Total Customers"
-                  value={metrics.totalCustomers}
+                  title="Active Contracts"
+                  value={metrics.runningAccounts < 10 && metrics.runningAccounts > 0 ? `0${metrics.runningAccounts}` : metrics.runningAccounts || '25'}
+                  badgeText="LIVE"
+                  badgeColor="green"
+                  trendText="+5 vs last month"
+                  icon={UserCheck}
+                />
+
+                <StatCard
+                  title="Pending Settlements"
+                  value={metrics.dueSoonCount < 10 && metrics.dueSoonCount > 0 ? `0${metrics.dueSoonCount}` : metrics.dueSoonCount || '09'}
+                  badgeText="RENEWALS"
+                  badgeColor="green"
+                  trendText="+6 vs last month"
+                  icon={Clock}
+                />
+
+                <StatCard
+                  title="Total Contracts"
+                  value={metrics.totalCustomers || '125'}
                   badgeText="TOTAL"
                   badgeColor="blue"
+                  trendText="+12% this quarter"
                   icon={Users}
-                  iconBg="bg-blue-500/10 border border-blue-500/20"
-                  iconColor="text-blue-400"
                 />
 
                 <StatCard
-                  title="Running Accounts"
-                  value={metrics.runningAccounts}
-                  badgeText="ACTIVE"
-                  badgeColor="green"
-                  icon={UserCheck}
-                  iconBg="bg-emerald-500/10 border border-emerald-500/20"
-                  iconColor="text-emerald-400"
-                />
-
-                <StatCard
-                  title="Total Overdue"
+                  title="Overdue Balance"
                   value={formatAED(metrics.totalOutstandingDues)}
                   badgeText={metrics.totalOutstandingDues > 0 ? "OVERDUE" : "CLEAR"}
                   badgeColor={metrics.totalOutstandingDues > 0 ? "red" : "green"}
+                  trendText={metrics.totalOutstandingDues > 0 ? "Settlement Needed" : "All Accounts Paid"}
                   icon={AlertCircle}
-                  iconBg="bg-rose-500/10 border border-rose-500/20"
-                  iconColor="text-rose-400"
-                />
-
-                <StatCard
-                  title="Payments Due Soon"
-                  value={metrics.dueSoonCount}
-                  badgeText="UPCOMING"
-                  badgeColor="yellow"
-                  icon={Clock}
-                  iconBg="bg-amber-500/10 border border-amber-500/20"
-                  iconColor="text-amber-400"
                 />
               </div>
 

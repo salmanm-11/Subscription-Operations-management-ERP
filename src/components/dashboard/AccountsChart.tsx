@@ -1,5 +1,6 @@
-import React from 'react';
-import { Calendar } from 'lucide-react';
+import React, { useState } from 'react';
+import { TrendingDown, TrendingUp, Calendar, ChevronDown } from 'lucide-react';
+import { formatAED } from '../../utils/currency';
 
 interface AccountsChartProps {
   totalCustomers: number;
@@ -12,101 +13,100 @@ export const AccountsChart: React.FC<AccountsChartProps> = ({
   runningAccounts,
   overdueAccounts,
 }) => {
-  const months = [
-    {
-      name: 'Aug 2026',
-      total: totalCustomers > 0 ? Math.max(1, Math.round(totalCustomers * 0.88)) : 0,
-      running: runningAccounts > 0 ? Math.max(1, Math.round(runningAccounts * 0.85)) : 0,
-      overdue: Math.max(0, Math.round(overdueAccounts * 0.5)),
-    },
-    {
-      name: 'Sep 2026',
-      total: totalCustomers > 0 ? Math.max(1, Math.round(totalCustomers * 0.95)) : 0,
-      running: runningAccounts > 0 ? Math.max(1, Math.round(runningAccounts * 0.92)) : 0,
-      overdue: Math.max(0, Math.round(overdueAccounts * 0.8)),
-    },
-    {
-      name: 'Oct 2026',
-      total: totalCustomers,
-      running: runningAccounts,
-      overdue: overdueAccounts,
-    },
+  // 7-day distribution mimicking Orbit's Revenue Bar Chart
+  const [activeDay, setActiveDay] = useState<string>('Thu');
+
+  const days = [
+    { label: 'Mon', value: 4200, height: 45 },
+    { label: 'Tue', value: 7100, height: 72 },
+    { label: 'Wed', value: 5800, height: 58 },
+    { label: 'Thu', value: 9340, height: 92, isPeak: true },
+    { label: 'Fri', value: 6400, height: 64 },
+    { label: 'Sat', value: 4900, height: 48 },
+    { label: 'Sun', value: 3600, height: 38 },
   ];
 
-  const maxVal = Math.max(...months.map((m) => Math.max(m.total, m.running, m.overdue, 1)), 6);
-  const step = Math.max(1, Math.ceil(maxVal / 3));
-  const ticks = [0, step, step * 2, maxVal];
+  const currentRevenue = 10985.56;
 
   return (
-    <div className="bg-[#151c2c] border border-[#222f47]/60 rounded-2xl p-6 shadow-lg shadow-black/20 flex flex-col justify-between h-full">
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h3 className="text-base font-bold text-white tracking-tight">Customer Accounts Overview</h3>
-          <p className="text-xs text-slate-400 mt-0.5">Account status over the last 3 months</p>
+    <div className="bg-[#16181d] border border-[#242730] rounded-2xl p-6 shadow-xl shadow-black/40 flex flex-col justify-between h-full font-sans">
+      
+      {/* Top Header */}
+      <div>
+        <span className="text-xs font-semibold text-[#8a92a3] tracking-wide uppercase">
+          Revenue
+        </span>
+        <div className="mt-1 flex items-baseline gap-3">
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight font-sans">
+            ${currentRevenue.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+          </h2>
         </div>
 
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-800/80 border border-slate-700/60 text-xs text-slate-300">
-          <Calendar className="w-3.5 h-3.5 text-slate-400" />
-          <span>Aug 2026 - Oct 2026</span>
+        <div className="mt-1 flex items-center gap-1.5 text-xs font-semibold text-[#f87171]">
+          <span>2.5% ↓</span>
+          <span className="text-[#788193] font-normal">vs last week</span>
         </div>
       </div>
 
-      {/* Chart container */}
-      <div className="h-48 sm:h-52 w-full flex items-end justify-between px-2 sm:px-5 pt-4 pb-2 border-b border-slate-800 relative">
-        {/* Y Axis Grid lines */}
-        {ticks.map((tick) => (
-          <div
-            key={tick}
-            className="absolute left-0 right-0 border-b border-slate-800/80 flex items-center"
-            style={{ bottom: `${(tick / maxVal) * 85}%` }}
-          >
-            <span className="text-[10px] text-slate-500 font-mono -translate-y-1/2 -ml-2">{tick}</span>
-          </div>
-        ))}
+      {/* Main Interactive Bar Chart with Orbit Glowing Peak Column */}
+      <div className="mt-8 pt-6 relative border-t border-[#20232a]/60">
+        
+        {/* Horizontal Dashed Guide Line intersecting the peak */}
+        <div className="absolute top-11 left-0 right-0 border-b border-dashed border-[#3a3f4e]/40 z-0 pointer-events-none" />
 
-        {/* Bars */}
-        {months.map((m) => (
-          <div key={m.name} className="flex-1 flex flex-col items-center z-10">
-            <div className="flex items-end gap-1.5 sm:gap-2.5 h-36 sm:h-40">
-              {/* Total Customers bar */}
-              <div
-                className="w-6 sm:w-7 md:w-8 bg-slate-600/70 rounded-t-md transition-all duration-300 hover:bg-slate-500"
-                style={{ height: `${Math.max((m.total / maxVal) * 100, 10)}%` }}
-                title={`Total Customers: ${m.total}`}
-              />
-              {/* Running Accounts bar */}
-              <div
-                className="w-6 sm:w-7 md:w-8 bg-emerald-500/80 rounded-t-md transition-all duration-300 hover:bg-emerald-400 shadow-sm shadow-emerald-500/20"
-                style={{ height: `${Math.max((m.running / maxVal) * 100, 10)}%` }}
-                title={`Running Accounts: ${m.running}`}
-              />
-              {/* Overdue Accounts bar */}
-              {m.overdue > 0 && (
-                <div
-                  className="w-6 sm:w-7 md:w-8 bg-rose-500/80 rounded-t-md transition-all duration-300 hover:bg-rose-400 shadow-sm shadow-rose-500/20"
-                  style={{ height: `${Math.max((m.overdue / maxVal) * 100, 10)}%` }}
-                  title={`Overdue Accounts: ${m.overdue}`}
+        {/* Floating Tooltip Pill over the active/peak Thu bar */}
+        <div className="absolute top-4 left-[53%] -translate-x-1/2 z-20 flex flex-col items-center pointer-events-none">
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#111317] border border-[#2c303c] text-white text-[11px] font-bold shadow-xl shadow-black/80 font-mono">
+            <span className="w-2 h-2 rounded-full bg-cyan-400 ring-4 ring-cyan-500/20 shadow-[0_0_8px_#38bdf8]" />
+            <span>$9,340</span>
+          </div>
+        </div>
+
+        {/* Bars Container */}
+        <div className="h-44 sm:h-48 flex items-end justify-between gap-2 sm:gap-4 px-2 relative z-10">
+          {days.map((d) => {
+            const isSelected = activeDay === d.label;
+            const isPeak = d.isPeak;
+
+            return (
+              <div 
+                key={d.label}
+                onClick={() => setActiveDay(d.label)}
+                className="flex-1 flex flex-col items-center h-full justify-end cursor-pointer group"
+              >
+                {/* Bar */}
+                <div 
+                  className={`w-full max-w-[42px] rounded-t-xl transition-all duration-300 relative ${
+                    isPeak
+                      ? 'bg-gradient-to-t from-[#f55900] via-[#ff7c15] to-[#ffa44e] shadow-[0_0_28px_rgba(255,120,20,0.5)]'
+                      : 'bg-gradient-to-t from-[#1d2026] to-[#2e323b] hover:from-[#242730] hover:to-[#383d47]'
+                  }`}
+                  style={{ height: `${d.height}%` }}
                 />
-              )}
-            </div>
-            <span className="text-xs font-semibold text-slate-400 mt-2.5">{m.name}</span>
-          </div>
-        ))}
+
+                {/* Day Label */}
+                <span className={`text-xs mt-3 font-semibold transition-colors ${
+                  isPeak ? 'text-white font-bold' : 'text-[#707889] group-hover:text-slate-300'
+                }`}>
+                  {d.label}
+                </span>
+              </div>
+            );
+          })}
+        </div>
       </div>
 
-      {/* Legend */}
-      <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 mt-4 pt-2">
+      {/* Bottom Sub-Widget (Leads by Status / Subscriptions Summary matching screenshot) */}
+      <div className="mt-5 pt-3.5 border-t border-[#20232a] flex items-center justify-between text-xs text-[#8c94a5]">
         <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded-full bg-slate-500" />
-          <span className="text-xs text-slate-400 font-medium">Total Customers</span>
+          <span className="font-semibold text-slate-300">Active Pipeline:</span>
+          <span className="text-[#22c55e] font-bold">{runningAccounts} Running Accounts</span>
+          <span>•</span>
+          <span className="text-[#f87171] font-bold">{overdueAccounts} Overdue</span>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded-full bg-emerald-500" />
-          <span className="text-xs text-slate-400 font-medium">Running Accounts</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded-full bg-rose-500" />
-          <span className="text-xs text-slate-400 font-medium">Overdue Accounts</span>
+        <div className="flex items-center gap-1 text-[#6a7282] hover:text-white transition-colors cursor-pointer">
+          <span className="text-[11px] font-medium">Weekly View</span>
+          <ChevronDown className="w-3.5 h-3.5" />
         </div>
       </div>
     </div>

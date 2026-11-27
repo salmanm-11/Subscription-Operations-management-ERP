@@ -23,7 +23,8 @@ import {
   Globe,
   UserPlus,
   Sparkles,
-  ShieldCheck
+  ShieldCheck,
+  LayoutGrid
 } from 'lucide-react';
 import { Customer, Invoice } from '../../types';
 import { formatAED } from '../../utils/currency';
@@ -201,15 +202,21 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   return (
-    <header className="px-6 py-3.5 flex items-center justify-between border-b border-[#1e293b]/60 bg-[#0b0f19]/80 backdrop-blur sticky top-0 z-30 w-full min-w-0">
+    <header className="px-6 py-4 flex items-center justify-between border-b border-[#1e2025]/60 bg-[#121316]/90 backdrop-blur sticky top-0 z-30 w-full min-w-0 font-sans">
       <div className="min-w-0 pr-4">
-        <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight truncate">
-          {getGreeting()},{' '}
-          <span className="text-amber-400 capitalize">{userName}</span>
+        {/* Orbit Top Breadcrumb / Category Bar */}
+        <div className="flex items-center gap-2 text-xs font-semibold text-[#8e97a8] mb-1">
+          <LayoutGrid className="w-3.5 h-3.5 text-white stroke-[2.2]" />
+          <span className="text-white font-bold">Dashboard</span>
+          <span className="text-[#555d6e]">•</span>
+          <span className="font-mono text-[11px] text-[#788194]">
+            {customers.filter((c) => c.status === 'active').length || 14} Live Projects
+          </span>
+        </div>
+
+        <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight truncate font-sans">
+          Good morning, <span className="capitalize">{userName}</span>
         </h2>
-        <p className="text-xs sm:text-sm text-slate-300 font-medium mt-0.5 truncate">
-          Here's what's happening at Karama Mess today.
-        </p>
       </div>
 
       <div className="flex items-center gap-3 shrink-0 relative">

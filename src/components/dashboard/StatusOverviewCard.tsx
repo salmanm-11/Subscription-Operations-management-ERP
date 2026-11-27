@@ -34,7 +34,7 @@ export const StatusOverviewCard: React.FC<StatusOverviewCardProps> = ({
   const inactivePct = Math.max(0, 100 - activePct - trialPct - pausedPct);
 
   return (
-    <div className="bg-[#151c2c] border border-[#222f47]/60 rounded-2xl p-6 shadow-lg shadow-black/20 flex flex-col justify-between h-full">
+    <div className="bg-[#16181d] border border-[#242730] rounded-2xl p-6 shadow-xl shadow-black/40 flex flex-col justify-between h-full font-sans">
       {/* Header */}
       <div>
         <div className="flex items-center justify-between mb-4">

@@ -48,7 +48,7 @@ export const RecentCustomersTable: React.FC<RecentCustomersTableProps> = ({
   }, [filterTab, sortedNewest]);
 
   return (
-    <div className="bg-[#151c2c] border border-[#222f47]/60 rounded-2xl p-6 shadow-lg shadow-black/20 flex flex-col h-full">
+    <div className="bg-[#16181d] border border-[#242730] rounded-2xl p-6 shadow-xl shadow-black/40 flex flex-col h-full font-sans">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
