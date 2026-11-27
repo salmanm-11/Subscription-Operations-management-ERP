@@ -259,20 +259,6 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onOpenCust
               <span className="sr-only">Sign In</span>
             </button>
 
-            {/* Don't have an account? Signup */}
-            <div className="text-center pt-2">
-              <span className="text-xs text-white/80 font-normal">
-                Don't have an account?{' '}
-              </span>
-              <button
-                type="button"
-                onClick={onOpenCustomerRegister}
-                className="text-xs font-bold text-white hover:underline transition-all cursor-pointer inline-block"
-              >
-                Signup
-              </button>
-            </div>
-
             {/* Footer Attribution */}
             <div className="text-center pt-4">
               <span className="text-[11px] text-white/45 tracking-wider font-medium select-none">
