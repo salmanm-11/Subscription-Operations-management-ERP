@@ -64,13 +64,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
     ? navItems.filter((i) => i.label.toLowerCase().includes(searchQuery.toLowerCase()))
     : navItems;
 
-  const favorites = [
-    { name: 'Apple', icon: '🍎', type: 'COMPANY' },
-    { name: 'Google', icon: '🌐', type: 'COMPANY' },
-    { name: 'Figma', icon: '🎨', type: 'COMPANY' },
-    { name: userName || 'Aman', icon: '👤', type: isViewer ? 'VIEWER' : 'DESIGNER' },
-  ];
-
   return (
     <aside className="w-64 bg-[#121316] border-r border-[#1e2025] flex flex-col h-screen fixed left-0 top-0 select-none z-30 font-sans text-slate-300">
       
@@ -102,15 +95,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       {/* 2. Global Search with ⌘ K */}
       <div className="px-4 pt-4 pb-2">
-        <div className="relative flex items-center justify-between px-3 py-2 rounded-xl bg-[#17191e] border border-[#23262e] text-xs text-slate-400 group focus-within:border-white/20 focus-within:bg-[#1b1e25] transition-all">
-          <div className="flex items-center gap-2 flex-1 min-w-0">
-            <Search className="w-3.5 h-3.5 text-[#737b8b] group-focus-within:text-white transition-colors shrink-0" />
+        <div className="relative flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-[#17191e] border border-[#23262e] text-xs text-slate-400 group focus-within:border-white/20 focus-within:bg-[#1b1e25] transition-all">
+          <div className="flex items-center gap-2.5 flex-1 min-w-0">
+            <Search className="w-4 h-4 text-[#737b8b] group-focus-within:text-white transition-colors shrink-0" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search"
-              className="w-full bg-transparent text-white placeholder-[#636b7a] text-xs font-medium focus:outline-none"
+              placeholder="Search navigation..."
+              className="w-full bg-transparent text-white placeholder-[#636b7a] text-xs md:text-[13px] font-medium focus:outline-none"
             />
           </div>
           <div className="flex items-center gap-1 font-mono text-[10px] text-[#737b8b] px-1.5 py-0.5 rounded bg-[#1e2128] border border-[#2c303a] shrink-0 select-none">
@@ -121,14 +114,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* Scrollable Navigation Body */}
-      <div className="flex-1 overflow-y-auto px-3 py-2 space-y-4 custom-scrollbar">
+      <div className="flex-1 overflow-y-auto px-3.5 py-3 space-y-4 custom-scrollbar">
         
         {/* Navigation Section */}
         <div>
-          <div className="text-[10px] font-bold text-[#5c6475] px-2.5 pb-1.5 uppercase tracking-wider">
+          <div className="text-[11px] font-bold text-[#626b7d] px-2.5 pb-2 uppercase tracking-wider">
             Navigation
           </div>
-          <div className="space-y-0.5">
+          <div className="space-y-1">
             {filteredNav.map((item) => {
               const Icon = item.icon;
               const isActive = currentTab === item.id;
@@ -136,45 +129,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <button
                   key={item.id}
                   onClick={() => onSelectTab(item.id)}
-                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all duration-150 cursor-pointer ${
+                  className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-[13.5px] font-semibold transition-all duration-150 cursor-pointer ${
                     isActive
                       ? 'bg-[#20232a] text-white font-bold shadow-sm border border-white/[0.08]'
                       : 'text-[#8c94a5] hover:text-white hover:bg-[#17191e]'
                   }`}
                 >
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <Icon className={`w-4 h-4 shrink-0 stroke-[1.9] ${isActive ? 'text-white' : 'text-[#707889]'}`} />
+                  <div className="flex items-center gap-3 min-w-0">
+                    <Icon className={`w-[18px] h-[18px] shrink-0 stroke-[1.9] ${isActive ? 'text-white' : 'text-[#707889]'}`} />
                     <span className="truncate">{item.label}</span>
                   </div>
                   {item.hasDropdown && (
-                    <ChevronDown className="w-3.5 h-3.5 text-[#5e6677] shrink-0 stroke-[1.8]" />
+                    <ChevronDown className="w-4 h-4 text-[#5e6677] shrink-0 stroke-[1.8]" />
                   )}
                 </button>
               );
             })}
-          </div>
-        </div>
-
-        {/* Favorites Section */}
-        <div>
-          <div className="text-[10px] font-bold text-[#5c6475] px-2.5 pb-1.5 uppercase tracking-wider">
-            Favorites
-          </div>
-          <div className="space-y-0.5">
-            {favorites.map((fav, i) => (
-              <div
-                key={i}
-                className="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs font-medium text-[#9ba3b5] hover:bg-[#17191e] hover:text-white transition-colors cursor-pointer"
-              >
-                <div className="flex items-center gap-2.5">
-                  <span className="text-sm">{fav.icon}</span>
-                  <span className="font-semibold text-slate-200">{fav.name}</span>
-                </div>
-                <span className="font-mono text-[9px] font-bold tracking-widest text-[#5e6677] uppercase px-1.5 py-0.5 rounded bg-[#17191e] border border-[#23262f]">
-                  {fav.type}
-                </span>
-              </div>
-            ))}
           </div>
         </div>
       </div>
