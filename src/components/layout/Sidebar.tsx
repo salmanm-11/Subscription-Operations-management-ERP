@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import hiroLogo from '../../assets/hiro-axis-logo.png';
 import { 
   LayoutGrid, 
   Users, 
@@ -68,26 +69,31 @@ export const Sidebar: React.FC<SidebarProps> = ({
   return (
     <aside className="w-64 bg-[#121316] border-r border-[#1e2025] flex flex-col h-screen fixed left-0 top-0 select-none z-30 font-sans text-slate-300">
       
-      {/* 1. Orbit Brand Header */}
-      <div className="px-5 py-4 flex items-center justify-between border-b border-[#1e2025]/60">
-        <div className="flex items-center gap-3">
-          {/* Orbit glowing crescent icon */}
-          <div className="w-8 h-8 rounded-xl bg-[#1c1e24] border border-[#2a2d36] flex items-center justify-center relative shadow-sm shadow-orange-500/10">
-            <div className="w-5 h-5 rounded-full bg-gradient-to-br from-[#ff8d24] to-[#f95900] flex items-center justify-center relative overflow-hidden shadow-[0_0_12px_rgba(255,120,20,0.5)]">
-              {/* Crescent cutout inside */}
-              <div className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-[#1c1e24]" />
-              <div className="w-1.5 h-1.5 rounded-full bg-[#1c1e24] absolute bottom-1 left-1" />
-            </div>
+      {/* 1. Hiro Axis Brand Header */}
+      <div className="px-4 py-4 flex items-center justify-between border-b border-[#1e2025]/60">
+        <div className="flex items-center gap-3 min-w-0">
+          {/* Hiro Axis logo container with blue cyan glow border */}
+          <div className="w-10 h-10 rounded-2xl bg-[#0b101b] border border-sky-500/50 flex items-center justify-center p-1.5 shadow-[0_0_18px_rgba(14,165,233,0.35)] shrink-0 overflow-hidden">
+            <img 
+              src={hiroLogo} 
+              alt="Hiro Axis" 
+              className="w-full h-full object-contain"
+            />
           </div>
-          <span className="text-white font-extrabold text-lg tracking-tight font-sans">
-            Orbit
-          </span>
+          <div className="min-w-0 flex flex-col justify-center">
+            <span className="text-white font-extrabold text-[17px] leading-tight tracking-tight font-sans">
+              Hiro Axis
+            </span>
+            <span className="text-[8.5px] font-mono font-medium text-[#7d8799] tracking-[0.24em] uppercase mt-0.5">
+              TECHNOLOGIES
+            </span>
+          </div>
         </div>
 
         {/* Sidebar Collapse Toggle Button */}
         <button
           type="button"
-          className="p-1.5 rounded-lg text-[#7c8494] hover:text-white hover:bg-[#1a1c22] transition-colors"
+          className="p-1.5 rounded-lg border border-[#2a2f3b] text-[#858fa1] hover:text-white hover:bg-[#1c202a] transition-colors shrink-0"
           title="Toggle Sidebar Layout"
         >
           <PanelLeftClose className="w-4 h-4 stroke-[1.8]" />
@@ -95,19 +101,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* 2. Global Search with ⌘ K */}
-      <div className="px-4 pt-4 pb-2">
-        <div className="relative flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-[#17191e] border border-[#23262e] text-xs text-slate-400 group focus-within:border-white/20 focus-within:bg-[#1b1e25] transition-all">
+      <div className="px-4 pt-3.5 pb-2">
+        <div className="relative flex items-center justify-between px-3.5 py-2.5 rounded-2xl bg-[#13151b] border border-[#242732] text-xs text-slate-400 group focus-within:border-sky-500/40 focus-within:bg-[#161922] transition-all">
           <div className="flex items-center gap-2.5 flex-1 min-w-0">
-            <Search className="w-4 h-4 text-[#737b8b] group-focus-within:text-white transition-colors shrink-0" />
+            <Search className="w-4 h-4 text-[#757f92] group-focus-within:text-white transition-colors shrink-0" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search navigation..."
-              className="w-full bg-transparent text-white placeholder-[#636b7a] text-xs md:text-[13px] font-medium focus:outline-none"
+              className="w-full bg-transparent text-white placeholder-[#687284] text-xs md:text-[13px] font-medium focus:outline-none"
             />
           </div>
-          <div className="flex items-center gap-1 font-mono text-[10px] text-[#737b8b] px-1.5 py-0.5 rounded bg-[#1e2128] border border-[#2c303a] shrink-0 select-none">
+          <div className="flex items-center gap-1 font-mono text-[11px] text-[#8e98aa] px-2 py-0.5 rounded-lg bg-[#1a1d25] border border-[#2b313d] shrink-0 select-none">
             <span>⌘</span>
             <span>K</span>
           </div>
@@ -167,7 +173,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <button
             onClick={onLogout}
             className="p-1.5 rounded-lg text-[#7c8494] hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
-            title="Log Out of Orbit"
+            title="Log Out"
           >
             <LogOut className="w-4 h-4" />
           </button>
