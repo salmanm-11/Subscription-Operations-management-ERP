@@ -43,21 +43,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
 
   const navItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutGrid, hasDropdown: false },
-    { id: 'customers', label: 'Workspace', icon: FileText, hasDropdown: true },
-    { id: 'billing', label: 'Business Hub', icon: UtensilsCrossed, hasDropdown: true },
-    { id: 'buildings', label: 'Clients', icon: Users, hasDropdown: true },
-    { id: 'attendance', label: 'Companies', icon: Building2, hasDropdown: true },
-    { id: 'reports', label: 'Growth Report', icon: BarChart3, hasDropdown: false },
-    { id: 'payments', label: 'Payments & Ledger', icon: CreditCard, hasDropdown: false },
-    { id: 'due-dates-leaving', label: 'Due Dates & Exits', icon: CalendarClock, hasDropdown: false },
-    { id: 'vendor-accounts', label: 'Vendor Operations', icon: Truck, hasDropdown: false },
-    { id: 'overdue', label: 'Overdue Dues', icon: AlertCircle, hasDropdown: false },
+    { id: 'dashboard', label: 'Customer', icon: LayoutGrid },
+    { id: 'customers', label: 'Customers', icon: Users },
+    { id: 'buildings', label: 'Buildings', icon: Building2 },
+    { id: 'attendance', label: 'Meal Attendance', icon: UtensilsCrossed },
+    { id: 'meal-plans', label: 'Meal Plans', icon: CalendarDays },
+    { id: 'billing', label: 'Billing & Invoices', icon: FileText },
+    { id: 'payments', label: 'Payments', icon: CreditCard },
+    { id: 'due-dates-leaving', label: 'Due Dates & Leaving', icon: CalendarClock },
+    { id: 'vendor-accounts', label: 'Vendor Accounts', icon: Truck },
+    { id: 'overdue', label: 'Overdue Accounts', icon: AlertCircle },
+    { id: 'reports', label: 'Reports', icon: BarChart3 },
     ...(!isViewer ? [
-      { id: 'admin', label: 'Admin & Security', icon: ShieldCheck, hasDropdown: false },
-      { id: 'settings', label: 'Settings', icon: Settings, hasDropdown: false },
+      { id: 'admin', label: 'Admin & Users', icon: ShieldCheck },
+      { id: 'settings', label: 'Settings', icon: Settings },
     ] : []),
-    { id: 'help', label: 'Help & Docs', icon: HelpCircle, hasDropdown: false },
+    { id: 'help', label: 'Help & Support', icon: HelpCircle },
   ];
 
   const filteredNav = searchQuery.trim()
@@ -129,19 +130,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <button
                   key={item.id}
                   onClick={() => onSelectTab(item.id)}
-                  className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-[13.5px] font-semibold transition-all duration-150 cursor-pointer ${
+                  className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-[13.5px] font-bold transition-all duration-150 cursor-pointer ${
                     isActive
-                      ? 'bg-[#20232a] text-white font-bold shadow-sm border border-white/[0.08]'
-                      : 'text-[#8c94a5] hover:text-white hover:bg-[#17191e]'
+                      ? 'bg-gradient-to-r from-[#ff9500] to-[#f97316] text-slate-950 font-black shadow-md shadow-orange-500/25'
+                      : 'text-[#94a0b8] hover:text-white hover:bg-[#191c22]'
                   }`}
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <Icon className={`w-[18px] h-[18px] shrink-0 stroke-[1.9] ${isActive ? 'text-white' : 'text-[#707889]'}`} />
+                    <Icon className={`w-[18px] h-[18px] shrink-0 stroke-[2] ${isActive ? 'text-slate-950 stroke-[2.2]' : 'text-[#717b8f]'}`} />
                     <span className="truncate">{item.label}</span>
                   </div>
-                  {item.hasDropdown && (
-                    <ChevronDown className="w-4 h-4 text-[#5e6677] shrink-0 stroke-[1.8]" />
-                  )}
                 </button>
               );
             })}
