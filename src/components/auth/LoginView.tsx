@@ -42,30 +42,19 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onOpenCust
   const passwordRef = useRef<HTMLInputElement>(null);
   const submitRef = useRef<HTMLButtonElement>(null);
 
-  // Instantly focus window and appropriate input on mount
+  // Focus window and input once on initial mount only
   useEffect(() => {
     if (typeof window !== 'undefined') {
       window.focus();
     }
-    const focusTarget = () => {
-      if (!username && usernameRef.current) {
+    const timer = setTimeout(() => {
+      if (usernameRef.current && !usernameRef.current.value) {
         usernameRef.current.focus();
-      } else if (passwordRef.current) {
-        passwordRef.current.focus();
       }
-    };
+    }, 60);
 
-    focusTarget();
-    const raf = requestAnimationFrame(focusTarget);
-    const t1 = setTimeout(focusTarget, 50);
-    const t2 = setTimeout(focusTarget, 150);
-
-    return () => {
-      cancelAnimationFrame(raf);
-      clearTimeout(t1);
-      clearTimeout(t2);
-    };
-  }, [username]);
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -287,7 +276,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onOpenCust
             {/* Footer Attribution */}
             <div className="text-center pt-4">
               <span className="text-[11px] text-white/45 tracking-wider font-medium select-none">
-                created by <span className="font-semibold text-white/70">Exnihiloo</span>
+                created by <span className="font-semibold text-white/70">Hiro Axis Technologies</span>
               </span>
             </div>
           </form>
