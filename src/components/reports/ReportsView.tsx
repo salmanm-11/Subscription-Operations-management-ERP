@@ -51,7 +51,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ metrics, onExportCsv }
 
       {/* Summary Stat Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        <div className="bg-[#151c2c] border border-[#222f47]/60 rounded-2xl p-5">
+        <div className="bg-[#16181d] border border-[#242730] rounded-2xl p-5">
           <div className="flex items-center justify-between mb-3 text-amber-400">
             <DollarSign className="w-5 h-5" />
             <span className="text-[10px] uppercase font-bold text-slate-400">CURRENT MONTH</span>
@@ -60,7 +60,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ metrics, onExportCsv }
           <div className="text-2xl font-extrabold text-white mt-1">{formatAED(metrics.billedThisMonth)}</div>
         </div>
 
-        <div className="bg-[#151c2c] border border-[#222f47]/60 rounded-2xl p-5">
+        <div className="bg-[#16181d] border border-[#242730] rounded-2xl p-5">
           <div className="flex items-center justify-between mb-3 text-emerald-400">
             <TrendingUp className="w-5 h-5" />
             <span className="text-[10px] uppercase font-bold text-emerald-400/80">COLLECTED</span>
@@ -69,7 +69,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ metrics, onExportCsv }
           <div className="text-2xl font-extrabold text-emerald-400 mt-1">{formatAED(metrics.collectedThisMonth)}</div>
         </div>
 
-        <div className="bg-[#151c2c] border border-[#222f47]/60 rounded-2xl p-5">
+        <div className="bg-[#16181d] border border-[#242730] rounded-2xl p-5">
           <div className="flex items-center justify-between mb-3 text-rose-400">
             <DollarSign className="w-5 h-5" />
             <span className="text-[10px] uppercase font-bold text-rose-400/80">OUTSTANDING</span>
@@ -78,7 +78,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ metrics, onExportCsv }
           <div className="text-2xl font-extrabold text-rose-400 mt-1">{formatAED(metrics.totalOutstandingDues)}</div>
         </div>
 
-        <div className="bg-[#151c2c] border border-[#222f47]/60 rounded-2xl p-5">
+        <div className="bg-[#16181d] border border-[#242730] rounded-2xl p-5">
           <div className="flex items-center justify-between mb-3 text-sky-400">
             <Utensils className="w-5 h-5" />
             <span className="text-[10px] uppercase font-bold text-sky-400/80">DAILY VOLUME</span>
@@ -89,7 +89,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ metrics, onExportCsv }
       </div>
 
       {/* Corporate Accounts Section */}
-      <div className="bg-[#151c2c] border border-[#222f47]/60 rounded-2xl p-6 shadow-lg">
+      <div className="bg-[#16181d] border border-[#242730] rounded-2xl p-6 shadow-lg">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
@@ -138,7 +138,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ metrics, onExportCsv }
       </div>
 
       {/* 365-Day Daily Ledger Table */}
-      <div className="bg-[#151c2c] border border-[#222f47]/60 rounded-2xl p-6 shadow-lg space-y-4">
+      <div className="bg-[#16181d] border border-[#242730] rounded-2xl p-6 shadow-lg space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400">
@@ -154,7 +154,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ metrics, onExportCsv }
             <select
               value={selectedMonth}
               onChange={e => setSelectedMonth(e.target.value)}
-              className="bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500"
+              className="bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-[#ff8d24]"
             >
               <option value="ALL">All Months (2026)</option>
               <option value="2026-10">October 2026</option>
@@ -176,7 +176,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ metrics, onExportCsv }
                 value={ledgerSearch}
                 onChange={e => setLedgerSearch(e.target.value)}
                 placeholder="Search date..."
-                className="bg-slate-900 border border-slate-700 rounded-xl pl-8 pr-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500 w-32 sm:w-40"
+                className="bg-slate-900 border border-slate-700 rounded-xl pl-8 pr-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-[#ff8d24] w-32 sm:w-40"
               />
             </div>
           </div>
@@ -226,7 +226,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ metrics, onExportCsv }
 
       {/* Detailed breakdown cards */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-[#151c2c] border border-[#222f47]/60 rounded-2xl p-6 shadow-lg">
+        <div className="bg-[#16181d] border border-[#242730] rounded-2xl p-6 shadow-lg">
           <h3 className="text-base font-bold text-white mb-4">Meal Attendance Breakdown</h3>
           <div className="space-y-4">
             <div>
@@ -270,7 +270,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ metrics, onExportCsv }
           </div>
         </div>
 
-        <div className="bg-[#151c2c] border border-[#222f47]/60 rounded-2xl p-6 shadow-lg">
+        <div className="bg-[#16181d] border border-[#242730] rounded-2xl p-6 shadow-lg">
           <h3 className="text-base font-bold text-white mb-4">Customer Status Distribution</h3>
           <div className="space-y-3 text-xs">
             <div className="flex items-center justify-between p-3 rounded-xl bg-slate-900/60 border border-slate-800">

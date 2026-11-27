@@ -367,7 +367,7 @@ export const VendorAccountsView: React.FC<VendorAccountsViewProps> = ({ currentU
       {/* TAB 2: VENDORS DIRECTORY */}
       {activeTab === 'vendors' && (
         <div className="space-y-4">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-[#151c2c] border border-slate-800 p-4 rounded-2xl shadow-xl">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-[#16181d] border border-slate-800 p-4 rounded-2xl shadow-xl">
             <div>
               <h3 className="text-lg font-black text-white">Registered Vendors &amp; Kitchen Partners</h3>
               <p className="text-xs text-slate-400 mt-0.5">Supplier rates, charge configurations &amp; contact profiles</p>
@@ -381,7 +381,7 @@ export const VendorAccountsView: React.FC<VendorAccountsViewProps> = ({ currentU
                   value={vendorSearch}
                   onChange={(e) => setVendorSearch(e.target.value)}
                   placeholder="Search vendor name, code..."
-                  className="w-full pl-9 pr-3 py-1.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs focus:outline-none focus:border-amber-500"
+                  className="w-full pl-9 pr-3 py-1.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs focus:outline-none focus:border-[#ff8d24]"
                 />
               </div>
 
@@ -408,11 +408,11 @@ export const VendorAccountsView: React.FC<VendorAccountsViewProps> = ({ currentU
             </div>
           </div>
 
-          <div className="bg-[#151c2c] border border-slate-800/80 rounded-2xl overflow-hidden shadow-xl">
+          <div className="bg-[#16181d] border border-slate-800/80 rounded-2xl overflow-hidden shadow-xl">
             <div className="overflow-x-auto custom-scrollbar">
               <table className="w-full text-left text-xs">
                 <thead>
-                  <tr className="bg-[#0f1422] text-slate-300 border-b border-slate-800 font-bold uppercase text-[10px] tracking-wider">
+                  <tr className="bg-[#121419] text-slate-300 border-b border-slate-800 font-bold uppercase text-[10px] tracking-wider">
                     <th className="py-3 px-3">Code</th>
                     <th className="py-3 px-3">Vendor Name</th>
                     <th className="py-3 px-3">Category</th>
@@ -508,7 +508,7 @@ export const VendorAccountsView: React.FC<VendorAccountsViewProps> = ({ currentU
       {/* TAB 3: DAILY ACCOUNTS LIST */}
       {activeTab === 'daily' && (
         <div className="space-y-4">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-[#151c2c] border border-slate-800 p-4 rounded-2xl shadow-xl">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-[#16181d] border border-slate-800 p-4 rounded-2xl shadow-xl">
             <div>
               <h3 className="text-lg font-black text-white">Daily Vendor Accounts &amp; Ledger</h3>
               <p className="text-xs text-slate-400 mt-0.5">Daily meal supply quantities, contract charges &amp; closing balances</p>
@@ -549,11 +549,11 @@ export const VendorAccountsView: React.FC<VendorAccountsViewProps> = ({ currentU
             </div>
           </div>
 
-          <div className="bg-[#151c2c] border border-slate-800/80 rounded-2xl overflow-hidden shadow-xl">
+          <div className="bg-[#16181d] border border-slate-800/80 rounded-2xl overflow-hidden shadow-xl">
             <div className="overflow-x-auto custom-scrollbar">
               <table className="w-full text-left text-xs">
                 <thead>
-                  <tr className="bg-[#0f1422] text-slate-300 border-b border-slate-800 font-bold uppercase text-[10px] tracking-wider">
+                  <tr className="bg-[#121419] text-slate-300 border-b border-slate-800 font-bold uppercase text-[10px] tracking-wider">
                     <th className="py-3 px-3">Date</th>
                     <th className="py-3 px-2">Day</th>
                     <th className="py-3 px-3">Vendor</th>
@@ -625,7 +625,7 @@ export const VendorAccountsView: React.FC<VendorAccountsViewProps> = ({ currentU
               </table>
             </div>
             {filteredTransactions.length > 50 && (
-              <div className="p-3 text-center text-xs text-slate-500 bg-[#0f1422] border-t border-slate-800">
+              <div className="p-3 text-center text-xs text-slate-500 bg-[#121419] border-t border-slate-800">
                 Showing top 50 of {filteredTransactions.length} daily entries. Use date filter to view specific period or Account Statement for full printable ledger.
               </div>
             )}
@@ -636,7 +636,7 @@ export const VendorAccountsView: React.FC<VendorAccountsViewProps> = ({ currentU
       {/* TAB 4: VENDOR PAYMENTS LIST */}
       {activeTab === 'payments' && (
         <div className="space-y-4">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-[#151c2c] border border-slate-800 p-4 rounded-2xl shadow-xl">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-[#16181d] border border-slate-800 p-4 rounded-2xl shadow-xl">
             <div>
               <h3 className="text-lg font-black text-white">Vendor Payment Records</h3>
               <p className="text-xs text-slate-400 mt-0.5">Disbursements, bank transfers &amp; partial settlement history</p>
@@ -656,11 +656,11 @@ export const VendorAccountsView: React.FC<VendorAccountsViewProps> = ({ currentU
             )}
           </div>
 
-          <div className="bg-[#151c2c] border border-slate-800/80 rounded-2xl overflow-hidden shadow-xl">
+          <div className="bg-[#16181d] border border-slate-800/80 rounded-2xl overflow-hidden shadow-xl">
             <div className="overflow-x-auto custom-scrollbar">
               <table className="w-full text-left text-xs">
                 <thead>
-                  <tr className="bg-[#0f1422] text-slate-300 border-b border-slate-800 font-bold uppercase text-[10px] tracking-wider">
+                  <tr className="bg-[#121419] text-slate-300 border-b border-slate-800 font-bold uppercase text-[10px] tracking-wider">
                     <th className="py-3 px-3">Receipt / Ref</th>
                     <th className="py-3 px-3">Payment Date</th>
                     <th className="py-3 px-3">Vendor</th>

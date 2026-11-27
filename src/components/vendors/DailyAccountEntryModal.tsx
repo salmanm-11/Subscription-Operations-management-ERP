@@ -179,7 +179,7 @@ export const DailyAccountEntryModal: React.FC<DailyAccountEntryModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-      <div className="bg-[#151c2c] border border-slate-700/80 rounded-2xl w-full max-w-2xl max-h-[92vh] flex flex-col shadow-2xl shadow-black/90 overflow-hidden">
+      <div className="bg-[#16181d] border border-slate-700/80 rounded-2xl w-full max-w-2xl max-h-[92vh] flex flex-col shadow-2xl shadow-black/90 overflow-hidden">
         {/* Header */}
         <div className="p-5 border-b border-slate-800 flex items-center justify-between bg-[#111827]">
           <div className="flex items-center gap-3">
@@ -204,7 +204,7 @@ export const DailyAccountEntryModal: React.FC<DailyAccountEntryModalProps> = ({
         </div>
 
         {/* Transaction Type Selector: Meal Service vs Ordinary Supplier Purchase */}
-        <div className="px-6 pt-4 pb-1 bg-[#0f1422] border-b border-slate-800 flex gap-2">
+        <div className="px-6 pt-4 pb-1 bg-[#121419] border-b border-slate-800 flex gap-2">
           <button
             type="button"
             onClick={() => setTransactionType('daily_meal_entry')}
@@ -242,7 +242,7 @@ export const DailyAccountEntryModal: React.FC<DailyAccountEntryModalProps> = ({
                 value={vendorId}
                 onChange={(e) => handleVendorChange(e.target.value)}
                 required
-                className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-bold focus:outline-none focus:border-amber-500"
+                className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-bold focus:outline-none focus:border-[#ff8d24]"
               >
                 <option value="">Select Vendor...</option>
                 {vendors.map(v => (
@@ -260,7 +260,7 @@ export const DailyAccountEntryModal: React.FC<DailyAccountEntryModalProps> = ({
                 required
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-amber-500"
+                className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-[#ff8d24]"
               />
             </div>
           </div>

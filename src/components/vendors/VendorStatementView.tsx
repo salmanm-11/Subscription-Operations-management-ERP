@@ -78,7 +78,7 @@ export const VendorStatementView: React.FC<VendorStatementViewProps> = ({
   return (
     <div className="space-y-5">
       {/* Top Filter & Action Bar */}
-      <div className="bg-[#151c2c] border border-slate-800 p-4 rounded-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-xl">
+      <div className="bg-[#16181d] border border-slate-800 p-4 rounded-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-xl">
         <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
           {/* Vendor Selector */}
           <div>
@@ -86,7 +86,7 @@ export const VendorStatementView: React.FC<VendorStatementViewProps> = ({
             <select
               value={selectedVendorId}
               onChange={(e) => onSelectVendor(e.target.value)}
-              className="px-3.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white font-bold text-xs focus:outline-none focus:border-amber-500"
+              className="px-3.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white font-bold text-xs focus:outline-none focus:border-[#ff8d24]"
             >
               {vendors.map(v => (
                 <option key={v.id} value={v.id}>
@@ -102,7 +102,7 @@ export const VendorStatementView: React.FC<VendorStatementViewProps> = ({
             <select
               value={monthPreset}
               onChange={(e) => handlePresetChange(e.target.value)}
-              className="px-3.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs focus:outline-none focus:border-amber-500"
+              className="px-3.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs focus:outline-none focus:border-[#ff8d24]"
             >
               <option value="all">All Dates (Full Ledger)</option>
               <option value="1">January 2026</option>
@@ -171,7 +171,7 @@ export const VendorStatementView: React.FC<VendorStatementViewProps> = ({
       </div>
 
       {/* Printable Statement Document Wrapper */}
-      <div className="bg-[#151c2c] border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-2xl space-y-6 printable-area">
+      <div className="bg-[#16181d] border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-2xl space-y-6 printable-area">
         {/* Statement Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start gap-4 pb-6 border-b border-slate-800">
           <div>
@@ -250,7 +250,7 @@ export const VendorStatementView: React.FC<VendorStatementViewProps> = ({
           <div className="overflow-x-auto custom-scrollbar">
             <table className="w-full text-left text-xs">
               <thead>
-                <tr className="bg-[#0f1422] text-slate-300 border-b border-slate-800 font-bold uppercase text-[10px] tracking-wider">
+                <tr className="bg-[#121419] text-slate-300 border-b border-slate-800 font-bold uppercase text-[10px] tracking-wider">
                   <th className="py-3 px-3">Date</th>
                   <th className="py-3 px-2">Day</th>
                   <th className="py-3 px-3 min-w-[140px]">Description</th>
@@ -339,7 +339,7 @@ export const VendorStatementView: React.FC<VendorStatementViewProps> = ({
                 )}
               </tbody>
               {/* Footer Total Row */}
-              <tfoot className="bg-[#0f1422] border-t-2 border-slate-700 font-bold text-xs">
+              <tfoot className="bg-[#121419] border-t-2 border-slate-700 font-bold text-xs">
                 <tr>
                   <td colSpan={6} className="py-3 px-3 text-right text-slate-300 uppercase tracking-wider">
                     Total Period Activity / Final Closing:

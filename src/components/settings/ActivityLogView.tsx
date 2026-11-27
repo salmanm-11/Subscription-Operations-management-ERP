@@ -244,7 +244,7 @@ export const ActivityLogView: React.FC<ActivityLogViewProps> = ({ currentUsernam
       {/* 4 Summary Stat Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {/* Card 1: Total Events */}
-        <div className="bg-[#151c2c] border border-slate-800/80 rounded-2xl p-4 shadow-lg">
+        <div className="bg-[#16181d] border border-slate-800/80 rounded-2xl p-4 shadow-lg">
           <div className="flex items-center justify-between">
             <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Total Activity Events</span>
             <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
@@ -259,7 +259,7 @@ export const ActivityLogView: React.FC<ActivityLogViewProps> = ({ currentUsernam
         </div>
 
         {/* Card 2: Active Operators */}
-        <div className="bg-[#151c2c] border border-slate-800/80 rounded-2xl p-4 shadow-lg">
+        <div className="bg-[#16181d] border border-slate-800/80 rounded-2xl p-4 shadow-lg">
           <div className="flex items-center justify-between">
             <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Active Operators</span>
             <div className="w-8 h-8 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400">
@@ -274,7 +274,7 @@ export const ActivityLogView: React.FC<ActivityLogViewProps> = ({ currentUsernam
         </div>
 
         {/* Card 3: Today's Actions */}
-        <div className="bg-[#151c2c] border border-slate-800/80 rounded-2xl p-4 shadow-lg">
+        <div className="bg-[#16181d] border border-slate-800/80 rounded-2xl p-4 shadow-lg">
           <div className="flex items-center justify-between">
             <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Today's Operations</span>
             <div className="w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
@@ -289,7 +289,7 @@ export const ActivityLogView: React.FC<ActivityLogViewProps> = ({ currentUsernam
         </div>
 
         {/* Card 4: Most Active User */}
-        <div className="bg-[#151c2c] border border-slate-800/80 rounded-2xl p-4 shadow-lg">
+        <div className="bg-[#16181d] border border-slate-800/80 rounded-2xl p-4 shadow-lg">
           <div className="flex items-center justify-between">
             <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Primary Operator</span>
             <div className="w-8 h-8 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400">
@@ -308,7 +308,7 @@ export const ActivityLogView: React.FC<ActivityLogViewProps> = ({ currentUsernam
       </div>
 
       {/* Filter & Action Toolbar */}
-      <div className="bg-[#151c2c] border border-slate-800 p-4 rounded-2xl shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+      <div className="bg-[#16181d] border border-slate-800 p-4 rounded-2xl shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
         {/* Left: Filters */}
         <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto flex-1">
           {/* Search bar */}
@@ -319,7 +319,7 @@ export const ActivityLogView: React.FC<ActivityLogViewProps> = ({ currentUsernam
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search details, person, customer..."
-              className="w-full pl-9 pr-3 py-1.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs focus:outline-none focus:border-amber-500"
+              className="w-full pl-9 pr-3 py-1.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs focus:outline-none focus:border-[#ff8d24]"
             />
           </div>
 
@@ -328,7 +328,7 @@ export const ActivityLogView: React.FC<ActivityLogViewProps> = ({ currentUsernam
             <select
               value={userFilter}
               onChange={(e) => setUserFilter(e.target.value)}
-              className="px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs focus:outline-none focus:border-amber-500"
+              className="px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs focus:outline-none focus:border-[#ff8d24]"
             >
               <option value="all">All Persons</option>
               <option value="admin">👑 admin (Administrator)</option>
@@ -341,7 +341,7 @@ export const ActivityLogView: React.FC<ActivityLogViewProps> = ({ currentUsernam
             <select
               value={moduleFilter}
               onChange={(e) => setModuleFilter(e.target.value)}
-              className="px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs focus:outline-none focus:border-amber-500"
+              className="px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs focus:outline-none focus:border-[#ff8d24]"
             >
               <option value="all">All Modules</option>
               <option value="Customers">Customers</option>
@@ -361,7 +361,7 @@ export const ActivityLogView: React.FC<ActivityLogViewProps> = ({ currentUsernam
             <select
               value={actionFilter}
               onChange={(e) => setActionFilter(e.target.value)}
-              className="px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs focus:outline-none focus:border-amber-500"
+              className="px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs focus:outline-none focus:border-[#ff8d24]"
             >
               <option value="all">All Actions</option>
               <option value="ADD">+ ADD / CREATE</option>
@@ -379,7 +379,7 @@ export const ActivityLogView: React.FC<ActivityLogViewProps> = ({ currentUsernam
             <select
               value={dateFilter}
               onChange={(e) => setDateFilter(e.target.value)}
-              className="px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs focus:outline-none focus:border-amber-500"
+              className="px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs focus:outline-none focus:border-[#ff8d24]"
             >
               <option value="all">All Dates</option>
               <option value="today">Today</option>
@@ -430,11 +430,11 @@ export const ActivityLogView: React.FC<ActivityLogViewProps> = ({ currentUsernam
       </div>
 
       {/* Main Activity Log Table */}
-      <div className="bg-[#151c2c] border border-slate-800/80 rounded-2xl overflow-hidden shadow-2xl">
+      <div className="bg-[#16181d] border border-slate-800/80 rounded-2xl overflow-hidden shadow-2xl">
         <div className="overflow-x-auto custom-scrollbar">
           <table className="w-full text-left text-xs">
             <thead>
-              <tr className="bg-[#0f1422] text-slate-400 border-b border-slate-800 font-bold uppercase text-[10px] tracking-wider">
+              <tr className="bg-[#121419] text-slate-400 border-b border-slate-800 font-bold uppercase text-[10px] tracking-wider">
                 <th className="py-3 px-4 min-w-[155px]">Date &amp; Time</th>
                 <th className="py-3 px-3 min-w-[130px]">Person Operating</th>
                 <th className="py-3 px-2 text-center">Action</th>
@@ -533,7 +533,7 @@ export const ActivityLogView: React.FC<ActivityLogViewProps> = ({ currentUsernam
         </div>
 
         {/* Footer info strip */}
-        <div className="p-3 bg-[#0f1422] border-t border-slate-800 flex items-center justify-between text-[11px] text-slate-400">
+        <div className="p-3 bg-[#121419] border-t border-slate-800 flex items-center justify-between text-[11px] text-slate-400">
           <span>
             Showing <strong className="text-white">{filteredLogs.length}</strong> of <strong className="text-white">{logs.length}</strong> system activity records
           </span>
@@ -546,7 +546,7 @@ export const ActivityLogView: React.FC<ActivityLogViewProps> = ({ currentUsernam
       {/* Confirmation Modal: Delete All Activity Logs */}
       {isDeleteModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-[#151c2c] border border-rose-500/40 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4">
+          <div className="bg-[#16181d] border border-rose-500/40 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-2xl bg-rose-500/15 border border-rose-500/30 flex items-center justify-center text-rose-400 shrink-0">
                 <AlertTriangle className="w-6 h-6 stroke-[2.2]" />

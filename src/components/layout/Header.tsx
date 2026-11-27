@@ -297,7 +297,7 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Interactive Reminders Dropdown Popover */}
           {isRemindersOpen && (
             <div
-              className="absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl bg-[#151c2c] border border-amber-500/40 shadow-2xl z-50 overflow-hidden animate-fadeIn"
+              className="absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl bg-[#16181d] border border-amber-500/40 shadow-2xl z-50 overflow-hidden animate-fadeIn"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}
@@ -748,7 +748,7 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Cloud Diagnostics & Status Dropdown Popover */}
           {isCloudPopoverOpen && (
             <div
-              className="absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl bg-[#151c2c] border border-slate-700/80 shadow-2xl z-50 overflow-hidden animate-fadeIn"
+              className="absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl bg-[#16181d] border border-slate-700/80 shadow-2xl z-50 overflow-hidden animate-fadeIn"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Popover Header */}

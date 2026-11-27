@@ -1125,7 +1125,7 @@ export const App: React.FC = () => {
                     placeholder="Enter developer ID"
                     value={devUser}
                     onChange={(e) => setDevUser(e.target.value)}
-                    className="w-full px-3 py-2 bg-[#0d131f] border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-amber-400"
+                    className="w-full px-3 py-2 bg-[#0d131f] border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-[#ff8d24]"
                   />
                 </div>
                 <div>
@@ -1136,7 +1136,7 @@ export const App: React.FC = () => {
                     placeholder="Enter developer password"
                     value={devPass}
                     onChange={(e) => setDevPass(e.target.value)}
-                    className="w-full px-3 py-2 bg-[#0d131f] border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-amber-400"
+                    className="w-full px-3 py-2 bg-[#0d131f] border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-[#ff8d24]"
                   />
                 </div>
                 <div className="flex justify-end gap-2 pt-2">
@@ -1298,7 +1298,7 @@ export const App: React.FC = () => {
 
               {/* Upcoming Scheduled Cancellations & Exits Notice Widget */}
               {approachingCancellations.length > 0 && (
-                <div className="bg-gradient-to-r from-amber-950/40 via-[#151c2c] to-rose-950/30 border border-amber-500/40 rounded-2xl p-5 shadow-xl shadow-black/30">
+                <div className="bg-gradient-to-r from-amber-950/40 via-[#16181d] to-rose-950/30 border border-amber-500/40 rounded-2xl p-5 shadow-xl shadow-black/30">
                   <div className="flex flex-wrap items-center justify-between gap-3 mb-4 pb-3 border-b border-slate-800">
                     <div className="flex items-center gap-2.5">
                       <div className="p-2 rounded-xl bg-amber-500/20 text-amber-300 border border-amber-500/30 shrink-0">
@@ -1334,7 +1334,7 @@ export const App: React.FC = () => {
                       <div
                         key={item.customer.id}
                         onClick={() => setViewingProfileCustomer(item.customer)}
-                        className="p-3.5 rounded-xl bg-[#0f1422]/90 border border-slate-800 hover:border-amber-500/50 hover:bg-slate-800/60 transition-all cursor-pointer group flex flex-col justify-between"
+                        className="p-3.5 rounded-xl bg-[#121419]/90 border border-slate-800 hover:border-amber-500/50 hover:bg-slate-800/60 transition-all cursor-pointer group flex flex-col justify-between"
                       >
                         <div>
                           <div className="flex items-start justify-between gap-2">
@@ -1623,7 +1623,7 @@ export const App: React.FC = () => {
       {/* Modern In-App Logout Confirmation Modal (Never freezes Electron window) */}
       {isLogoutModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-[#151c2c] border border-slate-700/80 rounded-2xl w-full max-w-sm p-6 shadow-2xl shadow-black/80 space-y-4">
+          <div className="bg-[#16181d] border border-slate-700/80 rounded-2xl w-full max-w-sm p-6 shadow-2xl shadow-black/80 space-y-4">
             <div className="w-12 h-12 rounded-xl bg-rose-500/15 border border-rose-500/30 flex items-center justify-center text-rose-400 mx-auto">
               <LogOut className="w-6 h-6" />
             </div>

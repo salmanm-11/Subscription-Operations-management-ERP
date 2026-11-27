@@ -79,7 +79,7 @@ export const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ customers }) =
               type="date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
-              className="px-3.5 py-2 bg-slate-900 border border-slate-700/80 rounded-xl text-xs text-white focus:outline-none focus:border-amber-500 font-mono"
+              className="px-3.5 py-2 bg-slate-900 border border-slate-700/80 rounded-xl text-xs text-white focus:outline-none focus:border-[#ff8d24] font-mono"
             />
             <span className="px-2.5 py-1.5 rounded-xl bg-slate-800 border border-slate-700/80 text-xs font-mono font-bold text-amber-400">
               {formatDateDDMMMYYYY(selectedDate)}
@@ -96,7 +96,7 @@ export const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ customers }) =
       </div>
 
       {/* Meal Selection Tabs & Stats */}
-      <div className="flex flex-wrap items-center justify-between gap-4 bg-[#151c2c] border border-[#222f47]/60 rounded-2xl p-4">
+      <div className="flex flex-wrap items-center justify-between gap-4 bg-[#16181d] border border-[#242730] rounded-2xl p-4">
         <div className="flex items-center gap-2">
           {(['breakfast', 'lunch', 'dinner'] as const).map((m) => (
             <button
@@ -127,7 +127,7 @@ export const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ customers }) =
       </div>
 
       {/* Attendance Table */}
-      <div className="bg-[#151c2c] border border-[#222f47]/60 rounded-2xl overflow-hidden shadow-lg shadow-black/20">
+      <div className="bg-[#16181d] border border-[#242730] rounded-2xl overflow-hidden shadow-lg shadow-black/20">
         <div className="p-4 border-b border-slate-800 flex items-center gap-3">
           <Search className="w-4 h-4 text-slate-400" />
           <input
@@ -142,7 +142,7 @@ export const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ customers }) =
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
-              <tr className="bg-[#0f1422] text-slate-300 border-b border-slate-700/80 text-xs uppercase tracking-wider font-bold">
+              <tr className="bg-[#121419] text-slate-300 border-b border-slate-700/80 text-xs uppercase tracking-wider font-bold">
                 <th className="py-4 px-5">Code</th>
                 <th className="py-4 px-5">Customer</th>
                 <th className="py-4 px-5">Building &amp; Apt</th>

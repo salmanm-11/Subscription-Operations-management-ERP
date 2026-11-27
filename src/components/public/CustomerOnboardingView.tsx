@@ -380,7 +380,7 @@ export const CustomerOnboardingView: React.FC<CustomerOnboardingViewProps> = ({ 
                     placeholder="e.g. Mohammed Salman"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-[#090d16] border border-slate-700/80 rounded-xl text-white text-xs placeholder:text-slate-500 focus:outline-none focus:border-amber-400 transition-colors"
+                    className="w-full px-3.5 py-2.5 bg-[#090d16] border border-slate-700/80 rounded-xl text-white text-xs placeholder:text-slate-500 focus:outline-none focus:border-[#ff8d24] transition-colors"
                   />
                 </div>
 
@@ -400,7 +400,7 @@ export const CustomerOnboardingView: React.FC<CustomerOnboardingViewProps> = ({ 
                         placeholder="50 123 4567"
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
-                        className="w-full pl-20 pr-3.5 py-2.5 bg-[#090d16] border border-slate-700/80 rounded-xl text-white text-xs placeholder:text-slate-500 focus:outline-none focus:border-amber-400 font-mono transition-colors"
+                        className="w-full pl-20 pr-3.5 py-2.5 bg-[#090d16] border border-slate-700/80 rounded-xl text-white text-xs placeholder:text-slate-500 focus:outline-none focus:border-[#ff8d24] font-mono transition-colors"
                       />
                     </div>
                   </div>
@@ -419,7 +419,7 @@ export const CustomerOnboardingView: React.FC<CustomerOnboardingViewProps> = ({ 
                         placeholder="50 987 6543 (Roommate / Friend)"
                         value={emergencyContact}
                         onChange={(e) => setEmergencyContact(e.target.value)}
-                        className="w-full pl-20 pr-3.5 py-2.5 bg-[#090d16] border border-slate-700/80 rounded-xl text-white text-xs placeholder:text-slate-500 focus:outline-none focus:border-amber-400 font-mono transition-colors"
+                        className="w-full pl-20 pr-3.5 py-2.5 bg-[#090d16] border border-slate-700/80 rounded-xl text-white text-xs placeholder:text-slate-500 focus:outline-none focus:border-[#ff8d24] font-mono transition-colors"
                       />
                     </div>
                   </div>
@@ -444,7 +444,7 @@ export const CustomerOnboardingView: React.FC<CustomerOnboardingViewProps> = ({ 
                     <select
                       value={selectedArea}
                       onChange={(e) => setSelectedArea(e.target.value)}
-                      className="w-full px-3 py-2.5 bg-[#090d16] border border-slate-700/80 rounded-xl text-white text-xs focus:outline-none focus:border-amber-400 transition-colors"
+                      className="w-full px-3 py-2.5 bg-[#090d16] border border-slate-700/80 rounded-xl text-white text-xs focus:outline-none focus:border-[#ff8d24] transition-colors"
                     >
                       {DELIVERY_AREAS.map((area) => (
                         <option key={area} value={area}>
@@ -468,7 +468,7 @@ export const CustomerOnboardingView: React.FC<CustomerOnboardingViewProps> = ({ 
                         placeholder="e.g. Al Wasl Tower"
                         value={customAreaName}
                         onChange={(e) => setCustomAreaName(e.target.value)}
-                        className="w-full px-3.5 py-2.5 bg-[#090d16] border border-slate-700/80 rounded-xl text-white text-xs focus:outline-none focus:border-amber-400 transition-colors"
+                        className="w-full px-3.5 py-2.5 bg-[#090d16] border border-slate-700/80 rounded-xl text-white text-xs focus:outline-none focus:border-[#ff8d24] transition-colors"
                       />
                     </div>
                   )}
@@ -483,7 +483,7 @@ export const CustomerOnboardingView: React.FC<CustomerOnboardingViewProps> = ({ 
                       placeholder="e.g. Apt 204, Room B"
                       value={apartment}
                       onChange={(e) => setApartment(e.target.value)}
-                      className="w-full px-3.5 py-2.5 bg-[#090d16] border border-slate-700/80 rounded-xl text-white text-xs focus:outline-none focus:border-amber-400 transition-colors"
+                      className="w-full px-3.5 py-2.5 bg-[#090d16] border border-slate-700/80 rounded-xl text-white text-xs focus:outline-none focus:border-[#ff8d24] transition-colors"
                     />
                   </div>
                 </div>
@@ -738,7 +738,7 @@ export const CustomerOnboardingView: React.FC<CustomerOnboardingViewProps> = ({ 
                     placeholder="e.g. No fish curry, prefer barik rice, less spicy, leave tiffin outside room door, etc."
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-[#090d16] border border-slate-700/80 rounded-xl text-white text-xs placeholder:text-slate-500 focus:outline-none focus:border-amber-400 transition-colors resize-none"
+                    className="w-full px-3.5 py-2.5 bg-[#090d16] border border-slate-700/80 rounded-xl text-white text-xs placeholder:text-slate-500 focus:outline-none focus:border-[#ff8d24] transition-colors resize-none"
                   />
                 </div>
 
@@ -754,7 +754,7 @@ export const CustomerOnboardingView: React.FC<CustomerOnboardingViewProps> = ({ 
                       required
                       value={joiningDate}
                       onChange={(e) => setJoiningDate(e.target.value)}
-                      className="w-full pl-10 pr-3.5 py-2.5 bg-[#090d16] border border-slate-700/80 rounded-xl text-white text-xs focus:outline-none focus:border-amber-400 font-mono transition-colors"
+                      className="w-full pl-10 pr-3.5 py-2.5 bg-[#090d16] border border-slate-700/80 rounded-xl text-white text-xs focus:outline-none focus:border-[#ff8d24] font-mono transition-colors"
                     />
                   </div>
                 </div>

@@ -419,9 +419,9 @@ export const CustomerList: React.FC<CustomerListProps> = ({
           {!isReadOnly && (
             <button
               onClick={() => setIsImportModalOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 text-xs font-bold border border-emerald-500/30 transition-colors shadow-sm"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#1c1f26] hover:bg-[#252932] text-slate-200 text-xs font-bold border border-[#2c313d] transition-colors shadow-sm"
             >
-              <Upload className="w-3.5 h-3.5 text-emerald-400" />
+              <Upload className="w-3.5 h-3.5 text-[#ff8d24]" />
               <span>Import</span>
             </button>
           )}
@@ -430,16 +430,16 @@ export const CustomerList: React.FC<CustomerListProps> = ({
           <div className="relative">
             <button
               onClick={() => setIsExportMenuOpen(!isExportMenuOpen)}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-750 text-slate-200 text-xs font-semibold border border-slate-700/60 transition-colors"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#1c1f26] hover:bg-[#252932] text-slate-200 text-xs font-bold border border-[#2c313d] transition-colors"
             >
-              <FileSpreadsheet className="w-3.5 h-3.5 text-amber-400" />
+              <FileSpreadsheet className="w-3.5 h-3.5 text-[#ff8d24]" />
               <span>Export</span>
               <ChevronDown className="w-3 h-3 text-slate-400 ml-0.5" />
             </button>
 
             {isExportMenuOpen && (
               <div
-                className="absolute right-0 mt-2 w-56 rounded-xl bg-[#151c2c] border border-slate-700 shadow-xl z-30 py-1.5 animate-fadeIn"
+                className="absolute right-0 mt-2 w-56 rounded-xl bg-[#16181d] border border-slate-700 shadow-xl z-30 py-1.5 animate-fadeIn"
                 onClick={() => setIsExportMenuOpen(false)}
               >
                 <button
@@ -505,7 +505,7 @@ export const CustomerList: React.FC<CustomerListProps> = ({
           {!isReadOnly && (
             <button
               onClick={() => setIsShareLinkModalOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/30 text-xs font-bold transition-all shadow-sm cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#1c1f26] hover:bg-[#252932] text-emerald-400 border border-emerald-500/30 text-xs font-bold transition-all shadow-sm cursor-pointer"
               title="Customer Registration Link (Send to customers on WhatsApp)"
             >
               <Share2 className="w-3.5 h-3.5" />
@@ -518,7 +518,7 @@ export const CustomerList: React.FC<CustomerListProps> = ({
             <button
               onClick={handleSyncCustomerFees}
               disabled={isSyncingFees}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 text-xs font-bold transition-all shadow-sm cursor-pointer disabled:opacity-50"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#1c1f26] hover:bg-[#252932] text-[#ff8d24] border border-orange-500/30 text-xs font-bold transition-all shadow-sm cursor-pointer disabled:opacity-50"
               title="Automatically update all customer monthly rates to match active meal plans"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${isSyncingFees ? 'animate-spin' : ''}`} />
@@ -529,9 +529,9 @@ export const CustomerList: React.FC<CustomerListProps> = ({
           {!isReadOnly && (
             <button
               onClick={onAddCustomer}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold shadow-md shadow-amber-500/20 transition-all active:scale-[0.98]"
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-[#ff8d24] to-[#f95900] hover:from-[#ff9c3a] hover:to-[#ff6810] text-slate-950 text-xs font-black shadow-md shadow-orange-500/20 transition-all active:scale-[0.98]"
             >
-              <Plus className="w-3.5 h-3.5 text-slate-950" />
+              <Plus className="w-3.5 h-3.5 text-slate-950 stroke-[2.5]" />
               <span>Add Customer</span>
             </button>
           )}
@@ -546,7 +546,7 @@ export const CustomerList: React.FC<CustomerListProps> = ({
       )}
 
       {/* Filter toolbar */}
-      <div className="bg-[#151c2c] border border-[#222f47]/60 rounded-xl p-3 flex flex-wrap items-center justify-between gap-2.5 shadow-md shadow-black/10">
+      <div className="bg-[#16181d] border border-[#242730] rounded-xl p-3 flex flex-wrap items-center justify-between gap-2.5 shadow-md shadow-black/10">
         <div
           onClick={() => searchInputRef.current?.focus()}
           className="relative flex-1 min-w-[200px] cursor-text group"
@@ -558,7 +558,7 @@ export const CustomerList: React.FC<CustomerListProps> = ({
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search name, code, phone, room, building, notes... (Press '/' to focus)"
-            className="w-full pl-9 pr-9 py-2 bg-slate-900/80 border border-slate-700/60 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-500 transition-colors cursor-text pointer-events-auto"
+            className="w-full pl-9 pr-9 py-2 bg-[#111317] border border-[#242730] rounded-xl text-xs text-white placeholder-[#687284] focus:outline-none focus:border-[#ff8d24] transition-colors cursor-text pointer-events-auto"
           />
           {searchTerm && (
             <button
@@ -580,7 +580,7 @@ export const CustomerList: React.FC<CustomerListProps> = ({
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="bg-slate-900/80 border border-slate-700/60 rounded-xl px-2.5 py-2 text-xs text-slate-200 focus:outline-none focus:border-amber-500 font-semibold"
+            className="bg-[#111317] border border-[#242730] rounded-xl px-2.5 py-2 text-xs text-slate-200 focus:outline-none focus:border-[#ff8d24] font-semibold"
           >
             <option value="all">All Statuses</option>
             <option value="active">Active (Running)</option>
@@ -598,10 +598,10 @@ export const CustomerList: React.FC<CustomerListProps> = ({
               setAreaFilter(e.target.value);
               setBuildingFilter('all');
             }}
-            className={`bg-slate-900/80 border rounded-xl px-2.5 py-2 text-xs font-semibold focus:outline-none transition-colors ${
+            className={`bg-[#111317] border rounded-xl px-2.5 py-2 text-xs font-semibold focus:outline-none transition-colors ${
               areaFilter !== 'all'
-                ? 'border-amber-500 text-amber-300 bg-amber-500/10'
-                : 'border-slate-700/60 text-slate-200 focus:border-amber-500'
+                ? 'border-[#ff8d24] text-orange-400 bg-orange-500/10'
+                : 'border-[#242730] text-slate-200 focus:border-[#ff8d24]'
             }`}
             title="Filter by Which Area / Delivery Cluster"
           >
@@ -623,10 +623,10 @@ export const CustomerList: React.FC<CustomerListProps> = ({
                   setBuildingSearchQuery('');
                 }
               }}
-              className={`flex items-center justify-between gap-1.5 bg-slate-900/80 border rounded-xl px-2.5 py-2 text-xs transition-all cursor-pointer min-w-[170px] max-w-[240px] ${
+              className={`flex items-center justify-between gap-1.5 bg-[#111317] border rounded-xl px-2.5 py-2 text-xs transition-all cursor-pointer min-w-[170px] max-w-[240px] ${
                 buildingFilter !== 'all'
-                  ? 'border-amber-500 text-amber-300 bg-amber-500/10 font-semibold shadow-sm'
-                  : 'border-slate-700/60 text-slate-200 hover:border-slate-500'
+                  ? 'border-[#ff8d24] text-orange-400 bg-orange-500/10 font-semibold shadow-sm'
+                  : 'border-[#242730] text-slate-200 hover:border-[#383e4e]'
               }`}
               title="Filter by Building (Click to open search box)"
             >
@@ -670,7 +670,7 @@ export const CustomerList: React.FC<CustomerListProps> = ({
                       value={buildingSearchQuery}
                       onChange={(e) => setBuildingSearchQuery(e.target.value)}
                       placeholder={`Search ${filteredBuildings.length} buildings...`}
-                      className="w-full pl-8 pr-7 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 font-medium"
+                      className="w-full pl-8 pr-7 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#ff8d24] font-medium"
                       onKeyDown={(e) => {
                         if (e.key === 'Escape') {
                           setIsBuildingDropdownOpen(false);
@@ -791,7 +791,7 @@ export const CustomerList: React.FC<CustomerListProps> = ({
           <select
             value={handlerFilter}
             onChange={(e) => setHandlerFilter(e.target.value)}
-            className="bg-[#151c2c] border border-slate-700/80 rounded-xl px-2.5 py-2 text-xs font-semibold text-slate-300 focus:outline-none focus:border-amber-400"
+            className="bg-[#111317] border border-[#242730] rounded-xl px-2.5 py-2 text-xs font-semibold text-slate-300 focus:outline-none focus:border-[#ff8d24]"
             title="Filter by customer account type"
           >
             <option value="all">All Customer Types</option>
@@ -820,11 +820,11 @@ export const CustomerList: React.FC<CustomerListProps> = ({
       </div>
 
       {/* Customers Table */}
-      <div className="bg-[#151c2c] border border-[#222f47]/60 rounded-2xl overflow-hidden shadow-xl shadow-black/30">
+      <div className="bg-[#16181d] border border-[#242730] rounded-2xl overflow-hidden shadow-xl shadow-black/30">
         <div className="overflow-x-auto w-full custom-scrollbar">
           <table className="w-full text-left">
             <thead>
-              <tr className="bg-[#0f1422] text-slate-300 border-b border-slate-700/80 text-[11px] uppercase tracking-wider font-bold">
+              <tr className="bg-[#121419] text-slate-300 border-b border-slate-700/80 text-[11px] uppercase tracking-wider font-bold">
                 <th className="py-2.5 px-2 text-center whitespace-nowrap w-24">Status</th>
                 <th className="py-2.5 px-2 whitespace-nowrap w-20">Code</th>
                 <th className="py-2.5 px-2.5 whitespace-nowrap min-w-[130px]">Customer</th>
@@ -1071,7 +1071,7 @@ export const CustomerList: React.FC<CustomerListProps> = ({
       {/* Confirmation Modal for Delete All Customers */}
       {isDeleteAllModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-[#151c2c] border border-rose-500/40 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4">
+          <div className="bg-[#16181d] border border-rose-500/40 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-2xl bg-rose-500/15 border border-rose-500/30 flex items-center justify-center text-rose-400 shrink-0">
                 <AlertTriangle className="w-6 h-6 stroke-[2.2]" />
@@ -1125,7 +1125,7 @@ export const CustomerList: React.FC<CustomerListProps> = ({
       {/* Customer Registration Link Modal */}
       {isShareLinkModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-[#151c2c] border border-emerald-500/30 rounded-3xl w-full max-w-md p-6 shadow-2xl text-white space-y-5">
+          <div className="bg-[#16181d] border border-emerald-500/30 rounded-3xl w-full max-w-md p-6 shadow-2xl text-white space-y-5">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <div className="flex items-center gap-2.5">
                 <div className="w-9 h-9 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center">
@@ -1172,7 +1172,7 @@ export const CustomerList: React.FC<CustomerListProps> = ({
                     value={urlInputValue}
                     onChange={(e) => setUrlInputValue(e.target.value)}
                     placeholder="https://customer-self-registration.vercel.app"
-                    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs font-mono text-white focus:outline-none focus:border-amber-400"
+                    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs font-mono text-white focus:outline-none focus:border-[#ff8d24]"
                     autoFocus
                   />
                   <div className="flex items-center gap-1.5 pt-0.5 flex-wrap">

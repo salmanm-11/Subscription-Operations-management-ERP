@@ -249,7 +249,7 @@ export const BusinessSettingsView: React.FC<BusinessSettingsViewProps> = ({
       </div>
 
       {activeTab === 'profile' && (
-        <div className="bg-[#151c2c] border border-[#222f47]/60 rounded-2xl p-6 shadow-lg max-w-2xl">
+        <div className="bg-[#16181d] border border-[#242730] rounded-2xl p-6 shadow-lg max-w-2xl">
           <form onSubmit={handleSaveProfile} className="space-y-4 text-xs">
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -279,7 +279,7 @@ export const BusinessSettingsView: React.FC<BusinessSettingsViewProps> = ({
                   type="text"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  className="w-full px-3.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-amber-500"
+                  className="w-full px-3.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-[#ff8d24]"
                 />
               </div>
               <div>
@@ -288,7 +288,7 @@ export const BusinessSettingsView: React.FC<BusinessSettingsViewProps> = ({
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-3.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-amber-500"
+                  className="w-full px-3.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-[#ff8d24]"
                 />
               </div>
             </div>
@@ -299,7 +299,7 @@ export const BusinessSettingsView: React.FC<BusinessSettingsViewProps> = ({
                 type="text"
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
-                className="w-full px-3.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-amber-500"
+                className="w-full px-3.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-[#ff8d24]"
               />
             </div>
 
@@ -331,7 +331,7 @@ export const BusinessSettingsView: React.FC<BusinessSettingsViewProps> = ({
                   type="text"
                   value={invoicePrefix}
                   onChange={(e) => setInvoicePrefix(e.target.value)}
-                  className="w-full px-3.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-amber-500"
+                  className="w-full px-3.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-[#ff8d24]"
                 />
               </div>
               <div>
@@ -340,7 +340,7 @@ export const BusinessSettingsView: React.FC<BusinessSettingsViewProps> = ({
                   type="text"
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  className="w-full px-3.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-amber-500"
+                  className="w-full px-3.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-[#ff8d24]"
                 />
               </div>
             </div>
@@ -381,7 +381,7 @@ export const BusinessSettingsView: React.FC<BusinessSettingsViewProps> = ({
                       max="60"
                       value={dueReminderDays}
                       onChange={(e) => setDueReminderDays(Math.max(1, parseInt(e.target.value) || 1))}
-                      className="w-16 px-2 py-1 bg-slate-900 border border-slate-700 rounded-lg text-white font-mono text-xs font-bold text-center focus:outline-none focus:border-amber-500"
+                      className="w-16 px-2 py-1 bg-slate-900 border border-slate-700 rounded-lg text-white font-mono text-xs font-bold text-center focus:outline-none focus:border-[#ff8d24]"
                     />
                     <span className="text-xs text-slate-400">days</span>
                   </div>
@@ -427,7 +427,7 @@ export const BusinessSettingsView: React.FC<BusinessSettingsViewProps> = ({
       {/* Local Daily Backups Tab (PC / Desktop Focused) */}
       {activeTab === 'backups' && (
         <div className="space-y-6 max-w-3xl">
-          <div className="bg-[#151c2c] border border-sky-500/30 rounded-2xl p-6 shadow-xl space-y-5">
+          <div className="bg-[#16181d] border border-sky-500/30 rounded-2xl p-6 shadow-xl space-y-5">
             <div className="flex items-start justify-between gap-4">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-2xl bg-sky-500/15 border border-sky-500/30 flex items-center justify-center text-sky-400 shrink-0">
@@ -581,7 +581,7 @@ export const BusinessSettingsView: React.FC<BusinessSettingsViewProps> = ({
 
           {/* Backup Files List on Local Hard Drive */}
           {isDesktop && backupFiles.length > 0 && (
-            <div className="bg-[#151c2c] border border-slate-800 rounded-2xl p-5 shadow-lg space-y-3">
+            <div className="bg-[#16181d] border border-slate-800 rounded-2xl p-5 shadow-lg space-y-3">
               <div className="flex items-center justify-between">
                 <h4 className="text-xs font-bold text-white flex items-center gap-2">
                   <FolderOpen className="w-4 h-4 text-amber-400" />

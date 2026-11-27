@@ -313,9 +313,9 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fadeIn">
-      <div className="bg-[#151c2c] border border-slate-700/80 rounded-2xl w-full max-w-xl max-h-[90vh] overflow-y-auto shadow-2xl shadow-black/60 custom-scrollbar">
+      <div className="bg-[#16181d] border border-slate-700/80 rounded-2xl w-full max-w-xl max-h-[90vh] overflow-y-auto shadow-2xl shadow-black/60 custom-scrollbar">
         {/* Header */}
-        <div className="p-6 border-b border-slate-800 flex items-center justify-between sticky top-0 bg-[#151c2c] z-10">
+        <div className="p-6 border-b border-slate-800 flex items-center justify-between sticky top-0 bg-[#16181d] z-10">
           <div>
             <h3 className="text-lg font-bold text-white">
               {customer ? 'Edit Customer Profile' : 'Add New Customer'}
@@ -343,7 +343,7 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 placeholder="e.g. Fayas"
-                className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-amber-500"
+                className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-[#ff8d24]"
               />
             </div>
             <div>
@@ -353,7 +353,7 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="e.g. +971 50 123 4567"
-                className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-amber-500"
+                className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-[#ff8d24]"
               />
             </div>
           </div>
@@ -386,7 +386,7 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
                 value={companyName}
                 onChange={(e) => setCompanyName(e.target.value)}
                 placeholder="e.g. Al Futtaim, Emirates, Freelance, etc."
-                className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-amber-500"
+                className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-[#ff8d24]"
               />
             </div>
           </div>
@@ -398,7 +398,7 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="e.g. customer@example.ae"
-              className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-amber-500"
+              className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-[#ff8d24]"
             />
           </div>
 
@@ -467,7 +467,7 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
                         }
                       }
                     }}
-                    className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs sm:text-sm focus:outline-none focus:border-amber-500 font-medium"
+                    className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs sm:text-sm focus:outline-none focus:border-[#ff8d24] font-medium"
                   >
                     <option value="">-- Select Area Cluster First --</option>
                     <option value="all">🌐 All Areas ({availableBuildings.length} buildings)</option>
@@ -491,7 +491,7 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
                         setNewBuildingArea(e.target.value);
                       }}
                       placeholder="Type new area name (e.g. Al Satwa)..."
-                      className="w-full px-3 py-2 bg-slate-950 border border-amber-500/60 rounded-xl text-white text-xs font-semibold focus:outline-none focus:border-amber-400"
+                      className="w-full px-3 py-2 bg-slate-950 border border-amber-500/60 rounded-xl text-white text-xs font-semibold focus:outline-none focus:border-[#ff8d24]"
                       autoFocus
                     />
                     <button
@@ -531,7 +531,7 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
                       }
                       value={buildingSearch}
                       onChange={(e) => setBuildingSearch(e.target.value)}
-                      className="w-full pl-9 pr-3 py-1.5 bg-slate-950 border border-slate-700/80 rounded-lg text-white text-xs placeholder:text-slate-500 focus:outline-none focus:border-amber-400"
+                      className="w-full pl-9 pr-3 py-1.5 bg-slate-950 border border-slate-700/80 rounded-lg text-white text-xs placeholder:text-slate-500 focus:outline-none focus:border-[#ff8d24]"
                     />
                   </div>
 
@@ -552,7 +552,7 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
                         }
                       }
                     }}
-                    className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs sm:text-sm focus:outline-none focus:border-amber-500 font-medium"
+                    className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs sm:text-sm focus:outline-none focus:border-[#ff8d24] font-medium"
                   >
                     <option value="">
                       {!selectedArea
@@ -576,7 +576,7 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
                       placeholder="Type custom building name..."
                       value={customBuildingName}
                       onChange={(e) => setCustomBuildingName(e.target.value)}
-                      className="w-full px-3 py-2 bg-slate-950 border border-amber-500/50 rounded-xl text-white text-xs font-semibold focus:outline-none focus:border-amber-400 animate-fadeIn"
+                      className="w-full px-3 py-2 bg-slate-950 border border-amber-500/50 rounded-xl text-white text-xs font-semibold focus:outline-none focus:border-[#ff8d24] animate-fadeIn"
                       autoFocus
                     />
                   )}
@@ -593,7 +593,7 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
                 value={apartment}
                 onChange={(e) => setApartment(e.target.value)}
                 placeholder="e.g. 211, Flat 104, Room 5B"
-                className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-amber-500 font-medium"
+                className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-[#ff8d24] font-medium"
               />
             </div>
           </div>
@@ -732,7 +732,7 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
                 required
                 value={monthlyRate}
                 onChange={(e) => setMonthlyRate(parseFloat(e.target.value) || 0)}
-                className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-bold focus:outline-none focus:border-amber-500"
+                className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-bold focus:outline-none focus:border-[#ff8d24]"
               />
             </div>
             <div>
@@ -754,7 +754,7 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
                     setCancellationDate('');
                   }
                 }}
-                className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-amber-500 font-medium"
+                className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-[#ff8d24] font-medium"
               >
                 <option value="active">Active (Running)</option>
                 <option value="cancelling_soon">⚠️ Cancelling Soon (On Notice)</option>
@@ -926,7 +926,7 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
             <select
               value={managedBy}
               onChange={(e) => setManagedBy(e.target.value)}
-              className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white font-medium text-xs sm:text-sm focus:outline-none focus:border-amber-400"
+              className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white font-medium text-xs sm:text-sm focus:outline-none focus:border-[#ff8d24]"
             >
               <option value="admin">Admin</option>
               <option value="manager">Manager</option>
@@ -968,7 +968,7 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
                     setPaymentMadeUpTo(val);
                   }
                 }}
-                className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white font-mono focus:outline-none focus:border-amber-500 text-xs sm:text-sm"
+                className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white font-mono focus:outline-none focus:border-[#ff8d24] text-xs sm:text-sm"
               />
 
               <div className="flex items-center justify-between p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/25">
@@ -1097,7 +1097,7 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
                     type="date"
                     value={billedUpTo}
                     onChange={(e) => setBilledUpTo(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono text-xs focus:outline-none focus:border-amber-500"
+                    className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono text-xs focus:outline-none focus:border-[#ff8d24]"
                   />
                 </div>
               </div>
@@ -1112,7 +1112,7 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
                 value={deliveryTime}
                 onChange={(e) => setDeliveryTime(e.target.value)}
                 placeholder="e.g. 5:45 AM, 6:00 AM, 12:00 PM"
-                className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-amber-500"
+                className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-[#ff8d24]"
               />
             </div>
             <div>
@@ -1122,7 +1122,7 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
                 value={doorPasscode}
                 onChange={(e) => setDoorPasscode(e.target.value)}
                 placeholder="e.g. 4695#, 7580#"
-                className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono focus:outline-none focus:border-amber-500"
+                className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono focus:outline-none focus:border-[#ff8d24]"
               />
             </div>
           </div>
@@ -1134,7 +1134,7 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
               value={dietaryPreferences}
               onChange={(e) => setDietaryPreferences(e.target.value)}
               placeholder="e.g. No chapati, No fish curry, No porota, Barik rice only, Veg only"
-              className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-amber-500"
+              className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-[#ff8d24]"
             />
           </div>
 
@@ -1145,7 +1145,7 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="e.g. Starting from 1 September 2026 ✅"
-              className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-amber-500"
+              className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-[#ff8d24]"
             />
           </div>
 
@@ -1172,7 +1172,7 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
       {/* Quick Add Building Modal */}
       {isAddBuildingModalOpen && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-[#151c2c] border border-amber-500/40 rounded-2xl w-full max-w-md p-5 shadow-2xl space-y-4">
+          <div className="bg-[#16181d] border border-amber-500/40 rounded-2xl w-full max-w-md p-5 shadow-2xl space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-slate-800">
               <div className="flex items-center gap-2">
                 <Building2 className="w-5 h-5 text-amber-400" />
@@ -1198,7 +1198,7 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
                   placeholder="e.g. Falaknaz, Al Wasl R Block"
                   value={newBuildingName}
                   onChange={(e) => setNewBuildingName(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs focus:outline-none focus:border-amber-400"
+                  className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs focus:outline-none focus:border-[#ff8d24]"
                 />
               </div>
 
@@ -1225,7 +1225,7 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
                         setNewBuildingArea(e.target.value);
                       }
                     }}
-                    className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs focus:outline-none focus:border-amber-400 font-medium"
+                    className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs focus:outline-none focus:border-[#ff8d24] font-medium"
                   >
                     {availableAreas.map(([areaName, count]) => (
                       <option key={areaName} value={areaName}>
@@ -1243,7 +1243,7 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
                     placeholder="Type new area name (e.g. Al Satwa)..."
                     value={newBuildingArea}
                     onChange={(e) => setNewBuildingArea(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-950 border border-amber-500/60 rounded-xl text-white text-xs font-semibold focus:outline-none focus:border-amber-400"
+                    className="w-full px-3 py-2 bg-slate-950 border border-amber-500/60 rounded-xl text-white text-xs font-semibold focus:outline-none focus:border-[#ff8d24]"
                     autoFocus
                   />
                 )}
@@ -1258,7 +1258,7 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
                   placeholder="e.g. Near Karama Center, Dubai"
                   value={newBuildingAddress}
                   onChange={(e) => setNewBuildingAddress(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs focus:outline-none focus:border-amber-400"
+                  className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs focus:outline-none focus:border-[#ff8d24]"
                 />
               </div>
 

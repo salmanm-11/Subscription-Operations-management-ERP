@@ -342,7 +342,7 @@ export const InvoiceList: React.FC<InvoiceListProps> = ({
 
       {/* Top Financial Metric Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full">
-        <div className="bg-[#151c2c] border border-amber-500/30 rounded-xl p-3.5 shadow-md shadow-black/20 min-w-0">
+        <div className="bg-[#16181d] border border-amber-500/30 rounded-xl p-3.5 shadow-md shadow-black/20 min-w-0">
           <div className="text-[10px] uppercase font-extrabold text-amber-400 tracking-wider">Total Invoiced (AED)</div>
           <div className="text-xl sm:text-2xl font-black text-white font-mono mt-0.5 truncate">
             {formatAED(totalBilled)}
@@ -352,7 +352,7 @@ export const InvoiceList: React.FC<InvoiceListProps> = ({
           </div>
         </div>
 
-        <div className="bg-[#151c2c] border border-rose-500/30 rounded-xl p-3.5 shadow-md shadow-black/20 min-w-0">
+        <div className="bg-[#16181d] border border-rose-500/30 rounded-xl p-3.5 shadow-md shadow-black/20 min-w-0">
           <div className="text-[10px] uppercase font-extrabold text-rose-400 tracking-wider">Outstanding Overdue (AED)</div>
           <div className="text-xl sm:text-2xl font-black text-rose-400 font-mono mt-0.5 truncate">
             {formatAED(totalOverdue)}
@@ -360,7 +360,7 @@ export const InvoiceList: React.FC<InvoiceListProps> = ({
           <div className="text-[11px] text-slate-400 mt-0.5 font-medium truncate">Unsettled Monthly Mess Dues</div>
         </div>
 
-        <div className="bg-[#151c2c] border border-emerald-500/30 rounded-xl p-3.5 shadow-md shadow-black/20 min-w-0">
+        <div className="bg-[#16181d] border border-emerald-500/30 rounded-xl p-3.5 shadow-md shadow-black/20 min-w-0">
           <div className="text-[10px] uppercase font-extrabold text-emerald-400 tracking-wider">Collected Amount (AED)</div>
           <div className="text-xl sm:text-2xl font-black text-emerald-400 font-mono mt-0.5 truncate">
             {formatAED(totalCollected)}
@@ -370,7 +370,7 @@ export const InvoiceList: React.FC<InvoiceListProps> = ({
       </div>
 
       {/* Search and Filter Controls */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-[#151c2c] border border-[#222f47]/60 rounded-xl p-3 shadow-md shadow-black/20">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-[#16181d] border border-[#242730] rounded-xl p-3 shadow-md shadow-black/20">
         <div className="relative flex-1 min-w-[200px] cursor-text">
           <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
@@ -378,7 +378,7 @@ export const InvoiceList: React.FC<InvoiceListProps> = ({
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search by customer name, invoice #, building, room, notes, amount..."
-            className="w-full pl-10 pr-9 py-2 bg-slate-900/90 border border-slate-700/70 rounded-xl text-xs sm:text-sm text-white placeholder-slate-400 focus:outline-none focus:border-amber-500 transition-colors"
+            className="w-full pl-10 pr-9 py-2 bg-slate-900/90 border border-slate-700/70 rounded-xl text-xs sm:text-sm text-white placeholder-slate-400 focus:outline-none focus:border-[#ff8d24] transition-colors"
           />
           {searchTerm && (
             <button
@@ -394,7 +394,7 @@ export const InvoiceList: React.FC<InvoiceListProps> = ({
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="bg-slate-900/90 border border-slate-700/70 rounded-xl px-3 py-2 text-xs font-bold text-slate-200 focus:outline-none focus:border-amber-500"
+            className="bg-slate-900/90 border border-slate-700/70 rounded-xl px-3 py-2 text-xs font-bold text-slate-200 focus:outline-none focus:border-[#ff8d24]"
           >
             <option value="all">All Invoice Statuses</option>
             <option value="overdue">Overdue Only</option>
@@ -407,11 +407,11 @@ export const InvoiceList: React.FC<InvoiceListProps> = ({
       </div>
 
       {/* Invoices Table */}
-      <div className="bg-[#151c2c] border border-[#222f47]/60 rounded-2xl overflow-hidden shadow-xl shadow-black/30">
+      <div className="bg-[#16181d] border border-[#242730] rounded-2xl overflow-hidden shadow-xl shadow-black/30">
         <div className="overflow-x-auto w-full custom-scrollbar">
           <table className="w-full text-left min-w-[1140px]">
             <thead>
-              <tr className="bg-[#0f1422] text-slate-300 border-b border-slate-700/80 text-xs uppercase tracking-wider font-bold">
+              <tr className="bg-[#121419] text-slate-300 border-b border-slate-700/80 text-xs uppercase tracking-wider font-bold">
                 <th className="py-3 px-3.5 whitespace-nowrap min-w-[120px]">Invoice #</th>
                 <th className="py-3 px-3.5 min-w-[200px]">Customer Name &amp; Details</th>
                 <th className="py-3 px-3 whitespace-nowrap min-w-[160px]">Billing Period</th>
@@ -575,7 +575,7 @@ export const InvoiceList: React.FC<InvoiceListProps> = ({
       {/* Modal for Invoice Generation & Editing */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-[#151c2c] border border-slate-700 rounded-2xl w-full max-w-lg p-6 sm:p-7 shadow-2xl space-y-4">
+          <div className="bg-[#16181d] border border-slate-700 rounded-2xl w-full max-w-lg p-6 sm:p-7 shadow-2xl space-y-4">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <div>
                 <h3 className="text-lg font-black text-white">
@@ -605,7 +605,7 @@ export const InvoiceList: React.FC<InvoiceListProps> = ({
                   value={customerId}
                   disabled={Boolean(editingInvoice)}
                   onChange={(e) => handleCustomerChange(e.target.value)}
-                  className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white font-medium focus:outline-none focus:border-amber-500 disabled:opacity-75 disabled:cursor-not-allowed"
+                  className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white font-medium focus:outline-none focus:border-[#ff8d24] disabled:opacity-75 disabled:cursor-not-allowed"
                 >
                   <option value="">Select customer...</option>
                   {customers.map((c) => (
@@ -705,7 +705,7 @@ export const InvoiceList: React.FC<InvoiceListProps> = ({
                     <select
                       value={invoiceStatus}
                       onChange={(e) => setInvoiceStatus(e.target.value as InvoiceStatus)}
-                      className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white font-bold focus:outline-none focus:border-amber-500"
+                      className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white font-bold focus:outline-none focus:border-[#ff8d24]"
                     >
                       <option value="issued">Issued / Pending</option>
                       <option value="partially_paid">Partially Paid</option>
@@ -725,7 +725,7 @@ export const InvoiceList: React.FC<InvoiceListProps> = ({
                     required
                     value={periodStart}
                     onChange={(e) => setPeriodStart(e.target.value)}
-                    className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white font-medium focus:outline-none focus:border-amber-500"
+                    className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white font-medium focus:outline-none focus:border-[#ff8d24]"
                   />
                 </div>
                 <div>
@@ -735,7 +735,7 @@ export const InvoiceList: React.FC<InvoiceListProps> = ({
                     required
                     value={periodEnd}
                     onChange={(e) => setPeriodEnd(e.target.value)}
-                    className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white font-medium focus:outline-none focus:border-amber-500"
+                    className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white font-medium focus:outline-none focus:border-[#ff8d24]"
                   />
                 </div>
               </div>
@@ -747,7 +747,7 @@ export const InvoiceList: React.FC<InvoiceListProps> = ({
                   required
                   value={dueDate}
                   onChange={(e) => setDueDate(e.target.value)}
-                  className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white font-medium focus:outline-none focus:border-amber-500"
+                  className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white font-medium focus:outline-none focus:border-[#ff8d24]"
                 />
               </div>
 
@@ -758,7 +758,7 @@ export const InvoiceList: React.FC<InvoiceListProps> = ({
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="e.g. Monthly mess catering subscription charges"
-                  className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-amber-500"
+                  className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-[#ff8d24]"
                 />
               </div>
 
@@ -788,7 +788,7 @@ export const InvoiceList: React.FC<InvoiceListProps> = ({
       {/* Delete Confirmation Modal */}
       {deletingInvoice && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-[#151c2c] border border-rose-500/40 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4">
+          <div className="bg-[#16181d] border border-rose-500/40 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4">
             <div className="flex items-center gap-3 text-rose-400">
               <div className="p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20">
                 <AlertTriangle className="w-5 h-5 text-rose-400" />

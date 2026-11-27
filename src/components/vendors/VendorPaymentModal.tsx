@@ -71,7 +71,7 @@ export const VendorPaymentModal: React.FC<VendorPaymentModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-      <div className="bg-[#151c2c] border border-slate-700/80 rounded-2xl w-full max-w-lg shadow-2xl shadow-black/90 overflow-hidden">
+      <div className="bg-[#16181d] border border-slate-700/80 rounded-2xl w-full max-w-lg shadow-2xl shadow-black/90 overflow-hidden">
         {/* Header */}
         <div className="p-5 border-b border-slate-800 flex items-center justify-between bg-[#111827]">
           <div className="flex items-center gap-3">

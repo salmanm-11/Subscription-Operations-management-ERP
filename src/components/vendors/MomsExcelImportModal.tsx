@@ -116,7 +116,7 @@ export const MomsExcelImportModal: React.FC<MomsExcelImportModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-      <div className="bg-[#151c2c] border border-slate-700/80 rounded-2xl w-full max-w-4xl max-h-[92vh] flex flex-col shadow-2xl shadow-black/95 overflow-hidden">
+      <div className="bg-[#16181d] border border-slate-700/80 rounded-2xl w-full max-w-4xl max-h-[92vh] flex flex-col shadow-2xl shadow-black/95 overflow-hidden">
         {/* Header */}
         <div className="p-5 border-b border-slate-800 flex items-center justify-between bg-[#111827]">
           <div className="flex items-center gap-3">
@@ -165,7 +165,7 @@ export const MomsExcelImportModal: React.FC<MomsExcelImportModalProps> = ({
             </div>
 
             {/* Box 2: Quick Bundled Dataset Button */}
-            <div className="p-5 border border-slate-800 rounded-2xl bg-[#0f1422] flex flex-col justify-between">
+            <div className="p-5 border border-slate-800 rounded-2xl bg-[#121419] flex flex-col justify-between">
               <div>
                 <div className="flex items-center gap-2 mb-2">
                   <FileCheck className="w-5 h-5 text-amber-400" />
@@ -292,7 +292,7 @@ export const MomsExcelImportModal: React.FC<MomsExcelImportModalProps> = ({
 
               {/* Preview Table (First 15 Rows) */}
               <div className="border border-slate-800 rounded-xl overflow-hidden shadow-inner">
-                <div className="p-3 bg-[#0f1422] border-b border-slate-800 flex items-center justify-between">
+                <div className="p-3 bg-[#121419] border-b border-slate-800 flex items-center justify-between">
                   <span className="font-bold text-slate-300 text-xs">Spreadsheet Data Preview (Showing first 15 records)</span>
                   <span className="text-[10px] text-slate-500 font-mono">Total {parseResult.validRows.length} rows loaded</span>
                 </div>

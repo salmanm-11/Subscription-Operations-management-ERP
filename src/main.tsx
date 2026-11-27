@@ -30,7 +30,7 @@ class AppErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState>
     if (this.state.hasError) {
       return (
         <div className="min-h-screen bg-[#0b0f19] text-white flex flex-col items-center justify-center p-6 font-sans">
-          <div className="bg-[#151c2c] border border-slate-700/80 rounded-2xl p-8 max-w-lg w-full text-center shadow-2xl space-y-5">
+          <div className="bg-[#16181d] border border-slate-700/80 rounded-2xl p-8 max-w-lg w-full text-center shadow-2xl space-y-5">
             <div className="w-14 h-14 bg-amber-500/10 border border-amber-500/30 rounded-2xl flex items-center justify-center mx-auto text-amber-400 text-2xl font-bold">
               ⚠️
             </div>

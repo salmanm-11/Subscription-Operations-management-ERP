@@ -44,7 +44,7 @@ export const VendorAuditTrail: React.FC<VendorAuditTrailProps> = ({ logs }) => {
   return (
     <div className="space-y-4">
       {/* Top Filter Bar */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-[#151c2c] border border-slate-800 p-4 rounded-2xl shadow-xl">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-[#16181d] border border-slate-800 p-4 rounded-2xl shadow-xl">
         <div>
           <h3 className="text-base font-bold text-white flex items-center gap-2">
             <ShieldCheck className="w-5 h-5 text-emerald-400" />
@@ -63,14 +63,14 @@ export const VendorAuditTrail: React.FC<VendorAuditTrailProps> = ({ logs }) => {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search audit trail..."
-              className="w-full pl-9 pr-3 py-1.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs focus:outline-none focus:border-amber-500"
+              className="w-full pl-9 pr-3 py-1.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs focus:outline-none focus:border-[#ff8d24]"
             />
           </div>
 
           <select
             value={actionFilter}
             onChange={(e) => setActionFilter(e.target.value)}
-            className="px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs focus:outline-none focus:border-amber-500"
+            className="px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs focus:outline-none focus:border-[#ff8d24]"
           >
             <option value="all">All Actions</option>
             <option value="create_vendor">Vendor Created</option>
@@ -84,11 +84,11 @@ export const VendorAuditTrail: React.FC<VendorAuditTrailProps> = ({ logs }) => {
       </div>
 
       {/* Logs Table */}
-      <div className="bg-[#151c2c] border border-slate-800/80 rounded-2xl overflow-hidden shadow-xl">
+      <div className="bg-[#16181d] border border-slate-800/80 rounded-2xl overflow-hidden shadow-xl">
         <div className="overflow-x-auto custom-scrollbar">
           <table className="w-full text-left text-xs">
             <thead>
-              <tr className="bg-[#0f1422] text-slate-400 border-b border-slate-800 font-bold uppercase text-[10px] tracking-wider">
+              <tr className="bg-[#121419] text-slate-400 border-b border-slate-800 font-bold uppercase text-[10px] tracking-wider">
                 <th className="py-3 px-4">Timestamp</th>
                 <th className="py-3 px-3">Action Type</th>
                 <th className="py-3 px-3">Vendor</th>

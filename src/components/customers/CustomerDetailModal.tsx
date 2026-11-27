@@ -872,7 +872,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Top Header */}
-        <div className="px-5 py-4 bg-gradient-to-r from-[#151c2c] via-[#1a233a] to-[#151c2c] border-b border-slate-800 flex items-center justify-between gap-4 shrink-0">
+        <div className="px-5 py-4 bg-gradient-to-r from-[#16181d] via-[#1a233a] to-[#16181d] border-b border-slate-800 flex items-center justify-between gap-4 shrink-0">
           <div className="flex items-center gap-3.5 min-w-0">
             {/* Avatar Badge with Customer Code (Auto-sizing cleanly on single line) */}
             <div className="min-w-[64px] px-2.5 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-slate-950 font-black text-sm tracking-tight shadow-lg shrink-0 whitespace-nowrap">
@@ -1515,7 +1515,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
             <div className="space-y-5">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 {/* 1. Personal & Contact Information Card */}
-                <div className="bg-[#151c2c]/80 border border-slate-800 rounded-xl p-4 space-y-3.5 shadow-sm">
+                <div className="bg-[#16181d]/80 border border-slate-800 rounded-xl p-4 space-y-3.5 shadow-sm">
                   <div className="flex items-center justify-between pb-2 border-b border-slate-800">
                     <span className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
                       <Phone className="w-3.5 h-3.5 text-amber-400" />
@@ -1639,7 +1639,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                 </div>
 
                 {/* 2. Accommodation & Delivery Logistics Card */}
-                <div className="bg-[#151c2c]/80 border border-slate-800 rounded-xl p-4 space-y-3.5 shadow-sm">
+                <div className="bg-[#16181d]/80 border border-slate-800 rounded-xl p-4 space-y-3.5 shadow-sm">
                   <div className="flex items-center justify-between pb-2 border-b border-slate-800">
                     <span className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
                       <Building2 className="w-3.5 h-3.5 text-sky-400" />
@@ -1709,7 +1709,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
               </div>
 
               {/* 3. Meal Subscription & Dietary Preferences */}
-              <div className="bg-[#151c2c]/80 border border-slate-800 rounded-xl p-4 space-y-4 shadow-sm">
+              <div className="bg-[#16181d]/80 border border-slate-800 rounded-xl p-4 space-y-4 shadow-sm">
                 <div className="flex items-center justify-between pb-2 border-b border-slate-800">
                   <span className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
                     <Utensils className="w-3.5 h-3.5 text-amber-400" />
@@ -1808,7 +1808,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                   </p>
                 </div>
               ) : (
-                <div className="overflow-x-auto rounded-xl border border-slate-800 bg-[#151c2c]/80">
+                <div className="overflow-x-auto rounded-xl border border-slate-800 bg-[#16181d]/80">
                   <table className="w-full text-left text-xs">
                     <thead className="bg-[#111827] text-slate-400 border-b border-slate-800">
                       <tr>
@@ -1920,7 +1920,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                   </p>
                 </div>
               ) : (
-                <div className="overflow-x-auto rounded-xl border border-slate-800 bg-[#151c2c]/80">
+                <div className="overflow-x-auto rounded-xl border border-slate-800 bg-[#16181d]/80">
                   <table className="w-full text-left text-xs">
                     <thead className="bg-[#111827] text-slate-400 border-b border-slate-800">
                       <tr>
@@ -2109,7 +2109,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
         {isPayModalOpen && (
           <div className="fixed inset-0 z-[60] flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
             <div
-              className="bg-[#151c2c] border border-slate-700 rounded-2xl w-full max-w-lg shadow-2xl flex flex-col max-h-[85vh] overflow-hidden my-auto animate-slideUp"
+              className="bg-[#16181d] border border-slate-700 rounded-2xl w-full max-w-lg shadow-2xl flex flex-col max-h-[85vh] overflow-hidden my-auto animate-slideUp"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}
@@ -2247,7 +2247,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                         }}
                         required
                         placeholder="0.00"
-                        className="w-full pl-12 pr-4 py-1.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono font-bold text-sm focus:outline-none focus:border-amber-500"
+                        className="w-full pl-12 pr-4 py-1.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono font-bold text-sm focus:outline-none focus:border-[#ff8d24]"
                       />
                     </div>
                   </div>
@@ -2304,7 +2304,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                           value={payDiscountValue || ''}
                           onChange={(e) => updatePayDiscount(payDiscountType, parseFloat(e.target.value) || 0)}
                           placeholder={payDiscountType === 'fixed' ? '0.00' : '0'}
-                          className="w-full pl-12 pr-3 py-1.5 bg-slate-950 border border-slate-700 rounded-xl text-white font-mono font-bold text-xs sm:text-sm focus:outline-none focus:border-amber-400"
+                          className="w-full pl-12 pr-3 py-1.5 bg-slate-950 border border-slate-700 rounded-xl text-white font-mono font-bold text-xs sm:text-sm focus:outline-none focus:border-[#ff8d24]"
                         />
                       </div>
                       <div className="text-right">
@@ -2475,7 +2475,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                 </div>
 
                 {/* Dialog Action Buttons (Sticky Footer) */}
-                <div className="px-5 py-3 border-t border-slate-800 bg-[#0f1422] flex items-center justify-end gap-2 shrink-0">
+                <div className="px-5 py-3 border-t border-slate-800 bg-[#121419] flex items-center justify-end gap-2 shrink-0">
                   <button
                     type="button"
                     onClick={() => setIsPayModalOpen(false)}
@@ -2500,7 +2500,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
         {/* In-Modal Add / Edit Due Balance Dialog */}
         {isDueModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-            <div className="bg-[#151c2c] border border-amber-500/40 rounded-2xl w-full max-w-lg p-5 shadow-2xl shadow-black/80 space-y-4">
+            <div className="bg-[#16181d] border border-amber-500/40 rounded-2xl w-full max-w-lg p-5 shadow-2xl shadow-black/80 space-y-4">
               <div className="flex items-center justify-between pb-3 border-b border-slate-800">
                 <div className="flex items-center gap-2.5">
                   <div className="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400">
@@ -2552,7 +2552,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                             setDueRatingInput('Late payer');
                           }
                         }}
-                        className="w-full pl-12 pr-4 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono text-sm font-bold focus:outline-none focus:border-amber-400"
+                        className="w-full pl-12 pr-4 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono text-sm font-bold focus:outline-none focus:border-[#ff8d24]"
                       />
                     </div>
                   </div>
@@ -2644,7 +2644,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                       type="date"
                       value={billedUpToInput}
                       onChange={(e) => setBilledUpToInput(e.target.value)}
-                      className="w-full px-2.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono text-xs focus:outline-none focus:border-amber-400"
+                      className="w-full px-2.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono text-xs focus:outline-none focus:border-[#ff8d24]"
                     />
                   </div>
                   <div className="space-y-1">
@@ -2737,7 +2737,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                   <select
                     value={dueRatingInput}
                     onChange={(e) => setDueRatingInput(e.target.value as any)}
-                    className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs focus:outline-none focus:border-amber-400 font-medium"
+                    className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs focus:outline-none focus:border-[#ff8d24] font-medium"
                   >
                     <option value="Good">⭐ Good (Account in good standing)</option>
                     <option value="Late payer">⚠️ Late payer (Pending / delayed settlement)</option>
@@ -2753,7 +2753,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                     value={dueReasonInput}
                     onChange={(e) => setDueReasonInput(e.target.value)}
                     placeholder="e.g. Opening balance brought forward, previous month unpaid meals"
-                    className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs focus:outline-none focus:border-amber-400"
+                    className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs focus:outline-none focus:border-[#ff8d24]"
                   />
                 </div>
 
@@ -2782,7 +2782,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
         {/* Official Printable Receipt Preview Modal */}
         {selectedReceipt && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-            <div className="bg-[#151c2c] border border-slate-700 rounded-2xl w-full max-w-lg p-6 sm:p-8 shadow-2xl text-white space-y-5">
+            <div className="bg-[#16181d] border border-slate-700 rounded-2xl w-full max-w-lg p-6 sm:p-8 shadow-2xl text-white space-y-5">
               <div className="flex items-center justify-between border-b border-slate-800 pb-3">
                 <div>
                   <h3 className="text-xl font-black text-white">Official Payment Receipt</h3>

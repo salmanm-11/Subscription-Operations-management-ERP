@@ -14,7 +14,7 @@ export const BackupToast: React.FC<BackupToastProps> = ({ message, files, onDism
   };
 
   return (
-    <div className="fixed bottom-5 right-5 z-50 max-w-sm w-full bg-[#151c2c] border border-sky-500/40 rounded-2xl shadow-2xl p-4 animate-slideUp text-xs flex items-start gap-3 backdrop-blur-md">
+    <div className="fixed bottom-5 right-5 z-50 max-w-sm w-full bg-[#16181d] border border-sky-500/40 rounded-2xl shadow-2xl p-4 animate-slideUp text-xs flex items-start gap-3 backdrop-blur-md">
       <div className="w-9 h-9 rounded-xl bg-sky-500/15 border border-sky-500/30 flex items-center justify-center text-sky-400 shrink-0">
         <ShieldCheck className="w-5 h-5" />
       </div>

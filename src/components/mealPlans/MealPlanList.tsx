@@ -174,7 +174,7 @@ export const MealPlanList: React.FC<MealPlanListProps> = ({
           return (
             <div
               key={mp.id}
-              className="bg-[#151c2c] border border-[#222f47]/60 rounded-2xl p-6 shadow-lg shadow-black/20 hover:border-slate-600/60 transition-all flex flex-col justify-between group"
+              className="bg-[#16181d] border border-[#242730] rounded-2xl p-6 shadow-lg shadow-black/20 hover:border-slate-600/60 transition-all flex flex-col justify-between group"
             >
               <div>
                 {/* Top Row: Icon, Status, and Action Buttons */}
@@ -330,7 +330,7 @@ export const MealPlanList: React.FC<MealPlanListProps> = ({
       {/* Add / Edit Meal Plan Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-[#151c2c] border border-slate-700 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4">
+          <div className="bg-[#16181d] border border-slate-700 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <h3 className="text-base font-bold text-white">
                 {editingPlan ? 'Edit Meal Plan' : 'Add Custom Meal Plan'}
@@ -356,7 +356,7 @@ export const MealPlanList: React.FC<MealPlanListProps> = ({
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g. 2 Time (Lunch & Dinner Only), Weekend Special"
-                  className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-amber-500 font-medium"
+                  className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-[#ff8d24] font-medium"
                 />
               </div>
 
@@ -367,7 +367,7 @@ export const MealPlanList: React.FC<MealPlanListProps> = ({
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="e.g. Regular meal service: Afternoon Lunch and Evening Dinner"
-                  className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-amber-500"
+                  className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-[#ff8d24]"
                 />
               </div>
 
@@ -380,7 +380,7 @@ export const MealPlanList: React.FC<MealPlanListProps> = ({
                     required
                     value={monthlyPrice}
                     onChange={(e) => setMonthlyPrice(parseFloat(e.target.value) || 0)}
-                    className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-bold font-mono focus:outline-none focus:border-amber-500"
+                    className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-bold font-mono focus:outline-none focus:border-[#ff8d24]"
                   />
                 </div>
                 <div>
@@ -390,7 +390,7 @@ export const MealPlanList: React.FC<MealPlanListProps> = ({
                     step="0.1"
                     value={perMealPrice}
                     onChange={(e) => setPerMealPrice(parseFloat(e.target.value) || 0)}
-                    className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-bold font-mono focus:outline-none focus:border-amber-500"
+                    className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-bold font-mono focus:outline-none focus:border-[#ff8d24]"
                   />
                 </div>
               </div>
@@ -473,7 +473,7 @@ export const MealPlanList: React.FC<MealPlanListProps> = ({
       {/* Delete Confirmation Modal */}
       {deletingPlan && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-[#151c2c] border border-rose-500/40 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4">
+          <div className="bg-[#16181d] border border-rose-500/40 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4">
             <div className="flex items-center gap-3 text-rose-400">
               <div className="p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20">
                 <AlertTriangle className="w-5 h-5 text-rose-400" />

@@ -273,9 +273,9 @@ export const BuildingList: React.FC<BuildingListProps> = ({
           {!isReadOnly && (
             <button
               onClick={handleOpenAdd}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold shadow-md shadow-amber-500/20 transition-colors cursor-pointer active:scale-[0.98]"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#ff8d24] to-[#f95900] hover:from-[#ff9c3a] hover:to-[#ff6810] text-slate-950 text-xs font-black shadow-md shadow-orange-500/20 transition-all cursor-pointer active:scale-[0.98]"
             >
-              <Plus className="w-4 h-4 text-slate-950" />
+              <Plus className="w-4 h-4 text-slate-950 stroke-[2.5]" />
               <span>Add Building</span>
             </button>
           )}
@@ -312,7 +312,7 @@ export const BuildingList: React.FC<BuildingListProps> = ({
       )}
 
       {/* Search & Area Cluster Filters */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-[#151c2c] border border-[#222f47]/60 rounded-2xl p-3">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-[#16181d] border border-[#242730] rounded-2xl p-3">
         {/* Search */}
         <div className="relative flex-1">
           <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
@@ -321,7 +321,7 @@ export const BuildingList: React.FC<BuildingListProps> = ({
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search buildings by name, address, or resident..."
-            className="w-full pl-9 pr-3 py-2 bg-slate-900 border border-slate-700/80 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
+            className="w-full pl-9 pr-3 py-2 bg-[#111317] border border-[#242730] rounded-xl text-xs text-white placeholder-[#687284] focus:outline-none focus:border-[#ff8d24]"
           />
         </div>
 
@@ -330,7 +330,7 @@ export const BuildingList: React.FC<BuildingListProps> = ({
           <select
             value={selectedClusterFilter}
             onChange={(e) => setSelectedClusterFilter(e.target.value)}
-            className="px-3 py-2 bg-slate-900 border border-slate-700/80 rounded-xl text-xs text-white font-medium focus:outline-none focus:border-amber-500"
+            className="px-3 py-2 bg-[#111317] border border-[#242730] rounded-xl text-xs text-white font-medium focus:outline-none focus:border-[#ff8d24]"
           >
             <option value="all">All Clusters ({buildings.length})</option>
             {allClusters
@@ -351,7 +351,7 @@ export const BuildingList: React.FC<BuildingListProps> = ({
           {customClusters.length > 0 && (
             <button
               onClick={() => setIsManageClustersOpen(true)}
-              className="px-2.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl text-xs font-medium border border-slate-700 transition-colors shrink-0 cursor-pointer"
+              className="px-2.5 py-2 bg-[#1c1f26] hover:bg-[#252934] text-slate-300 hover:text-white rounded-xl text-xs font-medium border border-[#2b303d] transition-colors shrink-0 cursor-pointer"
               title="Manage custom area clusters"
             >
               Manage Clusters
@@ -359,13 +359,13 @@ export const BuildingList: React.FC<BuildingListProps> = ({
           )}
 
           {/* Occupancy Filter Tabs */}
-          <div className="flex items-center gap-1 bg-slate-900 p-1 rounded-xl border border-slate-700/80 shrink-0">
+          <div className="flex items-center gap-1 bg-[#111317] p-1 rounded-xl border border-[#242730] shrink-0">
             <button
               type="button"
               onClick={() => setOccupancyFilter('all')}
               className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                 occupancyFilter === 'all'
-                  ? 'bg-amber-500 text-slate-950 shadow-sm'
+                  ? 'bg-gradient-to-r from-[#ff8d24] to-[#f95900] text-slate-950 font-black shadow-sm'
                   : 'text-slate-400 hover:text-slate-200'
               }`}
             >
@@ -399,7 +399,7 @@ export const BuildingList: React.FC<BuildingListProps> = ({
 
       {/* Buildings Grid */}
       {filteredBuildings.length === 0 ? (
-        <div className="bg-[#151c2c] border border-[#222f47]/60 rounded-2xl p-10 text-center text-slate-400">
+        <div className="bg-[#16181d] border border-[#242730] rounded-2xl p-10 text-center text-slate-400">
           <Building2 className="w-10 h-10 mx-auto mb-2 text-slate-600" />
           <p className="font-semibold text-sm text-slate-300">No buildings found</p>
           <p className="text-xs text-slate-500 mt-1">
@@ -415,22 +415,22 @@ export const BuildingList: React.FC<BuildingListProps> = ({
             return (
               <div
                 key={b.id}
-                className="bg-[#151c2c] border border-[#222f47]/60 rounded-2xl p-5 shadow-lg shadow-black/20 hover:border-slate-600/60 transition-all flex flex-col justify-between"
+                className="bg-[#16181d] border border-[#242730] rounded-2xl p-5 shadow-lg shadow-black/20 hover:border-slate-600/60 transition-all flex flex-col justify-between"
               >
                 <div>
                   <div className="flex items-start justify-between mb-3">
-                    <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+                    <div className="w-10 h-10 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-[#ff8d24]">
                       <Building2 className="w-5 h-5" />
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                      <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-[#1e222c] text-slate-200 border border-[#2e3444]">
                         {buildingCustomers.length} Customers
                       </span>
                       {!isReadOnly && (
                         <>
                           <button
                             onClick={() => handleOpenEdit(b)}
-                            className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-amber-400 border border-slate-700 transition-colors cursor-pointer"
+                            className="p-1.5 rounded-lg bg-[#1c1f26] hover:bg-[#252934] text-slate-400 hover:text-[#ff8d24] border border-[#2b303d] transition-colors cursor-pointer"
                             title="Edit Building & Area Cluster"
                           >
                             <Pencil className="w-3.5 h-3.5" />
@@ -506,7 +506,7 @@ export const BuildingList: React.FC<BuildingListProps> = ({
       {/* Add / Edit Building Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-[#151c2c] border border-slate-700 rounded-2xl w-full max-w-md p-6 shadow-2xl">
+          <div className="bg-[#16181d] border border-slate-700 rounded-2xl w-full max-w-md p-6 shadow-2xl">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-base font-bold text-white">
                 {editingBuilding ? `Edit Building: ${editingBuilding.name}` : 'Add New Building'}
@@ -529,7 +529,7 @@ export const BuildingList: React.FC<BuildingListProps> = ({
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g. Falaknaz, Al Wasl R Block"
-                  className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-amber-500 font-medium"
+                  className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-[#ff8d24] font-medium"
                 />
               </div>
 
@@ -565,7 +565,7 @@ export const BuildingList: React.FC<BuildingListProps> = ({
                           setArea(e.target.value);
                         }
                       }}
-                      className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-amber-500 font-medium"
+                      className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-[#ff8d24] font-medium"
                     >
                       {allClusters.map((cluster) => (
                         <option key={cluster} value={cluster}>
@@ -620,7 +620,7 @@ export const BuildingList: React.FC<BuildingListProps> = ({
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
                   placeholder="e.g. Near ADCB Metro Station, Karama"
-                  className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-amber-500"
+                  className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-[#ff8d24]"
                 />
               </div>
 
@@ -631,7 +631,7 @@ export const BuildingList: React.FC<BuildingListProps> = ({
                   value={passcode}
                   onChange={(e) => setPasscode(e.target.value)}
                   placeholder="e.g. 4695#"
-                  className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono focus:outline-none focus:border-amber-500"
+                  className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono focus:outline-none focus:border-[#ff8d24]"
                 />
               </div>
 
@@ -658,7 +658,7 @@ export const BuildingList: React.FC<BuildingListProps> = ({
       {/* Manage Custom Clusters Modal */}
       {isManageClustersOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-[#151c2c] border border-slate-700 rounded-2xl w-full max-w-sm p-6 shadow-2xl space-y-4">
+          <div className="bg-[#16181d] border border-slate-700 rounded-2xl w-full max-w-sm p-6 shadow-2xl space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-bold text-white">Custom Area Clusters</h3>
               <button
@@ -710,7 +710,7 @@ export const BuildingList: React.FC<BuildingListProps> = ({
       {/* Delete All Empty Buildings Confirmation Modal */}
       {isDeleteEmptyModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-[#151c2c] border border-rose-500/50 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4">
+          <div className="bg-[#16181d] border border-rose-500/50 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-xl bg-rose-500/15 border border-rose-500/30 flex items-center justify-center text-rose-400 shrink-0">
                 <Trash2 className="w-6 h-6" />

@@ -25,7 +25,7 @@ export const StaffList: React.FC = () => {
         </button>
       </div>
 
-      <div className="bg-[#151c2c] border border-[#222f47]/60 rounded-2xl overflow-hidden shadow-lg shadow-black/20">
+      <div className="bg-[#16181d] border border-[#242730] rounded-2xl overflow-hidden shadow-lg shadow-black/20">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead>

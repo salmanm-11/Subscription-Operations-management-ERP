@@ -10,7 +10,7 @@ export const HelpView: React.FC = () => {
       </div>
 
       {/* Official Developer & Technical Support Card */}
-      <div className="bg-[#151c2c] border border-amber-500/40 rounded-2xl p-6 shadow-lg space-y-4">
+      <div className="bg-[#16181d] border border-amber-500/40 rounded-2xl p-6 shadow-lg space-y-4">
         <div>
           <div className="text-xs text-slate-400 font-medium">Developer</div>
           <div className="text-lg font-bold text-amber-400 mt-0.5 tracking-wide">
@@ -36,7 +36,7 @@ export const HelpView: React.FC = () => {
         </div>
       </div>
 
-      <div className="bg-[#151c2c] border border-[#222f47]/60 rounded-2xl p-6 shadow-lg space-y-4 text-xs text-slate-300">
+      <div className="bg-[#16181d] border border-[#242730] rounded-2xl p-6 shadow-lg space-y-4 text-xs text-slate-300">
         <h3 className="text-sm font-bold text-white flex items-center gap-2">
           <CheckCircle2 className="w-4 h-4 text-amber-400" />
           <span>Core Daily Workflow</span>

@@ -667,7 +667,7 @@ export const OverdueList: React.FC<OverdueListProps> = ({
 
       {/* TAB 2 CONTROLS: Reminder Alert Window Chips (When Reminders Tab is selected) */}
       {activeTab === 'reminders' && (
-        <div className="bg-[#151c2c] border border-amber-500/30 rounded-xl p-3 shadow-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div className="bg-[#16181d] border border-amber-500/30 rounded-xl p-3 shadow-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <Clock className="w-4 h-4 text-amber-400 shrink-0" />
             <span className="text-xs font-bold text-white">Reminder Alert Window:</span>
@@ -697,7 +697,7 @@ export const OverdueList: React.FC<OverdueListProps> = ({
                 max="60"
                 value={reminderDays}
                 onChange={(e) => handleUpdateReminderDays(Math.max(1, parseInt(e.target.value) || 1))}
-                className="w-14 px-1.5 py-0.5 bg-slate-900 border border-slate-700 rounded text-white text-xs font-mono font-bold text-center focus:outline-none focus:border-amber-500"
+                className="w-14 px-1.5 py-0.5 bg-slate-900 border border-slate-700 rounded text-white text-xs font-mono font-bold text-center focus:outline-none focus:border-[#ff8d24]"
               />
               <span>days</span>
             </div>
@@ -707,7 +707,7 @@ export const OverdueList: React.FC<OverdueListProps> = ({
 
       {/* TAB 3 CONTROLS: Cleared Dues History Filters Toolbar */}
       {activeTab === 'cleared' && (
-        <div className="bg-[#151c2c] border border-emerald-500/30 rounded-xl p-3 shadow-md flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
+        <div className="bg-[#16181d] border border-emerald-500/30 rounded-xl p-3 shadow-md flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-xs font-bold text-white flex items-center gap-1.5">
               <Filter className="w-3.5 h-3.5 text-emerald-400" />
@@ -774,7 +774,7 @@ export const OverdueList: React.FC<OverdueListProps> = ({
       )}
 
       {/* Search Bar */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-[#151c2c] border border-[#222f47]/60 rounded-xl p-3 shadow-md shadow-black/20">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-[#16181d] border border-[#242730] rounded-xl p-3 shadow-md shadow-black/20">
         <div className="relative flex-1 min-w-[200px] cursor-text">
           <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
@@ -788,7 +788,7 @@ export const OverdueList: React.FC<OverdueListProps> = ({
                 ? 'Search approaching due customers by name, code, building, due date...'
                 : 'Search cleared dues history by customer name, code, receipt #, building, notes...'
             }
-            className="w-full pl-10 pr-9 py-2 bg-slate-900/90 border border-slate-700/70 rounded-xl text-xs sm:text-sm text-white placeholder-slate-400 focus:outline-none focus:border-amber-500 transition-colors"
+            className="w-full pl-10 pr-9 py-2 bg-slate-900/90 border border-slate-700/70 rounded-xl text-xs sm:text-sm text-white placeholder-slate-400 focus:outline-none focus:border-[#ff8d24] transition-colors"
           />
           {searchTerm && (
             <button
@@ -823,11 +823,11 @@ export const OverdueList: React.FC<OverdueListProps> = ({
       {/* TAB 1: OVERDUE ACCOUNTS TABLE                        */}
       {/* ---------------------------------------------------- */}
       {activeTab === 'overdue' && (
-        <div className="bg-[#151c2c] border border-[#222f47]/60 rounded-2xl overflow-hidden shadow-xl shadow-black/30">
+        <div className="bg-[#16181d] border border-[#242730] rounded-2xl overflow-hidden shadow-xl shadow-black/30">
           <div className="overflow-x-auto w-full custom-scrollbar">
             <table className="w-full text-left min-w-[1140px]">
               <thead>
-                <tr className="bg-[#0f1422] text-slate-300 border-b border-slate-700/80 text-xs uppercase tracking-wider font-bold">
+                <tr className="bg-[#121419] text-slate-300 border-b border-slate-700/80 text-xs uppercase tracking-wider font-bold">
                   <th className="py-3 px-3.5 whitespace-nowrap min-w-[160px]">Customer</th>
                   <th className="py-3 px-3.5 whitespace-nowrap min-w-[150px]">Building &amp; Apt</th>
                   <th className="py-3 px-3 whitespace-nowrap min-w-[120px]">Contact</th>
@@ -984,11 +984,11 @@ export const OverdueList: React.FC<OverdueListProps> = ({
       {/* TAB 2: APPROACHING DUE REMINDERS TABLE               */}
       {/* ---------------------------------------------------- */}
       {activeTab === 'reminders' && (
-        <div className="bg-[#151c2c] border border-[#222f47]/60 rounded-2xl overflow-hidden shadow-xl shadow-black/30">
+        <div className="bg-[#16181d] border border-[#242730] rounded-2xl overflow-hidden shadow-xl shadow-black/30">
           <div className="overflow-x-auto w-full custom-scrollbar">
             <table className="w-full text-left min-w-[1140px]">
               <thead>
-                <tr className="bg-[#0f1422] text-slate-300 border-b border-slate-700/80 text-xs uppercase tracking-wider font-bold">
+                <tr className="bg-[#121419] text-slate-300 border-b border-slate-700/80 text-xs uppercase tracking-wider font-bold">
                   <th className="py-3 px-3.5 whitespace-nowrap min-w-[160px]">Customer</th>
                   <th className="py-3 px-3.5 whitespace-nowrap min-w-[150px]">Building &amp; Apt</th>
                   <th className="py-3 px-3 whitespace-nowrap min-w-[120px]">Phone</th>
@@ -1131,7 +1131,7 @@ export const OverdueList: React.FC<OverdueListProps> = ({
       {activeTab === 'leaving' && (
         <div className="space-y-3">
           {/* Leaving Notice Info Banner */}
-          <div className="bg-[#151c2c] border border-rose-500/30 rounded-xl p-3.5 shadow-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div className="bg-[#16181d] border border-rose-500/30 rounded-xl p-3.5 shadow-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-lg bg-rose-500/20 border border-rose-500/40 text-rose-300 flex items-center justify-center shrink-0">
                 <CalendarX className="w-4 h-4" />
@@ -1159,11 +1159,11 @@ export const OverdueList: React.FC<OverdueListProps> = ({
             </div>
           </div>
 
-          <div className="bg-[#151c2c] border border-[#222f47]/60 rounded-2xl overflow-hidden shadow-xl shadow-black/30">
+          <div className="bg-[#16181d] border border-[#242730] rounded-2xl overflow-hidden shadow-xl shadow-black/30">
             <div className="overflow-x-auto w-full custom-scrollbar">
               <table className="w-full text-left min-w-[1140px]">
                 <thead>
-                  <tr className="bg-[#0f1422] text-slate-300 border-b border-slate-700/80 text-xs uppercase tracking-wider font-bold">
+                  <tr className="bg-[#121419] text-slate-300 border-b border-slate-700/80 text-xs uppercase tracking-wider font-bold">
                     <th className="py-3 px-3.5 whitespace-nowrap min-w-[170px]">Customer</th>
                     <th className="py-3 px-3.5 whitespace-nowrap min-w-[150px]">Building &amp; Room</th>
                     <th className="py-3 px-3 whitespace-nowrap min-w-[120px]">Phone</th>
@@ -1329,11 +1329,11 @@ export const OverdueList: React.FC<OverdueListProps> = ({
       {/* TAB 3: CLEARED DUES & SETTLEMENT HISTORY TABLE       */}
       {/* ---------------------------------------------------- */}
       {activeTab === 'cleared' && (
-        <div className="bg-[#151c2c] border border-[#222f47]/60 rounded-2xl overflow-hidden shadow-xl shadow-black/30">
+        <div className="bg-[#16181d] border border-[#242730] rounded-2xl overflow-hidden shadow-xl shadow-black/30">
           <div className="overflow-x-auto w-full custom-scrollbar">
             <table className="w-full text-left min-w-[1140px]">
               <thead>
-                <tr className="bg-[#0f1422] text-slate-300 border-b border-slate-700/80 text-xs uppercase tracking-wider font-bold">
+                <tr className="bg-[#121419] text-slate-300 border-b border-slate-700/80 text-xs uppercase tracking-wider font-bold">
                   <th className="py-3 px-3.5 whitespace-nowrap min-w-[140px]">Receipt # &amp; Date</th>
                   <th className="py-3 px-3.5 whitespace-nowrap min-w-[150px]">Customer</th>
                   <th className="py-3 px-3.5 whitespace-nowrap min-w-[150px]">Building &amp; Apt</th>
@@ -1525,7 +1525,7 @@ export const OverdueList: React.FC<OverdueListProps> = ({
       {/* ---------------------------------------------------- */}
       {settlingCustomer && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-[#151c2c] border border-emerald-500/40 rounded-2xl w-full max-w-lg p-5 sm:p-6 shadow-2xl text-white space-y-4">
+          <div className="bg-[#16181d] border border-emerald-500/40 rounded-2xl w-full max-w-lg p-5 sm:p-6 shadow-2xl text-white space-y-4">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <div className="flex items-center gap-2.5">
                 <div className="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 flex items-center justify-center">
@@ -1686,7 +1686,7 @@ export const OverdueList: React.FC<OverdueListProps> = ({
       {/* ---------------------------------------------------- */}
       {selectedReceipt && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-[#151c2c] border border-slate-700 rounded-2xl w-full max-w-lg p-6 sm:p-8 shadow-2xl text-white space-y-5">
+          <div className="bg-[#16181d] border border-slate-700 rounded-2xl w-full max-w-lg p-6 sm:p-8 shadow-2xl text-white space-y-5">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <div>
                 <h3 className="text-xl font-black text-white">Official Payment Receipt</h3>

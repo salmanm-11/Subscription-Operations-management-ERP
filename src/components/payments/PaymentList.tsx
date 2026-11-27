@@ -341,7 +341,7 @@ export const PaymentList: React.FC<PaymentListProps> = ({
 
       {/* Top Financial Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full">
-        <div className="bg-[#151c2c] border border-emerald-500/30 rounded-xl p-3.5 shadow-md shadow-black/20 min-w-0">
+        <div className="bg-[#16181d] border border-emerald-500/30 rounded-xl p-3.5 shadow-md shadow-black/20 min-w-0">
           <div className="text-[10px] uppercase font-extrabold text-emerald-400 tracking-wider">Total Filtered Collections</div>
           <div className="text-xl sm:text-2xl font-black text-emerald-400 font-mono mt-0.5 truncate">
             {formatAED(totalCollections)}
@@ -351,7 +351,7 @@ export const PaymentList: React.FC<PaymentListProps> = ({
           </div>
         </div>
 
-        <div className="bg-[#151c2c] border border-amber-500/30 rounded-xl p-3.5 shadow-md shadow-black/20 min-w-0">
+        <div className="bg-[#16181d] border border-amber-500/30 rounded-xl p-3.5 shadow-md shadow-black/20 min-w-0">
           <div className="text-[10px] uppercase font-extrabold text-amber-400 tracking-wider">Cash Collections</div>
           <div className="text-xl sm:text-2xl font-black text-amber-400 font-mono mt-0.5 truncate">
             {formatAED(cashCollections)}
@@ -359,7 +359,7 @@ export const PaymentList: React.FC<PaymentListProps> = ({
           <div className="text-[11px] text-slate-400 mt-0.5 font-medium truncate">Direct Cash &amp; Counter Dues</div>
         </div>
 
-        <div className="bg-[#151c2c] border border-sky-500/30 rounded-xl p-3.5 shadow-md shadow-black/20 min-w-0">
+        <div className="bg-[#16181d] border border-sky-500/30 rounded-xl p-3.5 shadow-md shadow-black/20 min-w-0">
           <div className="text-[10px] uppercase font-extrabold text-sky-400 tracking-wider">Bank &amp; Card Transfers</div>
           <div className="text-xl sm:text-2xl font-black text-sky-400 font-mono mt-0.5 truncate">
             {formatAED(bankCollections)}
@@ -369,7 +369,7 @@ export const PaymentList: React.FC<PaymentListProps> = ({
       </div>
 
       {/* Search and Filters Bar */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-[#151c2c] border border-[#222f47]/60 rounded-xl p-3 shadow-md shadow-black/20">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-[#16181d] border border-[#242730] rounded-xl p-3 shadow-md shadow-black/20">
         <div className="relative flex-1 min-w-[200px] cursor-text">
           <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
@@ -377,7 +377,7 @@ export const PaymentList: React.FC<PaymentListProps> = ({
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search by customer name, receipt #, building, phone, notes, cheque #..."
-            className="w-full pl-10 pr-9 py-2 bg-slate-900/90 border border-slate-700/70 rounded-xl text-xs sm:text-sm text-white placeholder-slate-400 focus:outline-none focus:border-amber-500 transition-colors"
+            className="w-full pl-10 pr-9 py-2 bg-slate-900/90 border border-slate-700/70 rounded-xl text-xs sm:text-sm text-white placeholder-slate-400 focus:outline-none focus:border-[#ff8d24] transition-colors"
           />
           {searchTerm && (
             <button
@@ -393,7 +393,7 @@ export const PaymentList: React.FC<PaymentListProps> = ({
           <select
             value={methodFilter}
             onChange={(e) => setMethodFilter(e.target.value)}
-            className="bg-slate-900/90 border border-slate-700/70 rounded-xl px-3 py-2 text-xs font-bold text-slate-200 focus:outline-none focus:border-amber-500"
+            className="bg-slate-900/90 border border-slate-700/70 rounded-xl px-3 py-2 text-xs font-bold text-slate-200 focus:outline-none focus:border-[#ff8d24]"
           >
             <option value="all">All Payment Methods</option>
             <option value="cash">Cash Only</option>
@@ -405,11 +405,11 @@ export const PaymentList: React.FC<PaymentListProps> = ({
       </div>
 
       {/* Payments Table */}
-      <div className="bg-[#151c2c] border border-[#222f47]/60 rounded-2xl overflow-hidden shadow-xl shadow-black/30">
+      <div className="bg-[#16181d] border border-[#242730] rounded-2xl overflow-hidden shadow-xl shadow-black/30">
         <div className="overflow-x-auto w-full custom-scrollbar">
           <table className="w-full text-left min-w-[1280px]">
             <thead>
-              <tr className="bg-[#0f1422] text-slate-300 border-b border-slate-700/80 text-xs uppercase tracking-wider font-bold">
+              <tr className="bg-[#121419] text-slate-300 border-b border-slate-700/80 text-xs uppercase tracking-wider font-bold">
                 <th className="py-3 px-3.5 whitespace-nowrap">Receipt #</th>
                 <th className="py-3 px-3 whitespace-nowrap">Date</th>
                 <th className="py-3 px-3.5 min-w-[220px]">Customer Name &amp; Details</th>
@@ -575,8 +575,8 @@ export const PaymentList: React.FC<PaymentListProps> = ({
       {/* Official Printable Receipt Preview Modal */}
       {selectedReceipt && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-[#151c2c] border border-slate-700/80 rounded-2xl w-full max-w-lg shadow-2xl text-white flex flex-col max-h-[92vh] overflow-hidden">
-            <div className="flex items-center justify-between border-b border-slate-800 px-5 py-4 shrink-0 bg-[#151c2c]">
+          <div className="bg-[#16181d] border border-slate-700/80 rounded-2xl w-full max-w-lg shadow-2xl text-white flex flex-col max-h-[92vh] overflow-hidden">
+            <div className="flex items-center justify-between border-b border-slate-800 px-5 py-4 shrink-0 bg-[#16181d]">
               <div>
                 <h3 className="text-lg font-black text-white">Official Payment Receipt</h3>
                 <p className="text-xs text-amber-400 font-bold uppercase tracking-wider mt-0.5">Karama Homely Mess - Dubai, UAE</p>
@@ -661,7 +661,7 @@ export const PaymentList: React.FC<PaymentListProps> = ({
               })()}
             </div>
 
-            <div className="flex flex-wrap items-center justify-end gap-2.5 px-5 py-3.5 border-t border-slate-800 bg-[#0f1422] shrink-0">
+            <div className="flex flex-wrap items-center justify-end gap-2.5 px-5 py-3.5 border-t border-slate-800 bg-[#121419] shrink-0">
               <button
                 type="button"
                 onClick={() => setSelectedReceipt(null)}
@@ -694,7 +694,7 @@ export const PaymentList: React.FC<PaymentListProps> = ({
       {/* Post-Payment Success Modal with Instant WhatsApp Receipt Option */}
       {justRecordedPayment && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-[#151c2c] border border-emerald-500/50 rounded-2xl w-full max-w-md p-6 sm:p-7 shadow-2xl text-white space-y-5 animate-in zoom-in-95 duration-200">
+          <div className="bg-[#16181d] border border-emerald-500/50 rounded-2xl w-full max-w-md p-6 sm:p-7 shadow-2xl text-white space-y-5 animate-in zoom-in-95 duration-200">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 flex items-center justify-center shrink-0">
                 <CheckCircle2 className="w-7 h-7" />
@@ -778,9 +778,9 @@ export const PaymentList: React.FC<PaymentListProps> = ({
       {/* Record Payment Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-[#151c2c] border border-slate-700/80 rounded-2xl w-full max-w-lg shadow-2xl flex flex-col max-h-[85vh] overflow-hidden my-auto">
+          <div className="bg-[#16181d] border border-slate-700/80 rounded-2xl w-full max-w-lg shadow-2xl flex flex-col max-h-[85vh] overflow-hidden my-auto">
             {/* Modal Header (Fixed at top) */}
-            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-800 bg-[#151c2c] shrink-0">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-800 bg-[#16181d] shrink-0">
               <div>
                 <h3 className="text-base sm:text-lg font-black text-white">Record Customer Payment</h3>
                 <p className="text-[11px] text-slate-400">Issue official receipt, apply discount & update subscription</p>
@@ -805,7 +805,7 @@ export const PaymentList: React.FC<PaymentListProps> = ({
                     required
                     value={customerId}
                     onChange={(e) => handleSelectCustomer(e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-medium focus:outline-none focus:border-amber-500 text-xs sm:text-sm"
+                    className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-medium focus:outline-none focus:border-[#ff8d24] text-xs sm:text-sm"
                   >
                     <option value="">Select customer...</option>
                     {customers.map((c) => (
@@ -867,7 +867,7 @@ export const PaymentList: React.FC<PaymentListProps> = ({
                       setBaseAmount(newBase);
                       updateDiscount(discountType, discountValue, newBase);
                     }}
-                    className="w-full px-3.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono font-bold text-xs sm:text-sm focus:outline-none focus:border-amber-500"
+                    className="w-full px-3.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono font-bold text-xs sm:text-sm focus:outline-none focus:border-[#ff8d24]"
                   />
                 </div>
 
@@ -923,7 +923,7 @@ export const PaymentList: React.FC<PaymentListProps> = ({
                         value={discountValue || ''}
                         onChange={(e) => updateDiscount(discountType, parseFloat(e.target.value) || 0)}
                         placeholder={discountType === 'fixed' ? '0.00' : '0'}
-                        className="w-full pl-12 pr-3 py-1.5 bg-slate-950 border border-slate-700 rounded-xl text-white font-mono font-bold text-xs sm:text-sm focus:outline-none focus:border-amber-400"
+                        className="w-full pl-12 pr-3 py-1.5 bg-slate-950 border border-slate-700 rounded-xl text-white font-mono font-bold text-xs sm:text-sm focus:outline-none focus:border-[#ff8d24]"
                       />
                     </div>
                     <div className="text-right">
@@ -1013,7 +1013,7 @@ export const PaymentList: React.FC<PaymentListProps> = ({
                       required
                       value={paymentDate}
                       onChange={(e) => setPaymentDate(e.target.value)}
-                      className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white font-medium focus:outline-none focus:border-amber-500 text-xs sm:text-sm"
+                      className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white font-medium focus:outline-none focus:border-[#ff8d24] text-xs sm:text-sm"
                     />
                   </div>
                   <div>
@@ -1021,7 +1021,7 @@ export const PaymentList: React.FC<PaymentListProps> = ({
                     <select
                       value={paymentMethod}
                       onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
-                      className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-amber-500 uppercase font-bold text-xs sm:text-sm"
+                      className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-[#ff8d24] uppercase font-bold text-xs sm:text-sm"
                     >
                       <option value="cash">Cash</option>
                       <option value="bank_transfer">Bank Transfer</option>
@@ -1039,7 +1039,7 @@ export const PaymentList: React.FC<PaymentListProps> = ({
                     value={referenceNumber}
                     onChange={(e) => setReferenceNumber(e.target.value)}
                     placeholder="e.g. TXN-998822 / Cash hand collection"
-                    className="w-full px-3.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono focus:outline-none focus:border-amber-500 text-xs sm:text-sm"
+                    className="w-full px-3.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono focus:outline-none focus:border-[#ff8d24] text-xs sm:text-sm"
                   />
                 </div>
 
@@ -1050,13 +1050,13 @@ export const PaymentList: React.FC<PaymentListProps> = ({
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
                     placeholder="e.g. October monthly mess dues settled in full"
-                    className="w-full px-3.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-amber-500 text-xs sm:text-sm"
+                    className="w-full px-3.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-[#ff8d24] text-xs sm:text-sm"
                   />
                 </div>
               </div>
 
               {/* Modal Footer (Sticky at bottom, ALWAYS visible!) */}
-              <div className="px-5 py-3.5 border-t border-slate-800 bg-[#0f1422] flex items-center justify-end gap-3 shrink-0">
+              <div className="px-5 py-3.5 border-t border-slate-800 bg-[#121419] flex items-center justify-end gap-3 shrink-0">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
@@ -1078,7 +1078,7 @@ export const PaymentList: React.FC<PaymentListProps> = ({
       {/* Delete Payment Confirmation Modal */}
       {paymentToDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-[#151c2c] border border-rose-500/40 rounded-2xl w-full max-w-md p-6 shadow-2xl text-white space-y-4">
+          <div className="bg-[#16181d] border border-rose-500/40 rounded-2xl w-full max-w-md p-6 shadow-2xl text-white space-y-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-rose-500/15 border border-rose-500/30 flex items-center justify-center text-rose-400 shrink-0">
                 <Trash2 className="w-5 h-5" />

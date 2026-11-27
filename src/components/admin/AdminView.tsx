@@ -252,28 +252,28 @@ export const AdminView: React.FC<AdminViewProps> = ({ currentUser, onUserSession
       {/* Summary KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Total Users */}
-        <div className="bg-[#151c2c] border border-[#222f47]/60 rounded-xl p-4 shadow-md shadow-black/20">
+        <div className="bg-[#16181d] border border-[#242730] rounded-xl p-4 shadow-md shadow-black/20">
           <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total Users</div>
           <div className="text-2xl font-black text-white mt-1">{users.length} Accounts</div>
           <div className="text-[11px] text-emerald-400 font-semibold mt-1">Ready for Desktop Access</div>
         </div>
 
         {/* Primary Admin */}
-        <div className="bg-[#151c2c] border border-amber-500/30 rounded-xl p-4 shadow-md shadow-black/20">
+        <div className="bg-[#16181d] border border-amber-500/30 rounded-xl p-4 shadow-md shadow-black/20">
           <div className="text-[11px] font-bold text-amber-400 uppercase tracking-wider">Primary Admin</div>
           <div className="text-xl font-black text-white mt-1">👑 admin</div>
           <div className="text-[11px] text-slate-400 mt-1">Full System Authority</div>
         </div>
 
         {/* Operations Manager */}
-        <div className="bg-[#151c2c] border border-sky-500/30 rounded-xl p-4 shadow-md shadow-black/20">
+        <div className="bg-[#16181d] border border-sky-500/30 rounded-xl p-4 shadow-md shadow-black/20">
           <div className="text-[11px] font-bold text-sky-400 uppercase tracking-wider">Operations Manager</div>
           <div className="text-xl font-black text-white mt-1">💼 manager</div>
           <div className="text-[11px] text-slate-400 mt-1">Mess Operations &amp; Billing</div>
         </div>
 
         {/* Master Recovery Code */}
-        <div className="bg-[#151c2c] border border-emerald-500/30 rounded-xl p-4 shadow-md shadow-black/20">
+        <div className="bg-[#16181d] border border-emerald-500/30 rounded-xl p-4 shadow-md shadow-black/20">
           <div className="flex items-center justify-between">
             <div className="text-[11px] font-bold text-emerald-400 uppercase tracking-wider">Forgot Password Key</div>
             <button
@@ -293,7 +293,7 @@ export const AdminView: React.FC<AdminViewProps> = ({ currentUser, onUserSession
       </div>
 
       {/* User Accounts Table */}
-      <div className="bg-[#151c2c] border border-[#222f47]/60 rounded-2xl overflow-hidden shadow-xl shadow-black/30">
+      <div className="bg-[#16181d] border border-[#242730] rounded-2xl overflow-hidden shadow-xl shadow-black/30">
         <div className="p-4 border-b border-slate-800 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <ShieldCheck className="w-5 h-5 text-amber-400" />
@@ -305,7 +305,7 @@ export const AdminView: React.FC<AdminViewProps> = ({ currentUser, onUserSession
         <div className="overflow-x-auto w-full custom-scrollbar">
           <table className="w-full text-left min-w-[960px]">
             <thead>
-              <tr className="bg-[#0f1422] text-slate-300 border-b border-slate-700/80 text-xs uppercase tracking-wider font-bold">
+              <tr className="bg-[#121419] text-slate-300 border-b border-slate-700/80 text-xs uppercase tracking-wider font-bold">
                 <th className="py-3 px-4 whitespace-nowrap min-w-[180px]">User</th>
                 <th className="py-3 px-4 whitespace-nowrap min-w-[130px]">Assigned Role</th>
                 <th className="py-3 px-4 whitespace-nowrap min-w-[130px]">Access Level</th>
@@ -434,7 +434,7 @@ export const AdminView: React.FC<AdminViewProps> = ({ currentUser, onUserSession
       </div>
 
       {/* Master Recovery Code Settings Card */}
-      <div className="bg-[#151c2c] border border-slate-800 rounded-2xl p-5 shadow-lg space-y-3">
+      <div className="bg-[#16181d] border border-slate-800 rounded-2xl p-5 shadow-lg space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <KeyRound className="w-5 h-5 text-amber-400" />
@@ -506,7 +506,7 @@ export const AdminView: React.FC<AdminViewProps> = ({ currentUser, onUserSession
       {/* CHANGE PASSWORD MODAL */}
       {isPasswordModalOpen && selectedUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-[#151c2c] border border-slate-700 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-5">
+          <div className="bg-[#16181d] border border-slate-700 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-5">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <div>
                 <h3 className="text-base font-bold text-white">Change Password</h3>
@@ -547,7 +547,7 @@ export const AdminView: React.FC<AdminViewProps> = ({ currentUser, onUserSession
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   placeholder="Enter new password (min 4 chars)"
-                  className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono focus:outline-none focus:border-amber-500"
+                  className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono focus:outline-none focus:border-[#ff8d24]"
                 />
               </div>
 
@@ -561,7 +561,7 @@ export const AdminView: React.FC<AdminViewProps> = ({ currentUser, onUserSession
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Re-enter new password"
-                  className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono focus:outline-none focus:border-amber-500"
+                  className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono focus:outline-none focus:border-[#ff8d24]"
                 />
               </div>
 
@@ -588,7 +588,7 @@ export const AdminView: React.FC<AdminViewProps> = ({ currentUser, onUserSession
       {/* EDIT USER MODAL */}
       {isEditUserModalOpen && selectedUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-[#151c2c] border border-slate-700 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-5">
+          <div className="bg-[#16181d] border border-slate-700 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-5">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <div>
                 <h3 className="text-base font-bold text-white">Edit User Account</h3>
@@ -610,7 +610,7 @@ export const AdminView: React.FC<AdminViewProps> = ({ currentUser, onUserSession
                   required
                   value={formFullName}
                   onChange={(e) => setFormFullName(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-amber-500"
+                  className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-[#ff8d24]"
                 />
               </div>
 
@@ -619,7 +619,7 @@ export const AdminView: React.FC<AdminViewProps> = ({ currentUser, onUserSession
                 <select
                   value={formRole}
                   onChange={(e) => setFormRole(e.target.value as 'admin' | 'manager' | 'viewer')}
-                  className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-amber-500"
+                  className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-[#ff8d24]"
                 >
                   <option value="viewer">Viewer (Read-Only - No Adding or Editing)</option>
                   <option value="manager">Operations Manager (Full Access)</option>
@@ -634,7 +634,7 @@ export const AdminView: React.FC<AdminViewProps> = ({ currentUser, onUserSession
                   value={formEmail}
                   onChange={(e) => setFormEmail(e.target.value)}
                   placeholder="user@karamamess.ae"
-                  className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-amber-500"
+                  className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-[#ff8d24]"
                 />
               </div>
 
@@ -645,7 +645,7 @@ export const AdminView: React.FC<AdminViewProps> = ({ currentUser, onUserSession
                   value={formPhone}
                   onChange={(e) => setFormPhone(e.target.value)}
                   placeholder="+971 50 123 4567"
-                  className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-amber-500"
+                  className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-[#ff8d24]"
                 />
               </div>
 
@@ -672,7 +672,7 @@ export const AdminView: React.FC<AdminViewProps> = ({ currentUser, onUserSession
       {/* ADD NEW USER MODAL */}
       {isAddUserModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-[#151c2c] border border-slate-700 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-5">
+          <div className="bg-[#16181d] border border-slate-700 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-5">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <h3 className="text-base font-bold text-white">Add New User Account</h3>
               <button
@@ -699,7 +699,7 @@ export const AdminView: React.FC<AdminViewProps> = ({ currentUser, onUserSession
                   value={formFullName}
                   onChange={(e) => setFormFullName(e.target.value)}
                   placeholder="e.g. Anand Kumar"
-                  className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-amber-500"
+                  className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-[#ff8d24]"
                 />
               </div>
 
@@ -711,7 +711,7 @@ export const AdminView: React.FC<AdminViewProps> = ({ currentUser, onUserSession
                   value={formUsername}
                   onChange={(e) => setFormUsername(e.target.value)}
                   placeholder="e.g. supervisor1"
-                  className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono focus:outline-none focus:border-amber-500"
+                  className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono focus:outline-none focus:border-[#ff8d24]"
                 />
               </div>
 
@@ -720,7 +720,7 @@ export const AdminView: React.FC<AdminViewProps> = ({ currentUser, onUserSession
                 <select
                   value={formRole}
                   onChange={(e) => setFormRole(e.target.value as 'admin' | 'manager' | 'viewer')}
-                  className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-amber-500"
+                  className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-[#ff8d24]"
                 >
                   <option value="viewer">Viewer (Read-Only - No Adding or Editing)</option>
                   <option value="manager">Operations Manager (Full Access)</option>
@@ -736,7 +736,7 @@ export const AdminView: React.FC<AdminViewProps> = ({ currentUser, onUserSession
                   value={formPassword}
                   onChange={(e) => setFormPassword(e.target.value)}
                   placeholder="Enter initial password"
-                  className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono focus:outline-none focus:border-amber-500"
+                  className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono focus:outline-none focus:border-[#ff8d24]"
                 />
               </div>
 

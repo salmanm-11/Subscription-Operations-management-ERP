@@ -172,7 +172,7 @@ export const VendorModal: React.FC<VendorModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fadeIn">
-      <div className="bg-[#151c2c] border border-slate-700/80 rounded-2xl w-full max-w-2xl max-h-[92vh] flex flex-col shadow-2xl shadow-black/80 overflow-hidden">
+      <div className="bg-[#16181d] border border-slate-700/80 rounded-2xl w-full max-w-2xl max-h-[92vh] flex flex-col shadow-2xl shadow-black/80 overflow-hidden">
         {/* Header */}
         <div className="p-5 border-b border-slate-800 flex items-center justify-between bg-[#111827]">
           <div className="flex items-center gap-3">
@@ -197,7 +197,7 @@ export const VendorModal: React.FC<VendorModalProps> = ({
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex border-b border-slate-800 bg-[#0f1422] px-4 gap-2 overflow-x-auto custom-scrollbar">
+        <div className="flex border-b border-slate-800 bg-[#121419] px-4 gap-2 overflow-x-auto custom-scrollbar">
           <button
             type="button"
             onClick={() => setActiveTab('general')}
@@ -260,7 +260,7 @@ export const VendorModal: React.FC<VendorModalProps> = ({
                     value={vendorCode}
                     onChange={(e) => setVendorCode(e.target.value)}
                     placeholder="e.g. VEND-001"
-                    className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-amber-400 font-mono font-bold focus:outline-none focus:border-amber-500"
+                    className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-amber-400 font-mono font-bold focus:outline-none focus:border-[#ff8d24]"
                   />
                 </div>
 
@@ -272,7 +272,7 @@ export const VendorModal: React.FC<VendorModalProps> = ({
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="e.g. Mom's Food Kitchen"
-                    className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-bold focus:outline-none focus:border-amber-500"
+                    className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-bold focus:outline-none focus:border-[#ff8d24]"
                   />
                 </div>
               </div>
@@ -285,7 +285,7 @@ export const VendorModal: React.FC<VendorModalProps> = ({
                     value={contactPerson}
                     onChange={(e) => setContactPerson(e.target.value)}
                     placeholder="e.g. Chef Fatima / Manager"
-                    className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-amber-500"
+                    className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-[#ff8d24]"
                   />
                 </div>
 
@@ -296,7 +296,7 @@ export const VendorModal: React.FC<VendorModalProps> = ({
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="e.g. +971 50 123 4567"
-                    className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-amber-500"
+                    className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-[#ff8d24]"
                   />
                 </div>
               </div>
@@ -307,7 +307,7 @@ export const VendorModal: React.FC<VendorModalProps> = ({
                   <select
                     value={category}
                     onChange={(e) => setCategory(e.target.value as VendorCategory)}
-                    className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-amber-500"
+                    className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-[#ff8d24]"
                   >
                     {categories.map((c) => (
                       <option key={c} value={c}>{c}</option>
@@ -320,7 +320,7 @@ export const VendorModal: React.FC<VendorModalProps> = ({
                   <select
                     value={paymentTerms}
                     onChange={(e) => setPaymentTerms(e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-amber-500"
+                    className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-[#ff8d24]"
                   >
                     {termsList.map((t) => (
                       <option key={t} value={t}>{t}</option>
@@ -336,7 +336,7 @@ export const VendorModal: React.FC<VendorModalProps> = ({
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
                   placeholder="e.g. Ras Al Khor Industrial Kitchen 2, Dubai"
-                  className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-amber-500"
+                  className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-[#ff8d24]"
                 />
               </div>
 
@@ -346,7 +346,7 @@ export const VendorModal: React.FC<VendorModalProps> = ({
                   <select
                     value={status}
                     onChange={(e) => setStatus(e.target.value as VendorStatus)}
-                    className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-amber-500"
+                    className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-[#ff8d24]"
                   >
                     <option value="active">Active (Available for daily accounts)</option>
                     <option value="inactive">Inactive / Deactivated</option>
@@ -360,7 +360,7 @@ export const VendorModal: React.FC<VendorModalProps> = ({
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
                     placeholder="e.g. Primary catering supplier"
-                    className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-amber-500"
+                    className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-[#ff8d24]"
                   />
                 </div>
               </div>
@@ -385,7 +385,7 @@ export const VendorModal: React.FC<VendorModalProps> = ({
                     value={breakfastRate}
                     onChange={(e) => setBreakfastRate(e.target.value)}
                     placeholder="3.27"
-                    className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-amber-400 font-mono text-base font-bold focus:outline-none focus:border-amber-500"
+                    className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-amber-400 font-mono text-base font-bold focus:outline-none focus:border-[#ff8d24]"
                   />
                   <p className="text-[10px] text-slate-400 mt-1.5">Per breakfast delivered</p>
                 </div>
@@ -399,7 +399,7 @@ export const VendorModal: React.FC<VendorModalProps> = ({
                     value={lunchRate}
                     onChange={(e) => setLunchRate(e.target.value)}
                     placeholder="4.385"
-                    className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-amber-400 font-mono text-base font-bold focus:outline-none focus:border-amber-500"
+                    className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-amber-400 font-mono text-base font-bold focus:outline-none focus:border-[#ff8d24]"
                   />
                   <p className="text-[10px] text-slate-400 mt-1.5">Per lunch delivered</p>
                 </div>
@@ -413,7 +413,7 @@ export const VendorModal: React.FC<VendorModalProps> = ({
                     value={dinnerRate}
                     onChange={(e) => setDinnerRate(e.target.value)}
                     placeholder="4.27"
-                    className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-amber-400 font-mono text-base font-bold focus:outline-none focus:border-amber-500"
+                    className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-amber-400 font-mono text-base font-bold focus:outline-none focus:border-[#ff8d24]"
                   />
                   <p className="text-[10px] text-slate-400 mt-1.5">Per dinner delivered</p>
                 </div>
@@ -679,7 +679,7 @@ export const VendorModal: React.FC<VendorModalProps> = ({
                     value={openingBalance}
                     onChange={(e) => setOpeningBalance(e.target.value)}
                     placeholder="-946.66"
-                    className="w-full px-3.5 py-3 bg-slate-950 border border-slate-700 rounded-xl text-white font-mono text-base font-bold focus:outline-none focus:border-amber-500"
+                    className="w-full px-3.5 py-3 bg-slate-950 border border-slate-700 rounded-xl text-white font-mono text-base font-bold focus:outline-none focus:border-[#ff8d24]"
                   />
                 </div>
 

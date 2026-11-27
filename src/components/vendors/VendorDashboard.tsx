@@ -85,7 +85,7 @@ export const VendorDashboard: React.FC<VendorDashboardProps> = ({
       {/* 4 Top KPI Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Card 1: Total Vendors */}
-        <div className="bg-[#151c2c] border border-slate-800/80 rounded-2xl p-5 shadow-lg relative overflow-hidden">
+        <div className="bg-[#16181d] border border-slate-800/80 rounded-2xl p-5 shadow-lg relative overflow-hidden">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Total Vendors</span>
             <div className="w-9 h-9 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400">
@@ -100,7 +100,7 @@ export const VendorDashboard: React.FC<VendorDashboardProps> = ({
         </div>
 
         {/* Card 2: Active Vendors */}
-        <div className="bg-[#151c2c] border border-slate-800/80 rounded-2xl p-5 shadow-lg relative overflow-hidden">
+        <div className="bg-[#16181d] border border-slate-800/80 rounded-2xl p-5 shadow-lg relative overflow-hidden">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Active Suppliers</span>
             <div className="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
@@ -115,7 +115,7 @@ export const VendorDashboard: React.FC<VendorDashboardProps> = ({
         </div>
 
         {/* Card 3: Total Vendor Charges This Month */}
-        <div className="bg-[#151c2c] border border-slate-800/80 rounded-2xl p-5 shadow-lg relative overflow-hidden">
+        <div className="bg-[#16181d] border border-slate-800/80 rounded-2xl p-5 shadow-lg relative overflow-hidden">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Total Charges (Month)</span>
             <div className="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
@@ -131,7 +131,7 @@ export const VendorDashboard: React.FC<VendorDashboardProps> = ({
         </div>
 
         {/* Card 4: Outstanding Payables */}
-        <div className="bg-[#151c2c] border border-slate-800/80 rounded-2xl p-5 shadow-lg relative overflow-hidden">
+        <div className="bg-[#16181d] border border-slate-800/80 rounded-2xl p-5 shadow-lg relative overflow-hidden">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Outstanding Payables</span>
             <div className="w-9 h-9 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400">
@@ -150,7 +150,7 @@ export const VendorDashboard: React.FC<VendorDashboardProps> = ({
       {/* Grid: Monthly Expense Chart & Vendors With Balances */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Monthly Expense Chart */}
-        <div className="lg:col-span-2 bg-[#151c2c] border border-slate-800/80 rounded-2xl p-5 shadow-xl flex flex-col justify-between">
+        <div className="lg:col-span-2 bg-[#16181d] border border-slate-800/80 rounded-2xl p-5 shadow-xl flex flex-col justify-between">
           <div className="flex items-center justify-between mb-4">
             <div>
               <h3 className="text-sm font-bold text-white flex items-center gap-2">
@@ -214,7 +214,7 @@ export const VendorDashboard: React.FC<VendorDashboardProps> = ({
         </div>
 
         {/* Vendors with Outstanding Balances */}
-        <div className="bg-[#151c2c] border border-slate-800/80 rounded-2xl p-5 shadow-xl flex flex-col justify-between">
+        <div className="bg-[#16181d] border border-slate-800/80 rounded-2xl p-5 shadow-xl flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-bold text-white flex items-center gap-2">
@@ -284,7 +284,7 @@ export const VendorDashboard: React.FC<VendorDashboardProps> = ({
       {/* Bottom Section: Recent Transactions & Upcoming Payments */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Recent Transactions Table */}
-        <div className="lg:col-span-2 bg-[#151c2c] border border-slate-800/80 rounded-2xl p-5 shadow-xl">
+        <div className="lg:col-span-2 bg-[#16181d] border border-slate-800/80 rounded-2xl p-5 shadow-xl">
           <div className="flex items-center justify-between mb-4">
             <div>
               <h3 className="text-sm font-bold text-white flex items-center gap-2">
@@ -361,7 +361,7 @@ export const VendorDashboard: React.FC<VendorDashboardProps> = ({
         </div>
 
         {/* Upcoming Vendor Payments */}
-        <div className="bg-[#151c2c] border border-slate-800/80 rounded-2xl p-5 shadow-xl flex flex-col justify-between">
+        <div className="bg-[#16181d] border border-slate-800/80 rounded-2xl p-5 shadow-xl flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-bold text-white flex items-center gap-2">
