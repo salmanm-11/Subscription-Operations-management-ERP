@@ -207,7 +207,7 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Orbit Top Breadcrumb / Category Bar */}
         <div className="flex items-center gap-2 text-xs font-semibold text-[#8e97a8] mb-1">
           <LayoutGrid className="w-3.5 h-3.5 text-white stroke-[2.2]" />
-          <span className="text-white font-bold">Customer</span>
+          <span className="text-white font-bold">Dashboard</span>
           <span className="text-[#555d6e]">•</span>
           <span className="font-mono text-[11px] text-[#788194]">
             {customers.filter((c) => c.status === 'active').length || 14} Live Projects

@@ -43,7 +43,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
 
   const navItems = [
-    { id: 'dashboard', label: 'Customer', icon: LayoutGrid },
+    { id: 'dashboard', label: 'Dashboard', icon: LayoutGrid },
     { id: 'customers', label: 'Customers', icon: Users },
     { id: 'buildings', label: 'Buildings', icon: Building2 },
     { id: 'attendance', label: 'Meal Attendance', icon: UtensilsCrossed },
