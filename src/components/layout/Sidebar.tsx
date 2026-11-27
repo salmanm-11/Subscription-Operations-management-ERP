@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import hiroLogo from '../../assets/hiro-axis-logo.png';
 import { 
   LayoutGrid, 
   Users, 
@@ -70,24 +69,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
     <aside className="w-64 bg-[#121316] border-r border-[#1e2025] flex flex-col h-screen fixed left-0 top-0 select-none z-30 font-sans text-slate-300">
       
       {/* 1. Hiro Axis Brand Header */}
-      <div className="px-4 py-4 flex items-center justify-between border-b border-[#1e2025]/60">
-        <div className="flex items-center gap-3 min-w-0">
-          {/* Hiro Axis logo container with blue cyan glow border */}
-          <div className="w-10 h-10 rounded-2xl bg-[#0b101b] border border-sky-500/50 flex items-center justify-center p-1.5 shadow-[0_0_18px_rgba(14,165,233,0.35)] shrink-0 overflow-hidden">
-            <img 
-              src={hiroLogo} 
-              alt="Hiro Axis" 
-              className="w-full h-full object-contain"
-            />
-          </div>
-          <div className="min-w-0 flex flex-col justify-center">
-            <span className="text-white font-extrabold text-[17px] leading-tight tracking-tight font-sans">
-              Hiro Axis
-            </span>
-            <span className="text-[8.5px] font-mono font-medium text-[#7d8799] tracking-[0.24em] uppercase mt-0.5">
-              TECHNOLOGIES
-            </span>
-          </div>
+      <div className="px-5 py-4 flex items-center justify-between border-b border-[#1e2025]/60">
+        <div className="min-w-0 flex flex-col justify-center">
+          <span className="text-white font-extrabold text-lg leading-tight tracking-tight font-sans">
+            Hiro Axis
+          </span>
+          <span className="text-[9px] font-mono font-medium text-[#7d8799] tracking-[0.24em] uppercase mt-0.5">
+            TECHNOLOGIES
+          </span>
         </div>
 
         {/* Sidebar Collapse Toggle Button */}
