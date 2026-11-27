@@ -5,7 +5,9 @@ import {
   EyeOff, 
   AlertCircle,
   Check,
-  Loader2
+  Loader2,
+  Layers,
+  Sparkles
 } from 'lucide-react';
 import { AuthService, AppUser } from '../../api/authService';
 import { ActivityLogService } from '../../api/activityLogService';
@@ -119,10 +121,30 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onOpenCust
       <div className="absolute inset-0 bg-black/15 backdrop-brightness-[0.95] pointer-events-none" />
 
       {/* Main Glassmorphic Login Card */}
-      <div className="w-full max-w-[390px] sm:max-w-[410px] relative z-20">
+      <div className="w-full max-w-[390px] sm:max-w-[420px] relative z-20">
         <div className="relative rounded-[32px] bg-slate-900/35 backdrop-blur-2xl border border-white/25 p-7 sm:p-9 shadow-[0_20px_50px_rgba(0,0,0,0.5)] shadow-black/60 transition-all">
           
-          {/* Card Header */}
+          {/* Aesthetic Software Brand Header */}
+          <div className="flex items-center justify-between mb-6 pb-4 border-b border-white/15">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-white/15 border border-white/30 backdrop-blur-md flex items-center justify-center text-cyan-300 shadow-sm">
+                <Layers className="w-4 h-4 stroke-[2.2]" />
+              </div>
+              <div>
+                <div className="text-xs font-black tracking-widest text-white uppercase flex items-center gap-1.5 font-sans">
+                  <span>SUBFLOW</span>
+                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-cyan-400/20 border border-cyan-300/30 text-cyan-200 font-mono font-bold tracking-wider">ERP</span>
+                </div>
+                <div className="text-[10px] text-white/60 tracking-wide font-normal">Subscription &amp; Logistics</div>
+              </div>
+            </div>
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/10 border border-white/20 text-[10px] font-semibold text-white/80 backdrop-blur-md shadow-sm">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span>v2.0 Active</span>
+            </div>
+          </div>
+
+          {/* Card Title */}
           <div className="mb-6">
             <h1 className="text-3xl sm:text-4xl font-bold text-white tracking-tight drop-shadow-sm font-sans">
               Login
